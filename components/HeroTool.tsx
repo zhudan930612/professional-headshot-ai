@@ -21,6 +21,7 @@ const CATEGORIES = [
   HeadshotStyle.RealEstate,
   HeadshotStyle.Corporate,
   HeadshotStyle.Creative,
+  HeadshotStyle.SolidColor,
 ];
 
 export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
@@ -31,15 +32,25 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [files, setFiles] = useState<File[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<HeadshotStyle>(HeadshotStyle.General);
-  
+
   // Multi-selection state
   const [selectedTemplateIds, setSelectedTemplateIds] = useState<string[]>([]);
-  
+
   // Generation State
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [generationResults, setGenerationResults] = useState<GenerationResult[]>([]);
   const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null);
+  const [remainingQuota, setRemainingQuota] = useState<number>(0);
+
+  // Load quota on mount and when generation completes
+  useEffect(() => {
+    const loadQuota = async () => {
+      const quota = await getRemainingQuota();
+      setRemainingQuota(quota);
+    };
+    loadQuota();
+  }, [isGenerating]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -69,7 +80,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
   };
 
   const startGeneration = async () => {
-    const quota = getRemainingQuota();
+    const quota = await getRemainingQuota();
     if (quota <= 0) {
       setError("Daily limit reached. Please come back tomorrow!");
       return;
@@ -115,21 +126,21 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
       const completedImages = await Promise.all(promises);
 
       setIsGenerating(false);
-      const success = incrementQuota(completedImages.length);
-      
+      const success = await incrementQuota(completedImages.length);
+
       if (success) {
         // Find style info for saving
         const selectedTemplates = HEADSHOT_TEMPLATES.filter(t => selectedTemplateIds.includes(t.id));
         const primaryStyle = selectedTemplates[0]?.category || HeadshotStyle.General;
 
-        saveSession({
+        await saveSession({
             id: Date.now().toString(),
             date: Date.now(),
             style: primaryStyle,
             useCase: UseCase.LinkedIn,
             images: completedImages
         });
-        
+
         if (onSuccess) onSuccess(completedImages);
       } else {
         setError("Quota exceeded during processing.");
@@ -267,23 +278,24 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                      const isSelected = selectedTemplateIds.includes(template.id);
                      const isDisabled = !isSelected && selectedTemplateIds.length >= 4;
                      return (
-                        <div 
+                        <div
                             key={template.id}
                             onClick={() => !isDisabled && toggleTemplate(template.id)}
                             className={`relative cursor-pointer rounded-lg overflow-hidden border-2 transition-all group aspect-[3/4] ${
-                                isSelected 
-                                ? 'border-primary-600 ring-2 ring-primary-100 ring-offset-1 shadow-md opacity-100 scale-95' 
-                                : isDisabled 
+                                isSelected
+                                ? 'border-primary-600 ring-2 ring-primary-100 ring-offset-1 shadow-md opacity-100 scale-95'
+                                : isDisabled
                                     ? 'border-transparent opacity-50 cursor-not-allowed'
                                     : 'border-transparent hover:border-slate-300 shadow-sm opacity-100 hover:shadow-md'
                             }`}
                         >
-                            <img 
-                                src={template.imageUrl} 
-                                alt={template.label} 
+                            <img
+                                src={template.imageUrl}
+                                alt={`${template.label} - Professional headshot reference template for ${template.category}`}
+                                loading="lazy"
                                 className="w-full h-full object-cover"
                             />
-                            
+
                             {isSelected && (
                                 <div className="absolute top-1 right-1 bg-primary-600 text-white p-0.5 rounded-full shadow-md animate-in zoom-in">
                                     <Check size={10} strokeWidth={3} />
@@ -457,7 +469,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                 </div>
 
                 <div className="text-xs font-medium text-slate-500 bg-white px-3 py-1.5 rounded-full border border-slate-200">
-                    {getRemainingQuota()} credits
+                    {remainingQuota} credits
                 </div>
             </div>
 

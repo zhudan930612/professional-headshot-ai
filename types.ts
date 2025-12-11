@@ -4,6 +4,7 @@ export enum HeadshotStyle {
   RealEstate = 'Real Estate Agent',
   Corporate = 'Corporate & Executive',
   Creative = 'Actor & Creative',
+  SolidColor = 'Solid Color Background',
 }
 
 export enum UseCase {
@@ -15,9 +16,18 @@ export enum UseCase {
 
 export interface HeadshotTemplate {
   id: string;
+  templateId: string;
   label: string;
+  name: string;
   category: HeadshotStyle;
   imageUrl: string;
+  thumbnailUrl?: string;
+  fullUrl?: string;
+  description?: string;
+  sortOrder?: number;
+  isActive?: boolean;
+  storagePath?: string;
+  createdAt?: string;
 }
 
 export interface GeneratedImage {

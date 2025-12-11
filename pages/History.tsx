@@ -9,7 +9,11 @@ export const History = () => {
   const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null);
 
   useEffect(() => {
-    setSessions(getHistory());
+    const loadHistory = async () => {
+      const history = await getHistory();
+      setSessions(history);
+    };
+    loadHistory();
   }, []);
 
   const formatDate = (ts: number) => {
