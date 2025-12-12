@@ -54,27 +54,8 @@ CREATE TRIGGER update_user_quotas_updated_at
 -- ========================================
 -- NEW TABLES AND MODIFICATIONS
 -- Added: 2025-12-11
--- Purpose: Support real file uploads, AI generation, and reference templates
+-- Purpose: Support real file uploads and AI generation
 -- ========================================
-
--- Create reference templates table (case reference image library)
-CREATE TABLE IF NOT EXISTS reference_templates (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  template_id TEXT NOT NULL UNIQUE,
-  name TEXT NOT NULL,
-  category TEXT NOT NULL,
-  storage_path TEXT NOT NULL UNIQUE,
-  thumbnail_url TEXT,
-  full_url TEXT NOT NULL,
-  description TEXT,
-  sort_order INTEGER DEFAULT 0,
-  is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_reference_templates_category ON reference_templates(category);
-CREATE INDEX IF NOT EXISTS idx_reference_templates_active ON reference_templates(is_active);
-CREATE INDEX IF NOT EXISTS idx_reference_templates_sort ON reference_templates(sort_order);
 
 -- Create uploaded files table (user uploaded photos)
 CREATE TABLE IF NOT EXISTS uploaded_files (

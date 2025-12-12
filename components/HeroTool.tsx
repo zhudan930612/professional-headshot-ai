@@ -64,6 +64,38 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
     }
   };
 
+  // 存储文件预览 URL 的映射
+  const [previewUrls, setPreviewUrls] = useState<Map<File, string>>(new Map());
+
+  // 当文件列表变化时，更新预览 URL
+  useEffect(() => {
+    const newPreviewUrls = new Map<File, string>();
+
+    files.forEach(file => {
+      // 复用已存在的 URL 或创建新的
+      const existingUrl = previewUrls.get(file);
+      if (existingUrl) {
+        newPreviewUrls.set(file, existingUrl);
+      } else {
+        newPreviewUrls.set(file, URL.createObjectURL(file));
+      }
+    });
+
+    // 清理不再使用的 URL
+    previewUrls.forEach((url, file) => {
+      if (!files.includes(file)) {
+        URL.revokeObjectURL(url);
+      }
+    });
+
+    setPreviewUrls(newPreviewUrls);
+
+    // 组件卸载时清理所有 URL
+    return () => {
+      newPreviewUrls.forEach(url => URL.revokeObjectURL(url));
+    };
+  }, [files]);
+
   const removeFile = (index: number) => {
     setFiles(files.filter((_, i) => i !== index));
   };
@@ -197,19 +229,30 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
             ) : (
                 <div className="w-full max-w-2xl">
                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 mb-4">
-                         {files.map((f, i) => (
-                            <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 bg-white shadow-sm">
-                                <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-300">
-                                    <ImageIcon size={20} />
+                         {files.map((f, i) => {
+                            const previewUrl = previewUrls.get(f);
+                            return (
+                                <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 bg-white shadow-sm group">
+                                    {previewUrl ? (
+                                        <img
+                                            src={previewUrl}
+                                            alt={`Preview ${i + 1}`}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-slate-100">
+                                            <Loader2 className="animate-spin text-slate-400" size={20} />
+                                        </div>
+                                    )}
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); removeFile(i); }}
+                                        className="absolute top-1 right-1 bg-black/60 hover:bg-red-500 text-white rounded-full p-1 transition-colors opacity-0 group-hover:opacity-100"
+                                    >
+                                        <XIcon size={12} />
+                                    </button>
                                 </div>
-                                <button 
-                                    onClick={(e) => { e.stopPropagation(); removeFile(i); }}
-                                    className="absolute top-1 right-1 bg-black/60 hover:bg-red-500 text-white rounded-full p-1 transition-colors"
-                                >
-                                    <XIcon size={12} />
-                                </button>
-                            </div>
-                         ))}
+                            );
+                         })}
                          {files.length < 10 && (
                             <div className="aspect-square rounded-xl border-2 border-dashed border-primary-300 bg-white flex flex-col items-center justify-center text-primary-600 hover:bg-primary-50 transition-colors">
                                 <Upload size={20} />
