@@ -1,9 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Upload, Sparkles, Image as ImageIcon, CheckCircle, AlertCircle, Loader2, Check, Download, RefreshCw, ArrowRight, ArrowLeft, X as XIconLucide, Maximize2 } from 'lucide-react';
 import { HEADSHOT_TEMPLATES } from '../constants';
-import { HeadshotStyle, UseCase, GeneratedImage } from '../types';
+import { HeadshotStyle, UseCase, GeneratedImage, ReferenceImage } from '../types';
 import { getRemainingQuota, incrementQuota, saveSession, mockGenerateImages } from '../services/storageService';
+import { selectReferenceImage, validateImageFiles } from '../services/imageService';
+import { uploadReferenceImage } from '../services/uploadService';
+import { generateHeadshots } from '../services/generationService';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 
 interface HeroToolProps {
   onSuccess?: (images: GeneratedImage[]) => void;
@@ -33,6 +37,10 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
   const [files, setFiles] = useState<File[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<HeadshotStyle>(HeadshotStyle.General);
 
+  // Reference Image State ⭐ NEW
+  const [selectedReferenceIndex, setSelectedReferenceIndex] = useState<number | null>(null);
+  const [uploadedReferenceImage, setUploadedReferenceImage] = useState<ReferenceImage | null>(null);
+
   // Multi-selection state
   const [selectedTemplateIds, setSelectedTemplateIds] = useState<string[]>([]);
 
@@ -52,15 +60,35 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
     loadQuota();
   }, [isGenerating]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
       if (newFiles.length + files.length > 10) {
         setError("Maximum 10 photos allowed.");
         return;
       }
-      setFiles([...files, ...newFiles]);
+
+      // ⭐ NEW: 验证图片文件
+      const validation = validateImageFiles(newFiles);
+      if (!validation.valid) {
+        setError(validation.errors.join('\n'));
+        return;
+      }
+
+      const updatedFiles = [...files, ...newFiles];
+      setFiles(updatedFiles);
       setError(null);
+
+      // ⭐ NEW: 自动选择参考图（选择第一张）
+      if (updatedFiles.length > 0 && selectedReferenceIndex === null) {
+        try {
+          const refIndex = await selectReferenceImage(updatedFiles);
+          setSelectedReferenceIndex(refIndex);
+          console.log(`✅ 自动选择第 ${refIndex + 1} 张图片作为参考图`);
+        } catch (err) {
+          console.error('选择参考图失败:', err);
+        }
+      }
     }
   };
 
@@ -96,8 +124,28 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
     };
   }, [files]);
 
-  const removeFile = (index: number) => {
-    setFiles(files.filter((_, i) => i !== index));
+  const removeFile = async (index: number) => {
+    const updatedFiles = files.filter((_, i) => i !== index);
+    setFiles(updatedFiles);
+
+    // ⭐ NEW: 如果删除的是参考图，重新选择
+    if (index === selectedReferenceIndex) {
+      setSelectedReferenceIndex(null);
+      setUploadedReferenceImage(null);
+
+      if (updatedFiles.length > 0) {
+        try {
+          const newRefIndex = await selectReferenceImage(updatedFiles);
+          setSelectedReferenceIndex(newRefIndex);
+          console.log(`✅ 重新选择第 ${newRefIndex + 1} 张图片作为参考图`);
+        } catch (err) {
+          console.error('重新选择参考图失败:', err);
+        }
+      }
+    } else if (selectedReferenceIndex !== null && index < selectedReferenceIndex) {
+      // 如果删除的文件在参考图之前，调整索引
+      setSelectedReferenceIndex(selectedReferenceIndex - 1);
+    }
   };
 
   const toggleTemplate = (id: string) => {
@@ -123,6 +171,12 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
         return;
     }
 
+    // ⭐ NEW: 检查参考图是否已选择
+    if (selectedReferenceIndex === null || !files[selectedReferenceIndex]) {
+      setError("No reference image selected. Please upload photos first.");
+      return;
+    }
+
     // Initialize placeholders for the results
     const initialResults: GenerationResult[] = selectedTemplateIds.map(id => ({
         templateId: id,
@@ -136,21 +190,55 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
     setError(null);
 
     try {
+      // ⭐ NEW: Step 1 - 上传参考图到 Supabase Storage
+      console.log('📤 上传参考图到 Supabase Storage...');
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id || `anon_${Date.now()}`;
+
+      const referenceFile = files[selectedReferenceIndex];
+      const uploadedRef = await uploadReferenceImage(referenceFile, userId);
+      setUploadedReferenceImage(uploadedRef);
+      console.log('✅ 参考图上传成功:', uploadedRef.url);
+
+      // ⭐ NEW: Step 2 - 调用新的生成服务（使用参考图 + 模板图）
+      const selectedTemplates = HEADSHOT_TEMPLATES.filter(t =>
+        selectedTemplateIds.includes(t.id)
+      );
+      const primaryStyle = selectedTemplates[0]?.category || HeadshotStyle.General;
+      const sessionId = Date.now().toString();
+
+      console.log('🎨 开始生成专业头像...');
+
       // Create independent generation promises for each selected template
-      const promises = selectedTemplateIds.map(async (id) => {
+      const promises = selectedTemplateIds.map(async (id, index) => {
         // Add a random stagger delay (0-2s) to make it look like independent processing
         await new Promise(r => setTimeout(r, Math.random() * 2000));
-        
-        // Generate single image (mock service has internal 3s delay)
-        const [img] = await mockGenerateImages(1);
-        
+
+        // ⭐ NEW: 使用真实的生成服务（当前仍使用 Mock，等待真实 API）
+        const template = selectedTemplates.find(t => t.id === id);
+        if (!template) {
+          throw new Error(`Template ${id} not found`);
+        }
+
+        // 调用生成服务（参考图 + 模板）
+        const generatedImages = await generateHeadshots(
+          referenceFile,
+          [template],
+          primaryStyle,
+          userId,
+          `${sessionId}_${index}`,
+          uploadedRef.url  // ⭐ NEW: 传递参考图 URL
+        );
+
+        const img = generatedImages[0];
+
         // Update specific item in state to show it's done
-        setGenerationResults(prev => prev.map(item => 
-             item.templateId === id 
+        setGenerationResults(prev => prev.map(item =>
+             item.templateId === id
              ? { ...item, loading: false, image: img }
              : item
         ));
-        
+
         return img;
       });
 
@@ -161,16 +249,14 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
       const success = await incrementQuota(completedImages.length);
 
       if (success) {
-        // Find style info for saving
-        const selectedTemplates = HEADSHOT_TEMPLATES.filter(t => selectedTemplateIds.includes(t.id));
-        const primaryStyle = selectedTemplates[0]?.category || HeadshotStyle.General;
-
+        // ⭐ NEW: 保存会话（包含参考图信息）
         await saveSession({
-            id: Date.now().toString(),
+            id: sessionId,
             date: Date.now(),
             style: primaryStyle,
             useCase: UseCase.LinkedIn,
-            images: completedImages
+            images: completedImages,
+            referenceImage: uploadedRef,  // 新增参考图信息
         });
 
         if (onSuccess) onSuccess(completedImages);
@@ -179,6 +265,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
       }
 
     } catch (err) {
+      console.error('生成失败:', err);
       setError("Something went wrong. Please try again.");
       setIsGenerating(false);
     }
@@ -190,6 +277,9 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
       setSelectedTemplateIds([]);
       setStep(1);
       setIsGenerating(false);
+      // ⭐ NEW: 重置参考图状态
+      setSelectedReferenceIndex(null);
+      setUploadedReferenceImage(null);
   }
 
   // --- STEPS RENDERERS ---
@@ -232,7 +322,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                          {files.map((f, i) => {
                             const previewUrl = previewUrls.get(f);
                             return (
-                                <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 bg-white shadow-sm group">
+                                <div key={i} className="relative aspect-square rounded-xl overflow-hidden border-2 border-slate-200 bg-white shadow-sm group">
                                     {previewUrl ? (
                                         <img
                                             src={previewUrl}
@@ -244,11 +334,12 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                                             <Loader2 className="animate-spin text-slate-400" size={20} />
                                         </div>
                                     )}
+                                    {/* 参考图徽章已移除 - 参考图选择为纯后端逻辑 */}
                                     <button
                                         onClick={(e) => { e.stopPropagation(); removeFile(i); }}
                                         className="absolute top-1 right-1 bg-black/60 hover:bg-red-500 text-white rounded-full p-1 transition-colors opacity-0 group-hover:opacity-100"
                                     >
-                                        <XIcon size={12} />
+                                        <XIconLucide size={12} />
                                     </button>
                                 </div>
                             );
@@ -260,6 +351,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                             </div>
                          )}
                      </div>
+                     {/* 参考图信息提示已移除 - 参考图选择为纯后端逻辑 */}
                      <p className="text-sm font-semibold text-primary-600">{files.length} photos selected</p>
                 </div>
             )}

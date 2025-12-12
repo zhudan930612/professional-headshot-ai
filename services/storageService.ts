@@ -80,26 +80,39 @@ export const saveSession = async (session: GenerationSession): Promise<void> => 
   try {
     const userId = await getUserId();
 
+    // ⭐ NEW: 准备会话数据（包含参考图信息）
+    const sessionData: any = {
+      user_id: userId,
+      session_id: session.id,
+      date: session.date,
+      style: session.style,
+      use_case: session.useCase,
+    };
+
+    // ⭐ NEW: 如果有参考图，添加到会话数据
+    if (session.referenceImage) {
+      sessionData.reference_image_url = session.referenceImage.url;
+      sessionData.reference_image_storage_path = session.referenceImage.storagePath;
+      sessionData.reference_image_file_name = session.referenceImage.fileName;
+    }
+
     // 保存会话到 Supabase
     const { error: sessionError } = await supabase
       .from('generation_sessions')
-      .insert({
-        user_id: userId,
-        session_id: session.id,
-        date: session.date,
-        style: session.style,
-        use_case: session.useCase,
-      });
+      .insert(sessionData);
 
     if (sessionError) throw sessionError;
 
-    // 保存图片到 Supabase
+    // ⭐ NEW: 保存图片到 Supabase（包含存储路径等元数据）
     if (session.images && session.images.length > 0) {
       const imageRecords = session.images.map(img => ({
         session_id: session.id,
         image_id: img.id,
         url: img.url,
         created_at_timestamp: img.createdAt,
+        storage_path: img.storagePath,        // ⭐ NEW
+        file_size: img.fileSize,              // ⭐ NEW
+        mime_type: img.mimeType,              // ⭐ NEW
       }));
 
       const { error: imagesError } = await supabase

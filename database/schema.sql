@@ -78,7 +78,10 @@ ALTER TABLE generation_sessions
 ADD COLUMN IF NOT EXISTS input_file_ids TEXT[],
 ADD COLUMN IF NOT EXISTS reference_template_ids TEXT[],
 ADD COLUMN IF NOT EXISTS processing_status TEXT DEFAULT 'pending',
-ADD COLUMN IF NOT EXISTS error_message TEXT;
+ADD COLUMN IF NOT EXISTS error_message TEXT,
+ADD COLUMN IF NOT EXISTS reference_image_url TEXT,
+ADD COLUMN IF NOT EXISTS reference_image_storage_path TEXT,
+ADD COLUMN IF NOT EXISTS reference_image_file_name TEXT;
 
 CREATE INDEX IF NOT EXISTS idx_sessions_status ON generation_sessions(processing_status);
 
