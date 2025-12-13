@@ -725,6 +725,7 @@ export const FAQ_ITEMS = [
 export const BLOG_POSTS = [
   {
     id: '1',
+    slug: 'what-to-wear-for-a-professional-headshot',
     title: 'What to Wear for a Professional Headshot',
     excerpt: 'Discover the best color palettes and clothing styles to make your LinkedIn profile stand out.',
     date: 'Oct 12, 2023',
@@ -732,6 +733,7 @@ export const BLOG_POSTS = [
   },
   {
     id: '2',
+    slug: 'top-5-mistakes-in-resume-photos',
     title: 'Top 5 Mistakes in Resume Photos',
     excerpt: 'Are you making these common errors? Learn how to fix your CV image instantly.',
     date: 'Nov 04, 2023',
@@ -739,9 +741,34 @@ export const BLOG_POSTS = [
   },
   {
     id: '3',
+    slug: 'lighting-101-studio-vs-natural',
     title: 'Lighting 101: Studio vs. Natural',
     excerpt: 'Understanding how lighting affects the mood and professionalism of your portrait.',
     date: 'Dec 01, 2023',
+    readTime: '6 min read'
+  },
+  {
+    id: '4',
+    slug: 'what-makes-professional-headshot-effective-2025',
+    title: 'What Makes a Professional Headshot Truly Effective in 2025?',
+    excerpt: 'Learn what recruiters and clients look for in a professional headshot—authenticity beats perfection in the modern workplace.',
+    date: 'Dec 13, 2024',
+    readTime: '8 min read'
+  },
+  {
+    id: '5',
+    slug: 'ai-professional-headshots-vs-studio-photography',
+    title: 'AI Professional Headshots vs Studio Photography: Which Is Right for You?',
+    excerpt: 'Compare costs, time, and flexibility. Discover why AI headshots are the perfect solution for most professionals.',
+    date: 'Dec 13, 2024',
+    readTime: '7 min read'
+  },
+  {
+    id: '6',
+    slug: 'how-to-upload-photos-best-ai-headshot-results',
+    title: 'How to Upload Photos for the Best AI Headshot Results',
+    excerpt: 'Master the art of uploading selfies. Learn lighting, angles, and expressions that produce stunning AI-generated headshots.',
+    date: 'Dec 13, 2024',
     readTime: '6 min read'
   }
 ];

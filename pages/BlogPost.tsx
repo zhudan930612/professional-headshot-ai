@@ -1,17 +1,30 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { BLOG_POSTS } from '../constants';
 import { ArrowLeft, Clock, Calendar, Share2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 export const BlogPost = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
-  const post = BLOG_POSTS.find(p => p.id === id);
+  const post = BLOG_POSTS.find(p => p.slug === slug);
+  const [content, setContent] = useState('');
 
-  // Scroll to top on mount
+  // Scroll to top on mount and load content
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
+
+    if (post) {
+      // Dynamically load markdown content
+      fetch(`/blog/${post.slug}.md`)
+        .then(res => res.text())
+        .then(text => setContent(text))
+        .catch(err => {
+          console.error('Failed to load blog content:', err);
+          setContent('');
+        });
+    }
+  }, [post?.slug]);
 
   if (!post) {
     return (
@@ -59,36 +72,43 @@ export const BlogPost = () => {
                 {post.title}
             </h1>
 
-            {/* Placeholder Content */}
+            {/* Markdown Content */}
             <div className="prose prose-slate prose-lg max-w-none">
-                <p className="lead text-xl text-slate-600 mb-8">
-                    {post.excerpt} This is a placeholder introduction that sets the stage for the valuable insights contained in this article regarding professional headshots and personal branding.
-                </p>
-
-                <h3>Why This Matters</h3>
-                <p>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-                </p>
-                <p>
-                    Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.
-                </p>
-
-                <div className="bg-slate-50 border-l-4 border-primary-500 p-6 my-8 rounded-r-lg italic text-slate-700">
-                    "Your professional headshot is often the first impression you make. Make it count with high-quality lighting and attire."
-                </div>
-
-                <h3>Key Takeaways</h3>
-                <ul className="list-disc pl-6 space-y-2 mb-8">
-                    <li>First impressions happen in less than a second.</li>
-                    <li>Lighting can drastically change the mood of a photo.</li>
-                    <li>AI tools provide a cost-effective alternative to traditional studios.</li>
-                    <li>Consistency across platforms builds brand recognition.</li>
-                </ul>
-
-                <h3>Conclusion</h3>
-                <p>
-                   To wrap up, ensuring your professional image is polished and up-to-date is crucial in today's digital landscape. Whether you choose a traditional photographer or use AI generation tools, the goal remains the same: presenting the best version of yourself to the world.
-                </p>
+                {content ? (
+                    <ReactMarkdown
+                        components={{
+                            h1: ({ node, ...props }) => <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6 mt-8" {...props} />,
+                            h2: ({ node, ...props }) => <h2 className="text-2xl font-bold text-slate-900 mb-4 mt-6" {...props} />,
+                            h3: ({ node, ...props }) => <h3 className="text-xl font-semibold text-slate-900 mb-3 mt-5" {...props} />,
+                            p: ({ node, ...props }) => <p className="text-slate-700 mb-4 leading-relaxed" {...props} />,
+                            ul: ({ node, ...props }) => <ul className="list-disc pl-6 space-y-2 mb-6 text-slate-700" {...props} />,
+                            ol: ({ node, ...props }) => <ol className="list-decimal pl-6 space-y-2 mb-6 text-slate-700" {...props} />,
+                            li: ({ node, ...props }) => <li className="text-slate-700" {...props} />,
+                            strong: ({ node, ...props }) => <strong className="font-bold text-slate-900" {...props} />,
+                            em: ({ node, ...props }) => <em className="italic text-slate-700" {...props} />,
+                            blockquote: ({ node, ...props }) => (
+                                <blockquote className="bg-slate-50 border-l-4 border-primary-500 p-6 my-6 rounded-r-lg italic text-slate-700" {...props} />
+                            ),
+                            code: ({ node, inline, ...props }) =>
+                                inline ? (
+                                    <code className="bg-slate-100 px-2 py-1 rounded text-sm font-mono text-slate-900" {...props} />
+                                ) : (
+                                    <pre className="bg-slate-900 text-slate-100 p-4 rounded-lg overflow-x-auto mb-4"><code {...props} /></pre>
+                                ),
+                            a: ({ node, ...props }) => <a className="text-primary-600 hover:underline font-medium" {...props} />,
+                            hr: ({ node, ...props }) => <hr className="my-8 border-slate-200" {...props} />,
+                            table: ({ node, ...props }) => <table className="w-full border-collapse my-6" {...props} />,
+                            th: ({ node, ...props }) => <th className="border border-slate-300 px-4 py-2 bg-slate-50 font-semibold" {...props} />,
+                            td: ({ node, ...props }) => <td className="border border-slate-300 px-4 py-2" {...props} />,
+                        }}
+                    >
+                        {content}
+                    </ReactMarkdown>
+                ) : (
+                    <div className="text-center py-12">
+                        <p className="text-slate-500">Loading article content...</p>
+                    </div>
+                )}
             </div>
 
             {/* Share / CTA */}
