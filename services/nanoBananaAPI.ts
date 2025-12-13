@@ -6,9 +6,13 @@
 const NANO_BANANA_API_BASE = 'https://api.evolink.ai/v1';
 const NANO_BANANA_API_KEY = import.meta.env.VITE_NANO_BANANA_API_KEY;
 
-// 验证环境变量
+// 验证环境变量（仅在开发环境抛出错误，生产环境给出友好提示）
 if (!NANO_BANANA_API_KEY) {
-  throw new Error('❌ 缺少环境变量 VITE_NANO_BANANA_API_KEY，请在 .env.local 文件中配置');
+  if (import.meta.env.DEV) {
+    throw new Error('❌ 缺少环境变量 VITE_NANO_BANANA_API_KEY，请在 .env.local 文件中配置');
+  }
+  console.error('❌ 缺少环境变量 VITE_NANO_BANANA_API_KEY');
+  console.error('请在 Vercel Dashboard → Settings → Environment Variables 中添加 VITE_NANO_BANANA_API_KEY');
 }
 
 /**
@@ -77,6 +81,13 @@ export async function submitGenerationTask(
     templateImage: request.templateImageUrl,
   });
 
+  // 检查 API Key
+  if (!NANO_BANANA_API_KEY) {
+    const errorMsg = 'API Key 未配置。请在 Vercel Dashboard → Settings → Environment Variables 中添加 VITE_NANO_BANANA_API_KEY';
+    console.error('❌', errorMsg);
+    throw new Error(errorMsg);
+  }
+
   try {
     const response = await fetch(`${NANO_BANANA_API_BASE}/images/generations`, {
       method: 'POST',
@@ -89,6 +100,18 @@ export async function submitGenerationTask(
 
     if (!response.ok) {
       const errorText = await response.text();
+      
+      // 提供更友好的错误提示
+      if (response.status === 403) {
+        console.error('❌ API 认证失败 (403 Forbidden)');
+        console.error('可能的原因：');
+        console.error('1. VITE_NANO_BANANA_API_KEY 未在 Vercel 环境变量中配置');
+        console.error('2. API Key 配置错误或已过期');
+        console.error('3. API Key 权限不足');
+        console.error('请检查 Vercel Dashboard → Settings → Environment Variables');
+        throw new Error('API 认证失败：请检查 VITE_NANO_BANANA_API_KEY 环境变量配置');
+      }
+      
       throw new Error(`API 请求失败 (${response.status}): ${errorText}`);
     }
 

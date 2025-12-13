@@ -75,7 +75,39 @@ vercel env add GEMINI_API_KEY
 
 | 变量名 | 必需 | 说明 |
 |--------|------|------|
-| `GEMINI_API_KEY` | 是 | Google Gemini API 密钥 |
+| `GEMINI_API_KEY` | 是 | Google Gemini API 密钥（用于 AI 建议功能） |
+| `VITE_NANO_BANANA_API_KEY` | 是 | Nano Banana Pro API 密钥（用于头像生成） |
+| `VITE_SUPABASE_URL` | 是 | Supabase 项目 URL |
+| `VITE_SUPABASE_ANON_KEY` | 是 | Supabase 匿名密钥 |
+
+### 配置步骤
+
+1. 登录 [Vercel Dashboard](https://vercel.com/dashboard)
+2. 选择你的项目
+3. 进入 **Settings** → **Environment Variables**
+4. 添加以下环境变量：
+
+```
+GEMINI_API_KEY=your_gemini_api_key_here
+VITE_NANO_BANANA_API_KEY=your_nano_banana_api_key_here
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+```
+
+5. 选择环境（Production, Preview, Development）
+6. 点击 **Save**
+7. 重新部署项目（Redeploy）
+
+### 常见错误
+
+**403 Forbidden 错误：**
+- 检查 `VITE_NANO_BANANA_API_KEY` 是否正确配置
+- 确认 API Key 未过期且有足够权限
+- 验证环境变量已应用到正确的环境（Production/Preview）
+
+**Supabase 连接错误：**
+- 检查 `VITE_SUPABASE_URL` 和 `VITE_SUPABASE_ANON_KEY` 是否正确
+- 确认 Supabase 项目已启用并运行
 
 ## 自定义域名 (可选)
 
