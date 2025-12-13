@@ -3,7 +3,7 @@ import { ReferenceImage, GeneratedImage } from '../types';
 
 // Supabase Storage Bucket 名称
 const USER_UPLOADS_BUCKET = 'user-uploads';
-const GENERATED_IMAGES_BUCKET = 'generated-images';
+const GENERATED_IMAGES_BUCKET = 'generated-headshots';
 
 /**
  * 上传参考图到 Supabase Storage
@@ -159,7 +159,7 @@ export const downloadAndUploadGeneratedImage = async (
  */
 export const deleteStorageFile = async (
   storagePath: string,
-  bucket: 'user-uploads' | 'generated-images'
+  bucket: 'user-uploads' | 'generated-headshots'
 ): Promise<boolean> => {
   try {
     const { error } = await supabase.storage

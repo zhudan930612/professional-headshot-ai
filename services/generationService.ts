@@ -25,6 +25,25 @@ export interface GenerationAPIResponse {
 }
 
 /**
+ * 将相对路径转换为绝对 URL
+ */
+const toAbsoluteUrl = (url: string): string => {
+  // 如果已经是完整 URL,直接返回
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+
+  // 获取当前域名
+  if (typeof window !== 'undefined') {
+    return `${window.location.origin}${url}`;
+  }
+
+  // 降级到环境变量 (Vercel/生产环境)
+  const appUrl = import.meta.env.VITE_APP_URL || 'http://localhost:3000';
+  return `${appUrl}${url}`;
+};
+
+/**
  * 调用真实的 AI 生图 API（Nano Banana Pro）
  *
  * @param request 生图请求参数
@@ -53,9 +72,11 @@ const callGenerationAPI = async (
     const generatedImages: string[] = [];
 
     for (let i = 0; i < request.templateImages.length; i++) {
-      const templateUrl = request.templateImages[i];
+      const templateUrl = toAbsoluteUrl(request.templateImages[i]); // ⭐ 转换为绝对路径
 
       console.log(`🚀 生成第 ${i + 1}/${request.templateImages.length} 张图片...`);
+      console.log(`   参考图 URL: ${referenceImageUrl}`);
+      console.log(`   模板图 URL: ${templateUrl}`);
 
       try {
         // 调用 Nano Banana API
