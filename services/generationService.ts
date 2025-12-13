@@ -1,6 +1,6 @@
 import { HeadshotStyle, GeneratedImage, ReferenceImage, HeadshotTemplate } from '../types';
 import { uploadGeneratedImage, downloadAndUploadGeneratedImage, uploadReferenceImage } from './uploadService';
-import { generateHeadshotWithNanoBanana } from './nanoBananaAPI';
+import { generateHeadshotWithNanoBanana } from './nanoBananaAPI.secure';
 import { supabase } from '../lib/supabase';
 
 // 检查用户是否已登录
