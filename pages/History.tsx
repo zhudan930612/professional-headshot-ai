@@ -3,8 +3,10 @@ import { getHistory } from '../services/storageService';
 import { GenerationSession, GeneratedImage } from '../types';
 import { Download, Calendar, ArrowLeft, Maximize2, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 export const History = () => {
+  const { user } = useAuth();
   const [sessions, setSessions] = useState<GenerationSession[]>([]);
   const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null);
 
@@ -14,7 +16,16 @@ export const History = () => {
       setSessions(history);
     };
     loadHistory();
-  }, []);
+
+    const handleMigrationComplete = () => {
+      loadHistory();
+    };
+    window.addEventListener('history-migrated', handleMigrationComplete);
+
+    return () => {
+      window.removeEventListener('history-migrated', handleMigrationComplete);
+    };
+  }, [user]);
 
   const formatDate = (ts: number) => {
     return new Date(ts).toLocaleDateString('en-US', {

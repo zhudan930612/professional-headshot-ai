@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import type { User, Session } from '@supabase/supabase-js';
+import { migrateLocalHistoryToDatabase } from '../services/storageService';
 
 interface AuthContextType {
   user: User | null;
@@ -28,10 +29,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+
+      // 登录后迁移本地历史记录到数据库，并通知前端刷新
+      if (event === 'SIGNED_IN' && session?.user?.id) {
+        try {
+          await migrateLocalHistoryToDatabase(session.user.id);
+          window.dispatchEvent(new CustomEvent('history-migrated'));
+        } catch (error) {
+          console.error('迁移本地历史记录失败:', error);
+        }
+      }
     });
 
     return () => subscription.unsubscribe();

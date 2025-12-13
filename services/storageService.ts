@@ -6,10 +6,19 @@ const HISTORY_KEY = 'ai_headshot_history';
 const QUOTA_KEY = 'ai_headshot_quota';
 const USER_ID_KEY = 'ai_headshot_user_id';
 
-// 获取用户 ID（优先使用 Supabase 认证用户，否则使用匿名 ID）
-const getUserId = async (): Promise<string> => {
+// 检查用户是否已登录
+const isUserLoggedIn = async (): Promise<boolean> => {
   try {
-    // 尝试获取 Supabase 认证用户
+    const { data: { session } } = await supabase.auth.getSession();
+    return !!session?.user?.id;
+  } catch {
+    return false;
+  }
+};
+
+// 获取登录用户 ID（仅当已登录时返回）
+const getUserId = async (): Promise<string | null> => {
+  try {
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user?.id) {
       return session.user.id;
@@ -17,21 +26,29 @@ const getUserId = async (): Promise<string> => {
   } catch (error) {
     console.error('获取 Supabase 会话失败:', error);
   }
-
-  // 降级到匿名用户 ID
-  let userId = localStorage.getItem(USER_ID_KEY);
-  if (!userId) {
-    userId = `anon_${Math.random().toString(36).substr(2, 9)}_${Date.now()}`;
-    localStorage.setItem(USER_ID_KEY, userId);
-  }
-  return userId;
+  return null;
 };
 
 export const getHistory = async (): Promise<GenerationSession[]> => {
+  const isLoggedIn = await isUserLoggedIn();
+
+  // 未登录：只从 localStorage 读取
+  if (!isLoggedIn) {
+    try {
+      const data = localStorage.getItem(HISTORY_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  // 已登录：从数据库读取
   try {
     const userId = await getUserId();
+    if (!userId) {
+      return [];
+    }
 
-    // 从 Supabase 获取历史记录
     const { data: sessions, error } = await supabase
       .from('generation_sessions')
       .select(`
@@ -66,21 +83,34 @@ export const getHistory = async (): Promise<GenerationSession[]> => {
     return history;
   } catch (e) {
     console.error('Error fetching history from Supabase:', e);
-    // 降级到 localStorage
-    try {
-      const data = localStorage.getItem(HISTORY_KEY);
-      return data ? JSON.parse(data) : [];
-    } catch {
-      return [];
-    }
+    return [];
   }
 };
 
 export const saveSession = async (session: GenerationSession): Promise<void> => {
+  const isLoggedIn = await isUserLoggedIn();
+
+  // 未登录：只保存到 localStorage
+  if (!isLoggedIn) {
+    try {
+      const data = localStorage.getItem(HISTORY_KEY);
+      const history: GenerationSession[] = data ? JSON.parse(data) : [];
+      const updated = [session, ...history.filter(s => s.id !== session.id)];
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
+    } catch (e) {
+      console.error('Error saving session to localStorage:', e);
+    }
+    return;
+  }
+
+  // 已登录：保存到数据库
   try {
     const userId = await getUserId();
+    if (!userId) {
+      throw new Error('User ID not available');
+    }
 
-    // ⭐ NEW: 准备会话数据（包含参考图信息）
+    // 准备会话数据（不包含参考图信息，参考图不保存到数据库）
     const sessionData: any = {
       user_id: userId,
       session_id: session.id,
@@ -89,13 +119,6 @@ export const saveSession = async (session: GenerationSession): Promise<void> => 
       use_case: session.useCase,
     };
 
-    // ⭐ NEW: 如果有参考图，添加到会话数据
-    if (session.referenceImage) {
-      sessionData.reference_image_url = session.referenceImage.url;
-      sessionData.reference_image_storage_path = session.referenceImage.storagePath;
-      sessionData.reference_image_file_name = session.referenceImage.fileName;
-    }
-
     // 保存会话到 Supabase
     const { error: sessionError } = await supabase
       .from('generation_sessions')
@@ -103,16 +126,16 @@ export const saveSession = async (session: GenerationSession): Promise<void> => 
 
     if (sessionError) throw sessionError;
 
-    // ⭐ NEW: 保存图片到 Supabase（包含存储路径等元数据）
+    // 保存图片到 Supabase（包含存储路径等元数据）
     if (session.images && session.images.length > 0) {
       const imageRecords = session.images.map(img => ({
         session_id: session.id,
         image_id: img.id,
         url: img.url,
         created_at_timestamp: img.createdAt,
-        storage_path: img.storagePath,        // ⭐ NEW
-        file_size: img.fileSize,              // ⭐ NEW
-        mime_type: img.mimeType,              // ⭐ NEW
+        storage_path: img.storagePath,
+        file_size: img.fileSize,
+        mime_type: img.mimeType,
       }));
 
       const { error: imagesError } = await supabase
@@ -121,26 +144,50 @@ export const saveSession = async (session: GenerationSession): Promise<void> => 
 
       if (imagesError) throw imagesError;
     }
-
-    // 同时保存到 localStorage 作为备份
-    const history = await getHistory();
-    const updated = [session, ...history.filter(s => s.id !== session.id)];
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
   } catch (e) {
     console.error('Error saving session to Supabase:', e);
     // 降级到 localStorage
-    const history = await getHistory();
-    const updated = [session, ...history.filter(s => s.id !== session.id)];
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
+    try {
+      const data = localStorage.getItem(HISTORY_KEY);
+      const history: GenerationSession[] = data ? JSON.parse(data) : [];
+      const updated = [session, ...history.filter(s => s.id !== session.id)];
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
+    } catch (localError) {
+      console.error('Error saving session to localStorage:', localError);
+    }
   }
 };
 
 export const getQuota = async (): Promise<number> => {
+  const isLoggedIn = await isUserLoggedIn();
+
+  // 未登录：只从 localStorage 读取
+  if (!isLoggedIn) {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const data = localStorage.getItem(QUOTA_KEY);
+      if (data) {
+        const parsed: UserQuota = JSON.parse(data);
+        if (parsed.date === today) {
+          return parsed.count;
+        }
+      }
+      localStorage.setItem(QUOTA_KEY, JSON.stringify({ date: today, count: 0 }));
+      return 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  // 已登录：从数据库读取
   try {
     const userId = await getUserId();
+    if (!userId) {
+      return 0;
+    }
+
     const today = new Date().toISOString().split('T')[0];
 
-    // 从 Supabase 获取配额
     const { data, error } = await supabase
       .from('user_quotas')
       .select('count, date')
@@ -148,7 +195,7 @@ export const getQuota = async (): Promise<number> => {
       .eq('date', today)
       .single();
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+    if (error && error.code !== 'PGRST116') {
       throw error;
     }
 
@@ -174,7 +221,6 @@ export const getQuota = async (): Promise<number> => {
     try {
       const today = new Date().toISOString().split('T')[0];
       const data = localStorage.getItem(QUOTA_KEY);
-
       if (data) {
         const parsed: UserQuota = JSON.parse(data);
         if (parsed.date === today) {
@@ -190,6 +236,24 @@ export const getQuota = async (): Promise<number> => {
 };
 
 export const incrementQuota = async (amount: number): Promise<boolean> => {
+  const isLoggedIn = await isUserLoggedIn();
+
+  // 未登录：只更新 localStorage
+  if (!isLoggedIn) {
+    try {
+      const current = await getQuota();
+      if (current + amount > DAILY_LIMIT) {
+        return false;
+      }
+      const today = new Date().toISOString().split('T')[0];
+      localStorage.setItem(QUOTA_KEY, JSON.stringify({ date: today, count: current + amount }));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // 已登录：更新数据库
   try {
     const current = await getQuota();
     if (current + amount > DAILY_LIMIT) {
@@ -197,10 +261,16 @@ export const incrementQuota = async (amount: number): Promise<boolean> => {
     }
 
     const userId = await getUserId();
+    if (!userId) {
+      // 降级到 localStorage
+      const today = new Date().toISOString().split('T')[0];
+      localStorage.setItem(QUOTA_KEY, JSON.stringify({ date: today, count: current + amount }));
+      return true;
+    }
+
     const today = new Date().toISOString().split('T')[0];
     const newCount = current + amount;
 
-    // 更新 Supabase 中的配额
     const { error } = await supabase
       .from('user_quotas')
       .upsert({
@@ -220,19 +290,120 @@ export const incrementQuota = async (amount: number): Promise<boolean> => {
   } catch (e) {
     console.error('Error incrementing quota in Supabase:', e);
     // 降级到 localStorage
-    const current = await getQuota();
-    if (current + amount > DAILY_LIMIT) {
+    try {
+      const current = await getQuota();
+      if (current + amount > DAILY_LIMIT) {
+        return false;
+      }
+      const today = new Date().toISOString().split('T')[0];
+      localStorage.setItem(QUOTA_KEY, JSON.stringify({ date: today, count: current + amount }));
+      return true;
+    } catch {
       return false;
     }
-    const today = new Date().toISOString().split('T')[0];
-    localStorage.setItem(QUOTA_KEY, JSON.stringify({ date: today, count: current + amount }));
-    return true;
   }
 };
 
 export const getRemainingQuota = async (): Promise<number> => {
   const current = await getQuota();
   return Math.max(0, DAILY_LIMIT - current);
+};
+
+/**
+ * 将本地历史记录迁移到数据库（登录后调用）
+ * @param userId 用户 ID
+ */
+export const migrateLocalHistoryToDatabase = async (userId: string): Promise<void> => {
+  try {
+    // 读取本地历史记录
+    const data = localStorage.getItem(HISTORY_KEY);
+    if (!data) {
+      console.log('📦 没有本地历史记录需要迁移');
+      return;
+    }
+
+    const localHistory: GenerationSession[] = JSON.parse(data);
+    if (localHistory.length === 0) {
+      console.log('📦 本地历史记录为空，无需迁移');
+      return;
+    }
+
+    console.log(`📦 开始迁移 ${localHistory.length} 条本地历史记录到数据库...`);
+
+    // 检查数据库中已存在的 session_id，避免重复插入
+    const { data: existingSessions } = await supabase
+      .from('generation_sessions')
+      .select('session_id')
+      .eq('user_id', userId);
+
+    const existingSessionIds = new Set(
+      existingSessions?.map((s: any) => s.session_id) || []
+    );
+
+    // 过滤出需要迁移的会话（不在数据库中的）
+    const sessionsToMigrate = localHistory.filter(
+      session => !existingSessionIds.has(session.id)
+    );
+
+    if (sessionsToMigrate.length === 0) {
+      console.log('✅ 所有本地历史记录已存在于数据库中');
+      // 清空本地历史记录（已迁移完成）
+      localStorage.removeItem(HISTORY_KEY);
+      return;
+    }
+
+    console.log(`📤 迁移 ${sessionsToMigrate.length} 条新会话...`);
+
+    // 批量迁移会话
+    for (const session of sessionsToMigrate) {
+      try {
+        // 只插入必需字段，避免数据库 schema 不匹配
+        const sessionData: any = {
+          user_id: userId,
+          session_id: session.id,
+          date: session.date,
+          style: session.style,
+          use_case: session.useCase,
+        };
+
+        const { error: sessionError } = await supabase
+          .from('generation_sessions')
+          .insert(sessionData);
+
+        if (sessionError) {
+          console.error(`❌ 迁移会话 ${session.id} 失败:`, sessionError);
+          continue;
+        }
+
+        // 迁移图片（只插入必需字段）
+        if (session.images && session.images.length > 0) {
+          const imageRecords = session.images.map(img => ({
+            session_id: session.id,
+            image_id: img.id,
+            url: img.url,
+            created_at_timestamp: img.createdAt,
+          }));
+
+          const { error: imagesError } = await supabase
+            .from('generated_images')
+            .insert(imageRecords);
+
+          if (imagesError) {
+            console.error(`❌ 迁移会话 ${session.id} 的图片失败:`, imagesError);
+          }
+        }
+      } catch (error) {
+        console.error(`❌ 迁移会话 ${session.id} 时出错:`, error);
+      }
+    }
+
+    console.log('✅ 本地历史记录迁移完成');
+    // 迁移成功后，清空本地历史记录
+    localStorage.removeItem(HISTORY_KEY);
+  } catch (error) {
+    console.error('❌ 迁移本地历史记录失败:', error);
+    // 迁移失败时不删除本地数据，保留作为备份
+  }
 };
 
 // Mock Image Generation Service

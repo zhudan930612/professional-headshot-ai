@@ -1,6 +1,17 @@
 import { HeadshotStyle, GeneratedImage, ReferenceImage, HeadshotTemplate } from '../types';
 import { uploadGeneratedImage, downloadAndUploadGeneratedImage, uploadReferenceImage } from './uploadService';
 import { generateHeadshotWithNanoBanana } from './nanoBananaAPI';
+import { supabase } from '../lib/supabase';
+
+// 检查用户是否已登录
+const isUserLoggedIn = async (): Promise<boolean> => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    return !!session?.user?.id;
+  } catch {
+    return false;
+  }
+};
 
 /**
  * 生图 API 请求参数接口
@@ -58,7 +69,7 @@ const callGenerationAPI = async (
     console.log('模板数量:', request.templateImages.length);
     console.log('风格:', request.style);
 
-    // 1. 确保参考图已上传到 Supabase（获取公开 URL）
+    // 1. 上传参考图到 Supabase Storage（无论是否登录，都需要上传以获取 HTTP URL）
     let referenceImageUrl = request.referenceImageUrl;
 
     if (!referenceImageUrl) {
@@ -106,7 +117,7 @@ const callGenerationAPI = async (
     }
 
     if (generatedImages.length === 0) {
-      throw new Error('所有图片生成失败');
+      throw new Error('Our AI blinked for a second 😅 Let\'s try again.');
     }
 
     console.log(`✅ 共生成 ${generatedImages.length}/${request.templateImages.length} 张图片`);
@@ -131,9 +142,10 @@ const callGenerationAPI = async (
  *
  * 完整流程：
  * 1. 调用 AI 生图 API（传递参考图 + 模板图）
- * 2. 下载生成的图片
- * 3. 上传到 Supabase Storage
- * 4. 返回 GeneratedImage 对象数组
+ * 2. 根据登录状态处理生成结果：
+ *    - 未登录：直接使用 API 返回的 URL，不保存到数据库
+ *    - 已登录：下载并上传到 Supabase Storage，保存到数据库
+ * 3. 返回 GeneratedImage 对象数组
  *
  * @param referenceImage 参考图文件
  * @param templates 选择的模板数组
@@ -142,7 +154,7 @@ const callGenerationAPI = async (
  * @param sessionId 会话 ID
  * @param referenceImageUrl 可选的参考图 URL（如果已上传）
  * @param onProgress 可选的进度回调
- * @returns 生成的图片数组（已上传到 Supabase Storage）
+ * @returns 生成的图片数组
  */
 export const generateHeadshots = async (
   referenceImage: File,
@@ -154,10 +166,14 @@ export const generateHeadshots = async (
   onProgress?: (progress: number) => void
 ): Promise<GeneratedImage[]> => {
   try {
-    // 1. 准备模板图片 URL
+    // 1. 检查用户登录状态
+    const isLoggedIn = await isUserLoggedIn();
+    console.log('用户登录状态:', isLoggedIn ? '已登录' : '未登录');
+
+    // 2. 准备模板图片 URL
     const templateImageUrls = templates.map(t => t.imageUrl);
 
-    // 2. 调用 AI 生图 API
+    // 3. 调用 AI 生图 API
     console.log('🎨 开始生成专业头像...');
     const apiResponse = await callGenerationAPI({
       referenceImage,
@@ -175,15 +191,30 @@ export const generateHeadshots = async (
 
     console.log('✅ API 生成成功，返回', apiResponse.images.length, '张图片');
 
-    // 3. 下载并上传到 Supabase Storage
-    console.log('📤 上传生成结果到 Supabase Storage...');
-    const uploadPromises = apiResponse.images.map((imageUrl, index) =>
-      downloadAndUploadGeneratedImage(imageUrl, userId, sessionId, index)
-    );
+    // 4. 根据登录状态处理生成结果
+    let generatedImages: GeneratedImage[];
 
-    const generatedImages = await Promise.all(uploadPromises);
+    if (isLoggedIn) {
+      // 已登录：上传到 Supabase Storage
+      console.log('📤 上传生成结果到 Supabase Storage...');
+      const uploadPromises = apiResponse.images.map((imageUrl, index) =>
+        downloadAndUploadGeneratedImage(imageUrl, userId, sessionId, index)
+      );
 
-    console.log('✅ 所有图片已上传到 Supabase Storage');
+      generatedImages = await Promise.all(uploadPromises);
+      console.log('✅ 所有图片已上传到 Supabase Storage');
+    } else {
+      // 未登录：直接使用 API 返回的 URL，不保存到数据库
+      console.log('📦 未登录用户，使用 API 返回的临时 URL');
+      const timestamp = Date.now();
+      generatedImages = apiResponse.images.map((imageUrl, index) => ({
+        id: `gen_${timestamp}_${index}`,
+        url: imageUrl,
+        createdAt: timestamp,
+        // 未登录用户不保存 storagePath、fileSize、mimeType
+      }));
+      console.log('✅ 生成结果已准备（未保存到数据库）');
+    }
 
     return generatedImages;
 
