@@ -74,9 +74,9 @@ export const History = () => {
                   <div className="p-6">
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                           {session.images.map((img) => (
-                              <div 
-                                key={img.id} 
-                                className="group relative aspect-square rounded-xl overflow-hidden bg-slate-100 shadow-sm cursor-pointer"
+                              <div
+                                key={img.id}
+                                className="group relative aspect-[3/4] rounded-xl overflow-hidden bg-slate-100 shadow-sm cursor-pointer"
                                 onClick={() => setSelectedImage(img)}
                               >
                                   <img src={img.url} alt="Generated Headshot" className="w-full h-full object-cover" />

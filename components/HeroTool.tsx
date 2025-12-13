@@ -544,7 +544,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                                 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=faces',
                                 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=faces'
                             ].map((url, idx) => (
-                                <div key={idx} className="w-24 h-24 rounded-xl overflow-hidden border-2 border-slate-300 shadow-md hover:shadow-lg transition-shadow">
+                                <div key={idx} className="w-24 aspect-[3/4] rounded-xl overflow-hidden border-2 border-slate-300 shadow-md hover:shadow-lg transition-shadow">
                                     <img src={url} alt={`Example ${idx + 1}`} className="w-full h-full object-cover" />
                                 </div>
                             ))}
@@ -581,7 +581,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                          {files.map((f, i) => {
                             const previewUrl = previewUrls.get(f);
                             return (
-                                <div key={i} className="relative aspect-square rounded-xl overflow-hidden border-2 border-slate-200 bg-white shadow-sm group">
+                                <div key={i} className="relative aspect-[3/4] rounded-xl overflow-hidden border-2 border-slate-200 bg-white shadow-sm group">
                                     {previewUrl ? (
                                         <img
                                             src={previewUrl}
@@ -604,7 +604,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                             );
                          })}
                          {files.length < 5 && (
-                            <div className="aspect-square rounded-xl border-2 border-dashed border-primary-300 bg-white flex flex-col items-center justify-center text-primary-600 hover:bg-primary-50 transition-colors">
+                            <div className="aspect-[3/4] rounded-xl border-2 border-dashed border-primary-300 bg-white flex flex-col items-center justify-center text-primary-600 hover:bg-primary-50 transition-colors">
                                 <Upload size={20} />
                                 <span className="text-xs font-bold mt-1">Add More</span>
                             </div>
@@ -778,15 +778,15 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
 
                 <div className="flex-grow flex flex-wrap justify-center content-start gap-4 overflow-y-auto max-h-[500px] p-2">
                     {generationResults.map((result, idx) => (
-                        <div 
-                            key={result.templateId} 
-                            className="relative aspect-square rounded-xl overflow-hidden shadow-md ring-1 ring-slate-200 w-[calc(50%-0.5rem)] md:w-[calc(25%-0.75rem)] flex-shrink-0"
+                        <div
+                            key={result.templateId}
+                            className="relative aspect-[3/4] rounded-xl overflow-hidden shadow-md ring-1 ring-slate-200 w-[calc(50%-0.5rem)] md:w-[calc(25%-0.75rem)] flex-shrink-0"
                         >
                             {result.error ? (
                                 // ❌ 错误状态
-                                <div className="w-full h-full bg-red-50 flex flex-col items-center justify-center border-2 border-red-200 p-4">
-                                    <XCircle className="text-red-500 mb-[22px]" size={32} />
-                                    <div className="text-xs font-semibold text-red-700 text-center mb-3">
+                                <div className="w-full h-full bg-red-50 flex flex-col items-center justify-center border-2 border-red-200 p-6">
+                                    <XCircle className="text-red-500 mb-4" size={48} />
+                                    <div className="text-sm font-semibold text-red-700 text-center mb-5 leading-relaxed">
                                         {result.error === "Our AI blinked for a second 😅 Let's try again." ? (
                                             <>
                                                 <div>Our AI blinked for a second 😅</div>
@@ -799,21 +799,21 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                                     {result.retryCount < 1 ? (
                                         <button
                                             onClick={() => retryTemplate(result.templateId)}
-                                            className="px-4 py-2 bg-red-500 text-white text-xs font-medium rounded-lg hover:bg-red-600 transition-colors flex items-center gap-1"
+                                            className="px-5 py-2.5 bg-red-500 text-white text-sm font-semibold rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
                                         >
-                                            <RefreshCw size={14} />
+                                            <RefreshCw size={18} />
                                             Retry
                                         </button>
                                     ) : (
-                                        <span className="text-xs text-red-600 italic">Please try again later</span>
+                                        <span className="text-sm text-red-600 italic">Please try again later</span>
                                     )}
                                 </div>
                             ) : !result.image || result.loading ? (
                                 // ⏳ 加载状态
-                                <div className="w-full h-full bg-slate-100 flex flex-col items-center justify-center p-4">
-                                    <Loader2 className="animate-spin text-primary-600 mb-2" size={32} />
-                                    <span className="text-xs font-semibold text-slate-500 animate-pulse" translate="no">Generating...</span>
-                                    <span className="text-xs text-slate-400 mt-2" translate="no">
+                                <div className="w-full h-full bg-slate-100 flex flex-col items-center justify-center p-6">
+                                    <Loader2 className="animate-spin text-primary-600 mb-3" size={40} />
+                                    <span className="text-sm font-semibold text-slate-600 animate-pulse" translate="no">Generating...</span>
+                                    <span className="text-xs text-slate-500 mt-2" translate="no">
                                         {result.progress >= 95 ? 'Finalizing...' : 'Estimated time: 30-60s'}
                                     </span>
                                 </div>

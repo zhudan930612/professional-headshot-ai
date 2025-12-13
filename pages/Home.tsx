@@ -101,10 +101,10 @@ export const Home = () => {
             <div className="flex mb-6 overflow-hidden">
                 <div className="flex animate-marquee gap-4 md:gap-6 min-w-max hover:[animation-play-state:paused]">
                     {[...ROW_1_DATA, ...ROW_1_DATA].map((pair, i) => (
-                        <div 
-                          key={`row1-${i}`} 
+                        <div
+                          key={`row1-${i}`}
                           onClick={() => setSelectedComparison(pair)}
-                          className="w-48 h-48 md:w-64 md:h-64 rounded-xl overflow-hidden shadow-md flex-shrink-0 cursor-pointer group relative"
+                          className="w-48 md:w-64 aspect-[3/4] rounded-xl overflow-hidden shadow-md flex-shrink-0 cursor-pointer group relative"
                         >
                             <img src={pair.generated} alt="Professional headshot" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
@@ -121,10 +121,10 @@ export const Home = () => {
             <div className="flex overflow-hidden">
                 <div className="flex animate-marquee-reverse gap-4 md:gap-6 min-w-max hover:[animation-play-state:paused]">
                     {[...ROW_2_DATA, ...ROW_2_DATA].map((pair, i) => (
-                        <div 
-                          key={`row2-${i}`} 
+                        <div
+                          key={`row2-${i}`}
                           onClick={() => setSelectedComparison(pair)}
-                          className="w-48 h-48 md:w-64 md:h-64 rounded-xl overflow-hidden shadow-md flex-shrink-0 cursor-pointer group relative"
+                          className="w-48 md:w-64 aspect-[3/4] rounded-xl overflow-hidden shadow-md flex-shrink-0 cursor-pointer group relative"
                         >
                             <img src={pair.generated} alt="Professional headshot" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
@@ -166,7 +166,7 @@ export const Home = () => {
             <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 pb-4">
                {/* Original */}
                <div className="flex flex-col items-center gap-3 w-full md:w-auto">
-                  <div className="relative w-full aspect-square md:w-80 md:h-80 rounded-xl overflow-hidden shadow-lg ring-4 ring-slate-100">
+                  <div className="relative w-full aspect-[3/4] md:w-80 rounded-xl overflow-hidden shadow-lg ring-4 ring-slate-100">
                      <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-semibold z-10">
                         Original Selfie
                      </div>
@@ -181,7 +181,7 @@ export const Home = () => {
 
                {/* Generated */}
                <div className="flex flex-col items-center gap-3 w-full md:w-auto">
-                  <div className="relative w-full aspect-square md:w-80 md:h-80 rounded-xl overflow-hidden shadow-lg ring-4 ring-primary-100 shadow-primary-900/10">
+                  <div className="relative w-full aspect-[3/4] md:w-80 rounded-xl overflow-hidden shadow-lg ring-4 ring-primary-100 shadow-primary-900/10">
                      <div className="absolute top-3 left-3 bg-primary-600 text-white px-3 py-1 rounded-full text-xs font-semibold z-10 flex items-center gap-1 shadow-sm">
                         <Sparkles size={10} className="fill-white" /> AI Professional
                      </div>
