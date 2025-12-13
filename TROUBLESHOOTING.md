@@ -60,7 +60,7 @@ fetch('https://api.evolink.ai/v1/tasks', {
 **解决方案：**
 1. 登录 [Vercel Dashboard](https://vercel.com/dashboard)
 2. 进入项目 → Settings → Environment Variables
-3. 确认 `VITE_NANO_BANANA_API_KEY` 已正确配置
+3. 确认 `NANO_BANANA_API_KEY` 已正确配置
 4. 确认环境变量应用到正确的环境（Production/Preview/Development）
 5. 重新部署项目（Redeploy）
 
@@ -71,7 +71,7 @@ fetch('https://api.evolink.ai/v1/tasks', {
 1. 进入项目设置
 2. 查看 Environment Variables 列表
 3. 确认以下变量存在：
-   - `VITE_NANO_BANANA_API_KEY`
+   - `NANO_BANANA_API_KEY`
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
    - `GEMINI_API_KEY` (可选)

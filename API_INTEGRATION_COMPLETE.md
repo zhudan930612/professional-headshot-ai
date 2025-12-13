@@ -96,16 +96,16 @@ const callGenerationAPI = async (request: GenerationAPIRequest) => {
 
 **`.env.local` 文件配置：**
 ```bash
-VITE_NANO_BANANA_API_KEY=sk-ruKcxjvuORSs0YYcVxvOix37mHaDDaWbXXAyG1cXoC77U0J6
+NANO_BANANA_API_KEY=sk-ruKcxjvuORSs0YYcVxvOix37mHaDDaWbXXAyG1cXoC77U0J6
 ```
 
 **`services/nanoBananaAPI.ts` 中读取：**
 ```typescript
-const NANO_BANANA_API_KEY = import.meta.env.VITE_NANO_BANANA_API_KEY;
+const NANO_BANANA_API_KEY = import.meta.env.NANO_BANANA_API_KEY;
 
 // 验证环境变量
 if (!NANO_BANANA_API_KEY) {
-  throw new Error('❌ 缺少环境变量 VITE_NANO_BANANA_API_KEY，请在 .env.local 文件中配置');
+  throw new Error('❌ 缺少环境变量 NANO_BANANA_API_KEY，请在 .env.local 文件中配置');
 }
 ```
 

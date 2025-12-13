@@ -49,7 +49,7 @@ grep -r "sk-\|GEMINI\|NANO_BANANA" dist/ && echo "⚠️ WARNING: API Keys found
 
 #### ⚠️ 需要删除的变量
 
-- `VITE_NANO_BANANA_API_KEY` (如果存在)
+- `NANO_BANANA_API_KEY` (如果存在)
   - 原因：使用VITE_前缀会导致暴露到客户端
   - 替换为：`NANO_BANANA_API_KEY` (无VITE_前缀)
 

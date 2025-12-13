@@ -76,7 +76,7 @@ define: {
 
 1. ✅ `GEMINI_API_KEY` - 保留（已在安全的 Serverless Function 中使用）
 2. ✅ `NANO_BANANA_API_KEY` - 新增（用于 `/api/nanoBanana`）
-   - **重要：** 从 `VITE_NANO_BANANA_API_KEY` 改为 `NANO_BANANA_API_KEY`（移除 `VITE_` 前缀）
+   - **重要：** 从 `NANO_BANANA_API_KEY` 改为 `NANO_BANANA_API_KEY`（移除 `VITE_` 前缀）
 3. ✅ `VITE_SUPABASE_URL` - 保留（已安全）
 4. ✅ `VITE_SUPABASE_ANON_KEY` - 保留（已安全）
 
@@ -190,7 +190,7 @@ ls -la dist/
 1. 登录 [Vercel Dashboard](https://vercel.com/dashboard)
 2. 选择你的项目
 3. 进入 **Settings** → **Environment Variables**
-4. **删除** `VITE_NANO_BANANA_API_KEY`（如果存在）
+4. **删除** `NANO_BANANA_API_KEY`（如果存在）
 5. **新增** `NANO_BANANA_API_KEY`（不带 `VITE_` 前缀）
 6. 确认以下环境变量已配置：
    - `GEMINI_API_KEY`

@@ -41,7 +41,7 @@ define: {
 **原问题：**
 ```typescript
 // services/nanoBananaAPI.ts - 不安全！
-const NANO_BANANA_API_KEY = import.meta.env.VITE_NANO_BANANA_API_KEY;
+const NANO_BANANA_API_KEY = import.meta.env.NANO_BANANA_API_KEY;
 // VITE_前缀导致在客户端代码中暴露
 ```
 
@@ -239,7 +239,7 @@ undefined
 
 2. **Vercel 配置**
    - 登录 Vercel Dashboard
-   - 更新环境变量（移除 VITE_NANO_BANANA_API_KEY）
+   - 更新环境变量（移除 NANO_BANANA_API_KEY）
    - 添加 NANO_BANANA_API_KEY（无 VITE_ 前缀）
 
 3. **部署**

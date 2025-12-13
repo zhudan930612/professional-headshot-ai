@@ -4,15 +4,15 @@
  */
 
 const NANO_BANANA_API_BASE = 'https://api.evolink.ai/v1';
-const NANO_BANANA_API_KEY = import.meta.env.VITE_NANO_BANANA_API_KEY;
+const NANO_BANANA_API_KEY = import.meta.env.NANO_BANANA_API_KEY;
 
 // 验证环境变量（仅在开发环境抛出错误，生产环境给出友好提示）
 if (!NANO_BANANA_API_KEY) {
   if (import.meta.env.DEV) {
-    throw new Error('❌ 缺少环境变量 VITE_NANO_BANANA_API_KEY，请在 .env.local 文件中配置');
+    throw new Error('❌ 缺少环境变量 NANO_BANANA_API_KEY，请在 .env.local 文件中配置');
   }
-  console.error('❌ 缺少环境变量 VITE_NANO_BANANA_API_KEY');
-  console.error('请在 Vercel Dashboard → Settings → Environment Variables 中添加 VITE_NANO_BANANA_API_KEY');
+  console.error('❌ 缺少环境变量 NANO_BANANA_API_KEY');
+  console.error('请在 Vercel Dashboard → Settings → Environment Variables 中添加 NANO_BANANA_API_KEY');
 }
 
 /**
@@ -130,7 +130,7 @@ export async function submitGenerationTask(
 
   // 检查 API Key
   if (!NANO_BANANA_API_KEY) {
-    const errorMsg = 'API Key 未配置。请在 Vercel Dashboard → Settings → Environment Variables 中添加 VITE_NANO_BANANA_API_KEY';
+    const errorMsg = 'API Key 未配置。请在 Vercel Dashboard → Settings → Environment Variables 中添加 NANO_BANANA_API_KEY';
     console.error('❌', errorMsg);
     throw new Error(errorMsg);
   }
