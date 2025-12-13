@@ -49,6 +49,53 @@ export interface NanoBananaGenerationRequest {
 }
 
 /**
+ * 验证 API Key 是否有效（通过简单的 API 调用测试）
+ * 注意：此函数仅用于诊断，不用于实际生成
+ */
+export async function verifyAPIKey(): Promise<{ valid: boolean; message: string }> {
+  if (!NANO_BANANA_API_KEY) {
+    return {
+      valid: false,
+      message: 'API Key 未配置'
+    };
+  }
+
+  try {
+    // 尝试查询账户信息或任务列表来验证 API Key
+    const response = await fetch(`${NANO_BANANA_API_BASE}/tasks`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${NANO_BANANA_API_KEY}`,
+      },
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      return {
+        valid: false,
+        message: `API Key 无效 (${response.status})`
+      };
+    }
+
+    if (response.ok) {
+      return {
+        valid: true,
+        message: 'API Key 有效'
+      };
+    }
+
+    return {
+      valid: false,
+      message: `API Key 验证失败 (${response.status})`
+    };
+  } catch (error) {
+    return {
+      valid: false,
+      message: `验证过程出错: ${error instanceof Error ? error.message : '未知错误'}`
+    };
+  }
+}
+
+/**
  * 提交生成任务
  */
 export async function submitGenerationTask(
@@ -99,17 +146,35 @@ export async function submitGenerationTask(
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
+      let errorText = '';
+      let errorJson: any = null;
+      
+      try {
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          errorJson = await response.json();
+          errorText = JSON.stringify(errorJson);
+        } else {
+          errorText = await response.text();
+        }
+      } catch (e) {
+        errorText = `无法读取错误响应: ${e}`;
+      }
       
       // 提供更友好的错误提示
       if (response.status === 403) {
         console.error('❌ API 认证失败 (403 Forbidden)');
+        console.error('API 响应:', errorText);
         console.error('可能的原因：');
-        console.error('1. VITE_NANO_BANANA_API_KEY 未在 Vercel 环境变量中配置');
-        console.error('2. API Key 配置错误或已过期');
-        console.error('3. API Key 权限不足');
-        console.error('请检查 Vercel Dashboard → Settings → Environment Variables');
-        throw new Error('API 认证失败：请检查 VITE_NANO_BANANA_API_KEY 环境变量配置');
+        console.error('1. API Key 无效或已过期 - 请检查 API Key 是否正确');
+        console.error('2. 账户余额不足 - 请检查 Nano Banana 账户余额');
+        console.error('3. API Key 权限不足 - 确认 API Key 有生成图片的权限');
+        console.error('4. 账户被限制 - 联系 API 提供商确认账户状态');
+        console.error('5. API Key 格式错误 - 确认没有多余的空格或换行符');
+        
+        // 尝试从错误响应中提取更具体的信息
+        const errorMessage = errorJson?.error?.message || errorJson?.message || errorText || 'API 认证失败';
+        throw new Error(`API 认证失败 (403): ${errorMessage}`);
       }
       
       throw new Error(`API 请求失败 (${response.status}): ${errorText}`);
