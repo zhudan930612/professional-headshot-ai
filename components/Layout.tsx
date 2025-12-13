@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Camera, Menu, X, User, LogIn, ScanFace, Sparkles, LogOut, ChevronDown } from 'lucide-react';
+import { Camera, Menu, X, User, LogIn, LogOut, ChevronDown } from 'lucide-react';
 import { getRemainingQuota } from '../services/storageService';
 import { AuthModal } from './AuthModal';
 import { useAuth } from '../contexts/AuthContext';
@@ -47,14 +47,9 @@ const Navbar = () => {
           <div className="flex justify-between h-16">
             <div className="flex items-center">
               <Link to="/" className="flex-shrink-0 flex items-center gap-2.5 group">
-                <div className="relative w-10 h-10 flex items-center justify-center bg-gradient-to-br from-primary-600 to-indigo-700 rounded-xl text-white shadow-lg shadow-primary-500/20 group-hover:scale-105 transition-transform duration-300">
-                  <ScanFace size={22} strokeWidth={2} />
-                  <div className="absolute -top-1 -right-1 bg-white rounded-full p-0.5 shadow-sm border border-slate-50">
-                     <Sparkles size={10} className="text-yellow-500 fill-yellow-500" />
-                  </div>
-                </div>
+                <img src="/logo.svg" alt="Professional Headshot AI" className="w-10 h-10 group-hover:scale-105 transition-transform duration-300" />
                 <span className="font-bold text-xl tracking-tight text-slate-900 group-hover:text-primary-700 transition-colors">
-                  Professional Headshot<span className="text-primary-600 ml-1 border-0 border-transparent bg-transparent">AI</span>
+                  Professional Headshot<span className="text-primary-600 ml-1.5">AI</span>
                 </span>
               </Link>
             </div>
@@ -65,6 +60,11 @@ const Navbar = () => {
                 <Link
                   key={link.name}
                   to={link.path}
+                  onClick={() => {
+                    if (location.pathname === link.path) {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                  }}
                   className={`text-sm font-medium transition-colors ${
                     location.pathname === link.path ? 'text-primary-600' : 'text-slate-500 hover:text-slate-900'
                   }`}
@@ -73,7 +73,7 @@ const Navbar = () => {
                 </Link>
               ))}
               <div className="px-3 py-1 bg-slate-100 rounded-full text-xs font-semibold text-slate-600">
-                 {quota} credits left today
+                 {quota} uses left today
               </div>
 
               <div className="flex items-center gap-2 border-l border-slate-200 pl-6">
@@ -141,7 +141,7 @@ const Navbar = () => {
 
             {/* Mobile menu button */}
             <div className="flex items-center md:hidden gap-3">
-              <span className="text-xs font-medium text-slate-500">{quota} left</span>
+              <span className="text-xs font-medium text-slate-500">{quota} uses left</span>
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="text-slate-500 hover:text-slate-900 focus:outline-none"
@@ -160,7 +160,12 @@ const Navbar = () => {
                 <Link
                   key={link.name}
                   to={link.path}
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => {
+                    setIsOpen(false);
+                    if (location.pathname === link.path) {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                  }}
                   className={`block px-3 py-2 rounded-md text-base font-medium ${
                      location.pathname === link.path ? 'bg-primary-50 text-primary-600' : 'text-slate-600 hover:bg-slate-50'
                   }`}
@@ -233,12 +238,7 @@ const Footer = () => (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
       <div className="col-span-1 md:col-span-1">
         <div className="flex items-center gap-2.5 mb-4 text-white">
-          <div className="relative w-8 h-8 flex items-center justify-center bg-gradient-to-br from-primary-500 to-indigo-600 rounded-lg text-white shadow-inner">
-             <ScanFace size={18} strokeWidth={2} />
-             <div className="absolute -top-1 -right-1 bg-slate-900 rounded-full p-0.5 border border-slate-800">
-                <Sparkles size={8} className="text-yellow-400 fill-yellow-400" />
-             </div>
-          </div>
+          <img src="/logo.svg" alt="Professional Headshot AI" className="w-8 h-8" />
           <span className="font-bold text-xl tracking-tight">Professional Headshot<span className="text-primary-400">AI</span></span>
         </div>
         <p className="text-sm text-slate-400">
@@ -250,7 +250,6 @@ const Footer = () => (
         <ul className="space-y-2 text-sm">
           <li><Link to="/" className="hover:text-white transition-colors">Generator</Link></li>
           <li><Link to="/history" className="hover:text-white transition-colors">My Headshots</Link></li>
-          <li><Link to="/faq" className="hover:text-white transition-colors">Pricing (Free)</Link></li>
         </ul>
       </div>
       <div>
@@ -258,7 +257,6 @@ const Footer = () => (
         <ul className="space-y-2 text-sm">
           <li><Link to="/blog" className="hover:text-white transition-colors">Blog</Link></li>
           <li><Link to="/faq" className="hover:text-white transition-colors">Help Center</Link></li>
-          <li><Link to="/faq" className="hover:text-white transition-colors">Tips & Guides</Link></li>
         </ul>
       </div>
       <div>

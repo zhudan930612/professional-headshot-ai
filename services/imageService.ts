@@ -120,7 +120,7 @@ export const validateImageFile = (
   if (!allowedTypes.includes(file.type.toLowerCase())) {
     return {
       valid: false,
-      error: `不支持的文件类型：${file.type}。请上传 JPG、PNG 或 HEIC 格式的图片。`
+      error: `Unsupported file type: ${file.type}. Please upload JPG, PNG, or HEIC images.`
     };
   }
 
@@ -129,7 +129,7 @@ export const validateImageFile = (
   if (file.size > maxSizeBytes) {
     return {
       valid: false,
-      error: `文件过大：${(file.size / 1024 / 1024).toFixed(2)}MB。最大允许 ${maxSizeMB}MB。`
+      error: `File too large: ${(file.size / 1024 / 1024).toFixed(2)}MB. Maximum allowed ${maxSizeMB}MB.`
     };
   }
 

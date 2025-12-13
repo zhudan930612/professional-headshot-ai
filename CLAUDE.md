@@ -144,7 +144,7 @@ professional-headshot-ai/
 
 **博客系统:**
 - 博客文章数据定义在 `constants.ts` 的 `BLOG_POSTS` 中
-- 路由为 `/blog/:id`
+- 路由为 `/blog/:slug`（使用 SEO 友好的 slug，如 `/blog/top-5-mistakes-in-resume-photos`）
 - 当前为静态内容,可扩展为使用 Gemini 生成动态内容
 
 ## 部署相关

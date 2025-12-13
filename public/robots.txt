@@ -1,0 +1,23 @@
+# Professional Headshot AI robots.txt
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /.env
+Disallow: /config/
+
+# Specific crawl delays
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://www.professionalheadshotai.ink/sitemap.xml
+
+# Allow Google
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+# Allow Bing
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1

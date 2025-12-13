@@ -48,14 +48,26 @@ export const Home = () => {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button 
-                  onClick={() => document.getElementById('upload-tool')?.scrollIntoView({ behavior: 'smooth' })}
+                <button
+                  onClick={() => {
+                    const element = document.getElementById('upload-tool');
+                    if (element) {
+                      const offsetTop = element.getBoundingClientRect().top + window.scrollY - 100;
+                      window.scrollTo({ top: offsetTop, behavior: 'smooth' });
+                    }
+                  }}
                   className="px-6 py-3.5 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/20"
                 >
                   Create Headshots Free
                 </button>
-                <button 
-                  onClick={() => document.getElementById('examples')?.scrollIntoView({ behavior: 'smooth' })}
+                <button
+                  onClick={() => {
+                    const element = document.getElementById('examples');
+                    if (element) {
+                      const offsetTop = element.getBoundingClientRect().top + window.scrollY - 100;
+                      window.scrollTo({ top: offsetTop, behavior: 'smooth' });
+                    }
+                  }}
                   className="px-6 py-3.5 bg-white text-slate-700 border border-slate-200 rounded-xl font-semibold hover:bg-slate-50 transition-all"
                 >
                   See Examples
@@ -63,8 +75,8 @@ export const Home = () => {
               </div>
               
               <div className="mt-8 flex items-center justify-center gap-6 text-sm text-slate-500">
-                <span className="flex items-center gap-1"><CheckCircle size={16} className="text-green-500" /> Free Daily Quota</span>
-                <span className="flex items-center gap-1"><CheckCircle size={16} className="text-green-500" /> No Credit Card</span>
+                <span className="flex items-center gap-1"><CheckCircle size={16} className="text-green-500" /> 5 Free Uses Daily</span>
+                <span className="flex items-center gap-1"><CheckCircle size={16} className="text-green-500" /> No Credit Card Required</span>
               </div>
             </div>
 
@@ -139,7 +151,16 @@ export const Home = () => {
         </div>
 
         <div className="text-center mt-12 px-4">
-            <button onClick={() => document.getElementById('upload-tool')?.scrollIntoView({behavior: 'smooth'})} className="inline-flex items-center gap-2 text-primary-600 font-semibold hover:text-primary-700">
+            <button
+              onClick={() => {
+                const element = document.getElementById('upload-tool');
+                if (element) {
+                  const offsetTop = element.getBoundingClientRect().top + window.scrollY - 100;
+                  window.scrollTo({ top: offsetTop, behavior: 'smooth' });
+                }
+              }}
+              className="inline-flex items-center gap-2 text-primary-600 font-semibold hover:text-primary-700"
+            >
                 Try it with your own photos <ArrowRight size={18} />
             </button>
         </div>
@@ -191,10 +212,14 @@ export const Home = () => {
             </div>
 
             <div className="mt-4 text-center">
-               <button 
+               <button
                 onClick={() => {
                   setSelectedComparison(null);
-                  document.getElementById('upload-tool')?.scrollIntoView({behavior: 'smooth'});
+                  const element = document.getElementById('upload-tool');
+                  if (element) {
+                    const offsetTop = element.getBoundingClientRect().top + window.scrollY - 100;
+                    window.scrollTo({ top: offsetTop, behavior: 'smooth' });
+                  }
                 }}
                 className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-xl font-semibold transition-colors shadow-lg shadow-primary-500/20"
                >
@@ -244,8 +269,14 @@ export const Home = () => {
                     </div>
                     <h3 className="text-lg font-bold text-slate-900 mb-2">{useCase.label}</h3>
                     <p className="text-sm text-slate-500 mb-6">Perfect for updating your {useCase.label.toLowerCase()} to stand out to recruiters and clients.</p>
-                    <button 
-                        onClick={() => document.getElementById('upload-tool')?.scrollIntoView({behavior: 'smooth'})}
+                    <button
+                        onClick={() => {
+                          const element = document.getElementById('upload-tool');
+                          if (element) {
+                            const offsetTop = element.getBoundingClientRect().top + window.scrollY - 100;
+                            window.scrollTo({ top: offsetTop, behavior: 'smooth' });
+                          }
+                        }}
                         className="text-sm font-semibold text-primary-600 flex items-center gap-1 hover:gap-2 transition-all"
                     >
                         Create for this <ArrowRight size={14} />
@@ -267,7 +298,7 @@ export const Home = () => {
                     <div className="space-y-6">
                         {[
                             { icon: Clock, title: "Save Time", desc: "No booking photographers or traveling to studios. Done in minutes." },
-                            { icon: DollarSign, title: "Save Money", desc: "Professional shoots cost $200+. We are free for daily use." },
+                            { icon: DollarSign, title: "Save Money", desc: "Professional shoots cost $200+. Get 5 free generations daily." },
                             { icon: Shield, title: "Private & Secure", desc: "We process your photos securely and delete them afterwards." }
                         ].map((item, i) => (
                             <div key={i} className="flex gap-4">

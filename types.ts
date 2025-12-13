@@ -67,8 +67,10 @@ export interface UserQuota {
 
 export interface BlogPost {
   id: string;
+  slug: string;  // SEO-friendly URL slug
   title: string;
   excerpt: string;
   date: string;
   readTime: string;
+  content: string;  // HTML content
 }

@@ -13,7 +13,7 @@ export const Blog = () => {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {BLOG_POSTS.map((post) => (
-            <Link to={`/blog/${post.id}`} key={post.id} className="group block">
+            <Link to={`/blog/${post.slug}`} key={post.id} className="group block">
               <article className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-lg transition-all h-full flex flex-col">
                 <div className="h-48 bg-slate-200 relative overflow-hidden">
                     <img 

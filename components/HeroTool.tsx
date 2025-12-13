@@ -224,7 +224,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
   const startGeneration = async () => {
     const quota = await getRemainingQuota();
     if (quota <= 0) {
-      setError("Daily limit reached. Please come back tomorrow!");
+      setError("You've reached your daily limit of 5 generations. Come back tomorrow for more!");
       return;
     }
 
@@ -654,10 +654,10 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                 <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                    className={`px-4 py-2.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer ${
                         selectedCategory === cat
-                        ? 'bg-slate-900 text-white shadow-md'
-                        : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                        ? 'bg-primary-600 text-white shadow-md shadow-primary-500/30 scale-105 ring-2 ring-primary-200'
+                        : 'bg-white border-2 border-primary-300 text-primary-700 shadow-sm hover:border-primary-500 hover:bg-primary-50 hover:text-primary-800 hover:shadow-md hover:scale-105 active:scale-95'
                     }`}
                 >
                     {cat}
@@ -785,7 +785,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                             {result.error ? (
                                 // ❌ 错误状态
                                 <div className="w-full h-full bg-red-50 flex flex-col items-center justify-center border-2 border-red-200 p-6">
-                                    <XCircle className="text-red-500 mb-4" size={48} />
+                                    <XCircle className="text-red-500 mb-[22px]" size={48} />
                                     <div className="text-sm font-semibold text-red-700 text-center mb-5 leading-relaxed">
                                         {result.error === "Our AI blinked for a second 😅 Let's try again." ? (
                                             <>
@@ -829,7 +829,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                                         className="w-full h-full object-cover"
                                         loading="eager"
                                     />
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3 backdrop-blur-sm rounded-xl">
+                                    <div className="absolute right-0 bottom-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3 backdrop-blur-sm rounded-xl">
                                         <div className="bg-white/20 backdrop-blur-md p-3 rounded-full text-white hover:bg-white/30 transition-colors">
                                             <Maximize2 size={24} />
                                         </div>
@@ -906,7 +906,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                 </div>
 
                 <div className="text-xs font-medium text-slate-500 bg-white px-3 py-1.5 rounded-full border border-slate-200">
-                    {remainingQuota} credits
+                    {remainingQuota} uses left
                 </div>
             </div>
 
