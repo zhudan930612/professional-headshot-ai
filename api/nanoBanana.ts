@@ -30,15 +30,13 @@ async function submitGenerationTask(
   templateImageUrl: string
 ): Promise<{ taskId: string; estimatedTime: number }> {
   const defaultPrompt =
-    "Generate a realistic professional headshot using the user's uploaded photo as the ONLY and EXCLUSIVE source of identity. " +
-    "The final image must clearly depict the same person, strictly preserving facial structure, face shape, facial proportions, eye spacing, jawline softness, nose and lip shape, skin tone, age appearance, and overall facial balance, with no identity averaging, no facial slimming, and no professional smoothing. " +
-    "Preserve the user's natural facial tension, expression tendency, and overall personal vibe, and do NOT introduce a forced smile or a standardized professional expression unless it is clearly present in the user's original photo. " +
-    "The reference example image must be used ONLY to define non-identity visual style, including background environment, lighting direction and softness, color tone, camera framing, depth of field, and photographic quality. " +
-    "Do NOT transfer or imitate any facial traits, proportions, expression style, emotional tone, or age characteristics from the reference image. " +
-    "Clothing and hairstyle may follow the reference example's professional level, but must not alter the user's perceived age, personality, or facial impression. " +
-    "Render the image in a realistic photography style with natural skin texture, minimal retouching only, no beauty filters, no stylization, and no aesthetic enhancement beyond realism. " +
-    "If any conflict arises between professional polish and identity accuracy, identity accuracy must take absolute priority. " +
-    "The result must look like the same user photographed in the reference setting, not a refined or idealized version of the person.";
+    "Generate a realistic professional headshot using the user's uploaded photo as the only and exclusive source of identity. " +
+    "The final image must depict the exact same person, strictly preserving facial structure, face shape, facial proportions, eye spacing, jawline position, nose and lip shape, skin tone, age appearance, and overall facial balance, with no identity averaging, no face replacement, and no change to gender or age perception. " +
+    "The reference example image must be used only to define non-identity visual style, including background environment, lighting direction and softness, color palette, camera framing, depth of field, and overall photographic quality, and must not transfer any facial traits, proportions, expression style, or age characteristics. " +
+    "Apply subtle, professional-grade retouching only, including gentle skin smoothing, slight tone evening, and very mild facial contour refinement that does not alter facial width, jaw length, or natural facial impression. " +
+    "Avoid beauty filters, exaggerated slimming, artificial symmetry, or aesthetic stylization. " +
+    "Realism and identity accuracy must take absolute priority over cosmetic enhancement. " +
+    "The result should look like the same person professionally photographed by a high-end portrait photographer, suitable for LinkedIn, resumes, and corporate profiles.";
 
   const requestBody = {
     model: 'gemini-3-pro-image-preview',
