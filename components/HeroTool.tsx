@@ -4,7 +4,6 @@ import { HEADSHOT_TEMPLATES } from '../constants';
 import { HeadshotStyle, UseCase, GeneratedImage, ReferenceImage } from '../types';
 import { getRemainingQuota, incrementQuota, saveSession, mockGenerateImages } from '../services/storageService';
 import { selectReferenceImage, validateImageFiles } from '../services/imageService';
-import { uploadReferenceImage } from '../services/uploadService';
 import { generateHeadshots } from '../services/generationService';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
@@ -43,7 +42,6 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
 
   // Reference Image State ⭐ NEW
   const [selectedReferenceIndex, setSelectedReferenceIndex] = useState<number | null>(null);
-  const [uploadedReferenceImage, setUploadedReferenceImage] = useState<ReferenceImage | null>(null);
 
   // Multi-selection state
   const [selectedTemplateIds, setSelectedTemplateIds] = useState<string[]>([]);
@@ -209,7 +207,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
       }
       return message;
     }
-    return 'Generation failed, please try again';
+    return 'Our AI blinked for a second 😅 Let\'s try again.';
   };
 
   const toggleTemplate = (id: string) => {
@@ -257,17 +255,16 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
     setError(null);
 
     try {
-      // ⭐ NEW: Step 1 - 上传参考图到 Supabase Storage
-      console.log('📤 上传参考图到 Supabase Storage...');
+      // ⭐ 获取用户 ID（用于生成服务）
       const { data: { session } } = await supabase.auth.getSession();
       const userId = session?.user?.id || `anon_${Date.now()}`;
 
       const referenceFile = files[selectedReferenceIndex];
-      const uploadedRef = await uploadReferenceImage(referenceFile, userId);
-      setUploadedReferenceImage(uploadedRef);
-      console.log('✅ 参考图上传成功:', uploadedRef.url);
+      if (!referenceFile) {
+        throw new Error('参考图未选择');
+      }
 
-      // ⭐ NEW: Step 2 - 调用新的生成服务（使用参考图 + 模板图）
+      // ⭐ 调用新的生成服务（使用参考图 + 模板图，参考图会上传到 Supabase Storage）
       const selectedTemplates = HEADSHOT_TEMPLATES.filter(t =>
         selectedTemplateIds.includes(t.id)
       );
@@ -287,14 +284,14 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
             throw new Error(`Template ${id} not found`);
           }
 
-          // 调用生成服务（参考图 + 模板），传递进度回调
+          // 调用生成服务（参考图 + 模板），不传递 referenceImageUrl（让服务内部上传到 Supabase Storage）
           const generatedImages = await generateHeadshots(
             referenceFile,
             [template],
             primaryStyle,
             userId,
             `${sessionId}_${index}`,
-            uploadedRef.url,
+            undefined, // 不传递 referenceImageUrl，让服务内部上传到 Supabase Storage
             (progress) => {
               // ⭐ 更新当前图片的生成进度，但最多到95%，避免100%时的白屏
               const cappedProgress = Math.min(progress, 95);
@@ -357,14 +354,13 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
         const success = await incrementQuota(completedImages.length);
 
         if (success) {
-          // 保存会话（包含参考图信息）
+          // 保存会话（不包含参考图信息，参考图不保存到数据库）
           await saveSession({
             id: sessionId,
             date: Date.now(),
             style: primaryStyle,
             useCase: UseCase.LinkedIn,
             images: completedImages,
-            referenceImage: uploadedRef,
           });
 
           if (onSuccess) onSuccess(completedImages);
@@ -373,7 +369,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
         }
       } else {
         // 所有模板都失败
-        setError("All templates failed, please check your network and try again");
+        setError("Our AI blinked for a second 😅 Let's try again.");
       }
 
     } catch (err) {
@@ -386,7 +382,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
 
   // 重试单个失败的模板
   const retryTemplate = async (templateId: string) => {
-    if (!uploadedReferenceImage?.file || !uploadedReferenceImage?.url) {
+    if (selectedReferenceIndex === null || !files[selectedReferenceIndex]) {
       setError("Reference image lost, please re-upload");
       return;
     }
@@ -408,13 +404,14 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
       const { data: { session } } = await supabase.auth.getSession();
       const userId = session?.user?.id || `anon_${Date.now()}`;
 
+      const referenceFile = files[selectedReferenceIndex];
       const generatedImages = await generateHeadshots(
-        uploadedReferenceImage.file,
+        referenceFile,
         [template],
         template.category,
         userId,
         `${Date.now()}_retry_${templateId}`,
-        uploadedReferenceImage.url,
+        undefined, // 不传递 referenceImageUrl，让服务内部上传到 Supabase Storage
         (progress) => {
           // 限制进度最多到95%，避免100%时的白屏
           const cappedProgress = Math.min(progress, 95);
@@ -788,10 +785,17 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                             {result.error ? (
                                 // ❌ 错误状态
                                 <div className="w-full h-full bg-red-50 flex flex-col items-center justify-center border-2 border-red-200 p-4">
-                                    <XCircle className="text-red-500 mb-2" size={32} />
-                                    <span className="text-xs font-semibold text-red-700 text-center mb-3">
-                                        {result.error}
-                                    </span>
+                                    <XCircle className="text-red-500 mb-[22px]" size={32} />
+                                    <div className="text-xs font-semibold text-red-700 text-center mb-3">
+                                        {result.error === "Our AI blinked for a second 😅 Let's try again." ? (
+                                            <>
+                                                <div>Our AI blinked for a second 😅</div>
+                                                <div>Let's try again.</div>
+                                            </>
+                                        ) : (
+                                            result.error
+                                        )}
+                                    </div>
                                     {result.retryCount < 1 ? (
                                         <button
                                             onClick={() => retryTemplate(result.templateId)}
@@ -876,22 +880,29 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                 </h2>
                 
                 <div className="flex items-center gap-2">
-                    {[1, 2, 3].map((s) => (
-                        <div key={s} className="flex items-center">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
-                                step === s 
-                                ? 'bg-primary-600 text-white' 
-                                : step > s 
-                                    ? 'bg-green-500 text-white' 
-                                    : 'bg-slate-200 text-slate-500'
-                            }`}>
-                                {step > s ? <Check size={16} /> : s}
+                    {[1, 2, 3].map((s) => {
+                        // 判断第三步是否已完成：step === 3 且所有图片都生成完成
+                        const isStep3Completed = s === 3 && step === 3 && !generationResults.some(r => r.loading) && generationResults.length > 0;
+                        const isCompleted = step > s || isStep3Completed;
+                        const isActive = step === s && !isStep3Completed;
+                        
+                        return (
+                            <div key={s} className="flex items-center">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
+                                    isActive
+                                    ? 'bg-primary-600 text-white' 
+                                    : isCompleted
+                                        ? 'bg-green-500 text-white' 
+                                        : 'bg-slate-200 text-slate-500'
+                                }`}>
+                                    {isCompleted ? <Check size={16} /> : s}
+                                </div>
+                                {s < 3 && (
+                                    <div className={`w-8 h-1 mx-2 rounded-full ${isCompleted ? 'bg-green-500' : 'bg-slate-200'}`}></div>
+                                )}
                             </div>
-                            {s < 3 && (
-                                <div className={`w-8 h-1 mx-2 rounded-full ${step > s ? 'bg-green-500' : 'bg-slate-200'}`}></div>
-                            )}
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
 
                 <div className="text-xs font-medium text-slate-500 bg-white px-3 py-1.5 rounded-full border border-slate-200">

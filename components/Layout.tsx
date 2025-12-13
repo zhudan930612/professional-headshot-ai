@@ -54,7 +54,7 @@ const Navbar = () => {
                   </div>
                 </div>
                 <span className="font-bold text-xl tracking-tight text-slate-900 group-hover:text-primary-700 transition-colors">
-                  Professional Headshot<span className="text-primary-600">AI</span>
+                  Professional Headshot<span className="text-primary-600 ml-1 border-0 border-transparent bg-transparent">AI</span>
                 </span>
               </Link>
             </div>
