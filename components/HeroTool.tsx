@@ -34,7 +34,8 @@ const CATEGORIES = [
 export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+  const allPreviewUrlsRef = useRef<Set<string>>(new Set());
+
   // State
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [files, setFiles] = useState<File[]>([]);
@@ -100,32 +101,42 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
 
   // 当文件列表变化时，更新预览 URL
   useEffect(() => {
-    const newPreviewUrls = new Map<File, string>();
+    setPreviewUrls(prevUrls => {
+      const newPreviewUrls = new Map<File, string>();
 
-    files.forEach(file => {
-      // 复用已存在的 URL 或创建新的
-      const existingUrl = previewUrls.get(file);
-      if (existingUrl) {
-        newPreviewUrls.set(file, existingUrl);
-      } else {
-        newPreviewUrls.set(file, URL.createObjectURL(file));
-      }
+      files.forEach(file => {
+        // 复用已存在的 URL 或创建新的
+        const existingUrl = prevUrls.get(file);
+        if (existingUrl) {
+          newPreviewUrls.set(file, existingUrl);
+        } else {
+          const newUrl = URL.createObjectURL(file);
+          newPreviewUrls.set(file, newUrl);
+          allPreviewUrlsRef.current.add(newUrl); // 跟踪所有创建的 URL
+        }
+      });
+
+      // 清理不再使用的 URL（立即清理已删除文件的 URL）
+      prevUrls.forEach((url, file) => {
+        if (!files.includes(file)) {
+          URL.revokeObjectURL(url);
+          allPreviewUrlsRef.current.delete(url); // 从跟踪中移除
+        }
+      });
+
+      return newPreviewUrls;
     });
-
-    // 清理不再使用的 URL
-    previewUrls.forEach((url, file) => {
-      if (!files.includes(file)) {
-        URL.revokeObjectURL(url);
-      }
-    });
-
-    setPreviewUrls(newPreviewUrls);
-
-    // 组件卸载时清理所有 URL
-    return () => {
-      newPreviewUrls.forEach(url => URL.revokeObjectURL(url));
-    };
   }, [files]);
+
+  // 组件卸载时清理所有 URL
+  useEffect(() => {
+    return () => {
+      allPreviewUrlsRef.current.forEach(url => {
+        URL.revokeObjectURL(url);
+      });
+      allPreviewUrlsRef.current.clear();
+    };
+  }, []);
 
   const removeFile = async (index: number) => {
     const updatedFiles = files.filter((_, i) => i !== index);
@@ -149,6 +160,56 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
       // 如果删除的文件在参考图之前，调整索引
       setSelectedReferenceIndex(selectedReferenceIndex - 1);
     }
+  };
+
+  // Drag and drop handlers
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const droppedFiles = Array.from(e.dataTransfer.files);
+    if (droppedFiles.length + files.length > 5) {
+      setError("Maximum 5 photos allowed.");
+      return;
+    }
+
+    // Validate image files
+    const validation = validateImageFiles(droppedFiles);
+    if (!validation.valid) {
+      setError(validation.errors.join('\n'));
+      return;
+    }
+
+    const updatedFiles = [...files, ...droppedFiles];
+    setFiles(updatedFiles);
+    setError(null);
+
+    // Auto-select reference image (first image)
+    if (updatedFiles.length > 0 && selectedReferenceIndex === null) {
+      try {
+        const refIndex = await selectReferenceImage(updatedFiles);
+        setSelectedReferenceIndex(refIndex);
+      } catch (err) {
+        console.error('Failed to select reference image:', err);
+      }
+    }
+  };
+
+  // Convert error messages to friendly text
+  const getFriendlyErrorMessage = (error: unknown): string => {
+    if (error instanceof Error) {
+      const message = error.message;
+      if (message.includes('Failed to fetch') || message.includes('fetch')) {
+        return 'Our AI blinked for a second 😅 Let\'s try again.';
+      }
+      return message;
+    }
+    return 'Generation failed, please try again';
   };
 
   const toggleTemplate = (id: string) => {
@@ -235,10 +296,11 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
             `${sessionId}_${index}`,
             uploadedRef.url,
             (progress) => {
-              // ⭐ 更新当前图片的生成进度
+              // ⭐ 更新当前图片的生成进度，但最多到95%，避免100%时的白屏
+              const cappedProgress = Math.min(progress, 95);
               setGenerationResults(prev => prev.map(item =>
                 item.templateId === id
-                  ? { ...item, progress }
+                  ? { ...item, progress: cappedProgress }
                   : item
               ));
             }
@@ -246,7 +308,15 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
 
           const img = generatedImages[0];
 
-          // ✅ 成功：更新状态
+          // ⭐ 预加载图片，确保浏览器完成加载后再显示
+          await new Promise<void>((resolve, reject) => {
+            const preloadImg = new Image();
+            preloadImg.onload = () => resolve();
+            preloadImg.onerror = () => reject(new Error('Failed to load image'));
+            preloadImg.src = img.url;
+          });
+
+          // ✅ 成功：图片真正加载完成后才更新状态
           setGenerationResults(prev => prev.map(item =>
             item.templateId === id
               ? { ...item, loading: false, image: img, progress: 100, error: undefined }
@@ -257,7 +327,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
 
         } catch (error) {
           // ❌ 失败：更新错误状态
-          const errorMessage = error instanceof Error ? error.message : 'Generation failed, please try again';
+          const errorMessage = getFriendlyErrorMessage(error);
 
           setGenerationResults(prev => prev.map(item =>
             item.templateId === id
@@ -346,9 +416,11 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
         `${Date.now()}_retry_${templateId}`,
         uploadedReferenceImage.url,
         (progress) => {
+          // 限制进度最多到95%，避免100%时的白屏
+          const cappedProgress = Math.min(progress, 95);
           setGenerationResults(prev => prev.map(item =>
             item.templateId === templateId
-              ? { ...item, progress }
+              ? { ...item, progress: cappedProgress }
               : item
           ));
         }
@@ -356,7 +428,15 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
 
       const img = generatedImages[0];
 
-      // 成功
+      // ⭐ 预加载图片，确保浏览器完成加载后再显示
+      await new Promise<void>((resolve, reject) => {
+        const preloadImg = new Image();
+        preloadImg.onload = () => resolve();
+        preloadImg.onerror = () => reject(new Error('Failed to load image'));
+        preloadImg.src = img.url;
+      });
+
+      // 成功：图片真正加载完成后才更新状态
       setGenerationResults(prev => prev.map(item =>
         item.templateId === templateId
           ? { ...item, loading: false, image: img, progress: 100, error: undefined }
@@ -368,7 +448,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
 
     } catch (error) {
       // 失败
-      const errorMessage = error instanceof Error ? error.message : 'Generation failed, please try again';
+      const errorMessage = getFriendlyErrorMessage(error);
 
       setGenerationResults(prev => prev.map(item =>
         item.templateId === templateId
@@ -391,6 +471,45 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
       setUploadedReferenceImage(null);
   }
 
+  // Download image directly
+  const handleDownloadImage = async (imageUrl: string) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+
+      // Determine file extension from blob MIME type or URL
+      let extension = 'jpg'; // default
+      const mimeType = blob.type;
+
+      if (mimeType === 'image/png') {
+        extension = 'png';
+      } else if (mimeType === 'image/jpeg' || mimeType === 'image/jpg') {
+        extension = 'jpg';
+      } else if (mimeType === 'image/webp') {
+        extension = 'webp';
+      } else {
+        // Fallback: try to extract from URL
+        const urlMatch = imageUrl.match(/\.(png|jpg|jpeg|webp)(\?|$)/i);
+        if (urlMatch) {
+          extension = urlMatch[1].toLowerCase();
+        }
+      }
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `professional-headshot-${Date.now()}.${extension}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download failed:', error);
+      // Fallback: open in new tab
+      window.open(imageUrl, '_blank');
+    }
+  }
+
   // --- STEPS RENDERERS ---
 
   const renderStep1_Upload = () => (
@@ -400,8 +519,10 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
             <p className="text-slate-500 whitespace-nowrap">We recommend uploading 3–5 clear selfies to help the AI better capture your facial features.</p>
         </div>
 
-        <div 
+        <div
             onClick={() => fileInputRef.current?.click()}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
             className={`flex-grow border-2 border-dashed rounded-2xl p-8 text-center transition-all cursor-pointer group flex flex-col items-center justify-center min-h-[300px] ${
                 files.length > 0 ? 'border-primary-200 bg-primary-50/30' : 'border-slate-300 hover:border-primary-500 hover:bg-primary-50'
             }`}
@@ -417,13 +538,45 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
             
             {files.length === 0 ? (
                 <>
-                    <div className="w-20 h-20 bg-white rounded-full shadow-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                         <Upload className="text-slate-400 group-hover:text-primary-500" size={32} />
+                    {/* 示例图片展示 - 放在最上面重点展示 */}
+                    <div className="mb-6">
+                        <p className="text-xs text-slate-500 font-medium mb-3 text-center">Example Photos:</p>
+                        <div className="flex gap-4 justify-center">
+                            {[
+                                'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=faces',
+                                'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=faces',
+                                'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=faces'
+                            ].map((url, idx) => (
+                                <div key={idx} className="w-24 h-24 rounded-xl overflow-hidden border-2 border-slate-300 shadow-md hover:shadow-lg transition-shadow">
+                                    <img src={url} alt={`Example ${idx + 1}`} className="w-full h-full object-cover" />
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* 照片要求说明 */}
+                        <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3 max-w-md mx-auto">
+                            <p className="text-xs font-semibold text-blue-900 mb-2">Photo Requirements:</p>
+                            <ul className="text-xs text-blue-800 space-y-1">
+                                <li className="flex items-start gap-1.5">
+                                    <Check size={14} className="text-blue-600 mt-0.5 flex-shrink-0" />
+                                    <span>Clear face, good lighting (natural light preferred)</span>
+                                </li>
+                                <li className="flex items-start gap-1.5">
+                                    <Check size={14} className="text-blue-600 mt-0.5 flex-shrink-0" />
+                                    <span>Front-facing or slight angle, neutral expression</span>
+                                </li>
+                                <li className="flex items-start gap-1.5">
+                                    <XIconLucide size={14} className="text-red-500 mt-0.5 flex-shrink-0" />
+                                    <span>No sunglasses, hats, or heavy filters</span>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
-                    <p className="text-lg font-semibold text-slate-700 group-hover:text-primary-700">
+
+                    <p className="text-lg font-semibold text-slate-700 group-hover:text-primary-700 mt-0">
                     Click or Drop Photos Here
                     </p>
-                    <p className="text-sm text-slate-400 mt-2">Supports JPG, PNG, HEIC</p>
+                    <p className="text-sm text-slate-400 mt-2">Supports JPG, PNG</p>
                 </>
             ) : (
                 <div className="w-full max-w-2xl">
@@ -618,10 +771,10 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                         </div>
                     )}
                     
-                    <h3 className="text-2xl font-bold text-slate-900">
+                    <h3 className="text-2xl font-bold text-slate-900" translate="no">
                         {isAnyLoading ? "Generating Your Headshots..." : "Headshots Ready!"}
                     </h3>
-                    <p className="text-slate-500">
+                    <p className="text-slate-500" translate="no">
                         {isAnyLoading ? "Please wait while we create your professional photos." : "Here are your professional AI-generated photos."}
                     </p>
                 </div>
@@ -651,12 +804,14 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                                         <span className="text-xs text-red-600 italic">Please try again later</span>
                                     )}
                                 </div>
-                            ) : result.loading || !result.image ? (
+                            ) : !result.image || result.loading ? (
                                 // ⏳ 加载状态
-                                <div className="w-full h-full bg-slate-50 flex flex-col items-center justify-center border-2 border-transparent">
+                                <div className="w-full h-full bg-slate-100 flex flex-col items-center justify-center p-4">
                                     <Loader2 className="animate-spin text-primary-600 mb-2" size={32} />
-                                    <span className="text-xs font-semibold text-slate-500 animate-pulse">Generating...</span>
-                                    <span className="text-xs text-slate-400 mt-2">Estimated time: 30-60s</span>
+                                    <span className="text-xs font-semibold text-slate-500 animate-pulse" translate="no">Generating...</span>
+                                    <span className="text-xs text-slate-400 mt-2" translate="no">
+                                        {result.progress >= 95 ? 'Finalizing...' : 'Estimated time: 30-60s'}
+                                    </span>
                                 </div>
                             ) : (
                                 // ✅ 成功状态
@@ -664,7 +819,12 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                                     onClick={() => setSelectedImage(result.image)}
                                     className="w-full h-full group cursor-pointer animate-in fade-in duration-700"
                                 >
-                                    <img src={result.image.url} alt="Result" className="w-full h-full object-cover" />
+                                    <img
+                                        src={result.image.url}
+                                        alt="Result"
+                                        className="w-full h-full object-cover"
+                                        loading="eager"
+                                    />
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3 backdrop-blur-sm rounded-xl">
                                         <div className="bg-white/20 backdrop-blur-md p-3 rounded-full text-white hover:bg-white/30 transition-colors">
                                             <Maximize2 size={24} />
@@ -749,39 +909,40 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
 
         {/* Full Screen Image Modal */}
         {selectedImage && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8" style={{ maxHeight: '100dvh' }}>
-                <div 
+            <div className="fixed inset-0 z-[100] overflow-hidden">
+                <div
                     className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
                     onClick={() => setSelectedImage(null)}
                 ></div>
-                
-                {/* Content wrapper */}
-                <div className="relative z-10 w-full max-w-5xl flex flex-col items-center justify-center gap-6 animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+
+                {/* Content wrapper - Absolutely centered */}
+                <div
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-6 animate-in zoom-in-95 duration-200 w-full px-4"
+                    onClick={(e) => e.stopPropagation()}
+                >
                     <div className="relative rounded-xl overflow-hidden shadow-2xl bg-black/50 ring-1 ring-white/10">
                         {/* Image */}
-                        <img 
-                            src={selectedImage.url} 
-                            alt="Full size" 
-                            className="max-h-[75vh] w-auto max-w-full object-contain"
+                        <img
+                            src={selectedImage.url}
+                            alt="Full size"
+                            className="max-h-[75vh] w-auto max-w-[90vw] object-contain"
                         />
                     </div>
-                    
+
                     {/* Buttons */}
                     <div className="flex items-center gap-4">
-                        <button 
+                        <button
                             onClick={() => setSelectedImage(null)}
                             className="px-6 py-2.5 bg-white text-slate-900 rounded-full font-bold text-sm hover:bg-slate-200 transition-colors shadow-lg"
                         >
                             Close
                         </button>
-                        <a 
-                            href={selectedImage.url} 
-                            target="_blank"
-                            rel="noreferrer"
+                        <button
+                            onClick={() => handleDownloadImage(selectedImage.url)}
                             className="px-6 py-2.5 bg-primary-600 text-white rounded-full font-bold text-sm hover:bg-primary-700 transition-colors shadow-lg flex items-center gap-2"
                         >
                             <Download size={16} /> Download High Res
-                        </a>
+                        </button>
                     </div>
                 </div>
 

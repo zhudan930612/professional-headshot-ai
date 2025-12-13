@@ -51,15 +51,17 @@ export async function submitGenerationTask(
   request: NanoBananaGenerationRequest
 ): Promise<{ taskId: string; estimatedTime: number }> {
   const defaultPrompt =
-    "Generate a realistic professional headshot using the user's uploaded photos as the only source of identity. " +
-    "Preserve the user's gender, facial features, face shape, skin tone, and overall likeness exactly, with no gender change or identity drift. " +
-    "Use the selected reference example to define all non-identity elements, including background, lighting, color tone, composition, camera framing, depth of field, and overall photo style. " +
-    "Adapt clothing, hairstyle, and grooming to match the reference example's professional look while remaining consistent with the user's preserved gender and facial identity. " +
-    "Render in a realistic, high-quality photography style with natural skin texture, light retouching only, and no artistic filters. " +
-    "The result should look like the same user photographed in the reference example's style, suitable for LinkedIn, resumes, and professional websites.";
+    "Generate a realistic professional headshot using the user's uploaded photo as the ONLY and PRIMARY source of identity. " +
+    "The final image must clearly depict the same person, strictly preserving facial structure, face shape, eye shape and spacing, nose, lips, jawline, skin tone, age appearance, and overall facial proportions, with zero face blending, averaging, replacement, or identity drift. " +
+    "The reference example image must be used ONLY for non-identity style attributes, including background type, environment, lighting direction and softness, color palette, camera framing, depth of field, and overall photographic quality. " +
+    "Do NOT transfer, imitate, or adapt any facial features, face shape, age cues, expression style, or ethnicity from the reference image. " +
+    "If there is any conflict between identity accuracy and visual style, identity accuracy must take absolute priority. " +
+    "Clothing, hairstyle, and grooming may follow the reference example's professional level and aesthetic, but must remain fully consistent with the user's preserved gender and facial identity and must not alter perceived age or facial structure. " +
+    "Render the image in a realistic, high-end photography style with natural skin texture, minimal retouching only, no beauty filters, no stylization, and no artistic reinterpretation. " +
+    "The result must look like the same user being professionally photographed in the reference example's setting and style, not a new person, not a hybrid face, and not a reinterpretation.";
 
   const requestBody = {
-    model: "nano-banana-2-lite",
+    model: "gemini-3-pro-image-preview",
     prompt: request.prompt || defaultPrompt,
     size: "3:4",
     quality: "2K",

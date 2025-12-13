@@ -128,21 +128,13 @@ const Navbar = () => {
                   </div>
                 ) : (
                   /* 未登录：显示登录按钮 */
-                  <>
-                    <button
-                      onClick={() => setIsAuthOpen(true)}
-                      className="text-slate-600 hover:text-primary-600 font-medium text-sm px-3 py-2 transition-colors flex items-center gap-2"
-                    >
-                      <LogIn size={18} />
-                      Sign In
-                    </button>
-                    <Link
-                      to="/"
-                      className="bg-primary-600 text-white hover:bg-primary-700 px-4 py-2 rounded-lg text-sm font-semibold transition-colors shadow-sm"
-                    >
-                      Get Started
-                    </Link>
-                  </>
+                  <button
+                    onClick={() => setIsAuthOpen(true)}
+                    className="text-slate-600 hover:text-primary-600 font-medium text-sm px-3 py-2 transition-colors flex items-center gap-2"
+                  >
+                    <LogIn size={18} />
+                    Sign In
+                  </button>
                 )}
               </div>
             </div>
@@ -214,25 +206,16 @@ const Navbar = () => {
                   </>
                 ) : (
                   /* 未登录：显示登录按钮 */
-                  <>
-                    <button
-                      onClick={() => {
-                        setIsOpen(false);
-                        setIsAuthOpen(true);
-                      }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-slate-600 font-medium hover:bg-slate-50 rounded-md"
-                    >
-                      <LogIn size={18} />
-                      Sign In / Register
-                    </button>
-                    <Link
-                      to="/"
-                      onClick={() => setIsOpen(false)}
-                      className="block w-full text-center mt-2 bg-primary-600 text-white px-4 py-3 rounded-lg font-semibold"
-                    >
-                      Create Headshot
-                    </Link>
-                  </>
+                  <button
+                    onClick={() => {
+                      setIsOpen(false);
+                      setIsAuthOpen(true);
+                    }}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-slate-600 font-medium hover:bg-slate-50 rounded-md"
+                  >
+                    <LogIn size={18} />
+                    Sign In / Register
+                  </button>
                 )}
               </div>
             </div>
