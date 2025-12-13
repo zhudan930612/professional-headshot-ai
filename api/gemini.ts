@@ -5,18 +5,19 @@ export default async function handler(
   req: VercelRequest,
   res: VercelResponse
 ) {
-  // 仅允许 POST 请求
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
   // CORS 配置 (如果需要)
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
+  // 处理 CORS preflight 请求
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
+  }
+
+  // 仅允许 POST 请求
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
