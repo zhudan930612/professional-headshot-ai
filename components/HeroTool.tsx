@@ -785,7 +785,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                             {result.error ? (
                                 // ❌ 错误状态
                                 <div className="w-full h-full bg-red-50 flex flex-col items-center justify-center border-2 border-red-200 p-6">
-                                    <XCircle className="text-red-500 mb-[22px]" size={48} />
+                                    <XCircle className="text-red-500 mb-4" size={48} />
                                     <div className="text-sm font-semibold text-red-700 text-center mb-5 leading-relaxed">
                                         {result.error === "Our AI blinked for a second 😅 Let's try again." ? (
                                             <>

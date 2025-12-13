@@ -46,10 +46,19 @@ const Navbar = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <Link to="/" className="flex-shrink-0 flex items-center gap-2.5 group">
+              <Link
+                to="/"
+                onClick={(e) => {
+                  if (location.pathname === '/') {
+                    e.preventDefault();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }
+                }}
+                className="flex-shrink-0 flex items-center gap-2.5 group"
+              >
                 <img src="/logo.svg" alt="Professional Headshot AI" className="w-10 h-10 group-hover:scale-105 transition-transform duration-300" />
                 <span className="font-bold text-xl tracking-tight text-slate-900 group-hover:text-primary-700 transition-colors">
-                  Professional Headshot<span className="text-primary-600 ml-1.5">AI</span>
+                  Professional Headshot<span className="text-primary-600 ml-1.5 border-0 border-none bg-[unset] bg-none" style={{ borderWidth: '0px', borderColor: 'rgba(0, 0, 0, 0)', borderImage: 'none', borderStyle: 'none', background: 'unset', backgroundImage: 'none' }}>AI</span>
                 </span>
               </Link>
             </div>
@@ -233,14 +242,26 @@ const Navbar = () => {
   );
 };
 
-const Footer = () => (
+const Footer = () => {
+  const location = useLocation();
+
+  return (
   <footer className="bg-slate-900 text-slate-300 py-12">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
       <div className="col-span-1 md:col-span-1">
-        <div className="flex items-center gap-2.5 mb-4 text-white">
+        <Link
+          to="/"
+          onClick={(e) => {
+            if (location.pathname === '/') {
+              e.preventDefault();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          }}
+          className="flex items-center gap-2.5 mb-4 text-white"
+        >
           <img src="/logo.svg" alt="Professional Headshot AI" className="w-8 h-8" />
-          <span className="font-bold text-xl tracking-tight">Professional Headshot<span className="text-primary-400">AI</span></span>
-        </div>
+          <span className="font-bold text-xl tracking-tight">Professional Headshot<span className="text-primary-400 ml-1.5">AI</span></span>
+        </Link>
         <p className="text-sm text-slate-400">
           Professional AI-generated headshots for your career success. Fast, free, and private.
         </p>
@@ -271,7 +292,8 @@ const Footer = () => (
       © {new Date().getFullYear()} Professional Headshot AI. All rights reserved.
     </div>
   </footer>
-);
+  );
+};
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
