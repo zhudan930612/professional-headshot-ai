@@ -706,7 +706,7 @@ export const FAQ_ITEMS = [
   },
   {
     question: "Do I really just need selfies to start?",
-    answer: "Yes! Our AI analyzes your facial features from 3-10 varied selfies to construct a photorealistic professional image. No studio required."
+    answer: "Yes! Our AI analyzes your facial features from 1-5 varied selfies to construct a photorealistic professional image. No studio required."
   },
   {
     question: "How many headshots can I generate per day?",

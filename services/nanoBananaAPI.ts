@@ -51,9 +51,12 @@ export async function submitGenerationTask(
   request: NanoBananaGenerationRequest
 ): Promise<{ taskId: string; estimatedTime: number }> {
   const defaultPrompt =
-    "Keep the subject from Image 1 unchanged and apply the composition, lighting, background, " +
-    "and color tone of Image 2 to create a realistic professional headshot. " +
-    "No props or filters. Natural skin tone, light retouching, clothing similar to Image 2.";
+    "Generate a realistic professional headshot using the user's uploaded photos as the only source of identity. " +
+    "Preserve the user's gender, facial features, face shape, skin tone, and overall likeness exactly, with no gender change or identity drift. " +
+    "Use the selected reference example to define all non-identity elements, including background, lighting, color tone, composition, camera framing, depth of field, and overall photo style. " +
+    "Adapt clothing, hairstyle, and grooming to match the reference example's professional look while remaining consistent with the user's preserved gender and facial identity. " +
+    "Render in a realistic, high-quality photography style with natural skin texture, light retouching only, and no artistic filters. " +
+    "The result should look like the same user photographed in the reference example's style, suitable for LinkedIn, resumes, and professional websites.";
 
   const requestBody = {
     model: "nano-banana-2-lite",
@@ -150,7 +153,7 @@ export async function waitForTaskCompletion(
   while (true) {
     // 检查是否超时
     if (Date.now() - startTime > maxWaitTime) {
-      throw new Error('生成超时，请稍后重试');
+      throw new Error('Generation timeout, please try again later');
     }
 
     // 查询任务状态
@@ -166,7 +169,7 @@ export async function waitForTaskCompletion(
     // 检查任务状态
     if (taskStatus.status === 'completed' && taskStatus.progress === 100) {
       if (!taskStatus.results || taskStatus.results.length === 0) {
-        throw new Error('生成完成但未返回图片');
+        throw new Error('Generation completed but no image returned');
       }
 
       const imageUrl = taskStatus.results[0];
@@ -175,7 +178,17 @@ export async function waitForTaskCompletion(
     }
 
     if (taskStatus.status === 'failed') {
-      throw new Error(taskStatus.error || '生成失败');
+      // 统一使用通用错误消息，避免 [object Object] 问题
+      const errorMessage = 'Image generation failed, please retry';
+
+      // 在控制台记录详细错误供调试
+      console.error('❌ Nano Banana 任务失败:', {
+        taskId,
+        error: taskStatus.error,
+        errorType: typeof taskStatus.error
+      });
+
+      throw new Error(errorMessage);
     }
 
     // 等待后继续轮询

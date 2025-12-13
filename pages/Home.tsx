@@ -215,7 +215,7 @@ export const Home = () => {
             
             <div className="grid md:grid-cols-3 gap-12">
                 {[
-                    { icon: Upload, title: "1. Upload Selfies", desc: "Upload 3-10 clear selfies from your phone. No professional equipment needed." },
+                    { icon: Upload, title: "1. Upload Selfies", desc: "Upload 1-5 clear selfies from your phone. No professional equipment needed." },
                     { icon: LayoutTemplate, title: "2. Pick a Template", desc: "Browse our gallery and select the perfect professional look for your needs." },
                     { icon: Download, title: "3. Download", desc: "Our AI generates your photos in seconds. Review, select, and download high-res files." }
                 ].map((step, idx) => (

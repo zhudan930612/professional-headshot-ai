@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, Sparkles, Image as ImageIcon, CheckCircle, AlertCircle, Loader2, Check, Download, RefreshCw, ArrowRight, ArrowLeft, X as XIconLucide, Maximize2 } from 'lucide-react';
+import { Upload, Sparkles, Image as ImageIcon, CheckCircle, AlertCircle, Loader2, Check, Download, RefreshCw, ArrowRight, ArrowLeft, X as XIconLucide, Maximize2, XCircle } from 'lucide-react';
 import { HEADSHOT_TEMPLATES } from '../constants';
 import { HeadshotStyle, UseCase, GeneratedImage, ReferenceImage } from '../types';
 import { getRemainingQuota, incrementQuota, saveSession, mockGenerateImages } from '../services/storageService';
@@ -17,6 +17,9 @@ interface GenerationResult {
   templateId: string;
   loading: boolean;
   image: GeneratedImage | null;
+  progress: number;
+  error?: string;  // 新增：存储错误消息
+  retryCount: number;  // 新增：跟踪重试次数
 }
 
 const CATEGORIES = [
@@ -63,8 +66,8 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
-      if (newFiles.length + files.length > 10) {
-        setError("Maximum 10 photos allowed.");
+      if (newFiles.length + files.length > 5) {
+        setError("Maximum 5 photos allowed.");
         return;
       }
 
@@ -181,7 +184,10 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
     const initialResults: GenerationResult[] = selectedTemplateIds.map(id => ({
         templateId: id,
         loading: true,
-        image: null
+        image: null,
+        progress: 0,
+        error: undefined,
+        retryCount: 0
     }));
 
     setGenerationResults(initialResults);
@@ -211,63 +217,166 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
 
       // Create independent generation promises for each selected template
       const promises = selectedTemplateIds.map(async (id, index) => {
-        // Add a random stagger delay (0-2s) to make it look like independent processing
-        await new Promise(r => setTimeout(r, Math.random() * 2000));
+        try {
+          // Add a random stagger delay (0-2s) to make it look like independent processing
+          await new Promise(r => setTimeout(r, Math.random() * 2000));
 
-        // ⭐ NEW: 使用真实的生成服务（当前仍使用 Mock，等待真实 API）
-        const template = selectedTemplates.find(t => t.id === id);
-        if (!template) {
-          throw new Error(`Template ${id} not found`);
+          const template = selectedTemplates.find(t => t.id === id);
+          if (!template) {
+            throw new Error(`Template ${id} not found`);
+          }
+
+          // 调用生成服务（参考图 + 模板），传递进度回调
+          const generatedImages = await generateHeadshots(
+            referenceFile,
+            [template],
+            primaryStyle,
+            userId,
+            `${sessionId}_${index}`,
+            uploadedRef.url,
+            (progress) => {
+              // ⭐ 更新当前图片的生成进度
+              setGenerationResults(prev => prev.map(item =>
+                item.templateId === id
+                  ? { ...item, progress }
+                  : item
+              ));
+            }
+          );
+
+          const img = generatedImages[0];
+
+          // ✅ 成功：更新状态
+          setGenerationResults(prev => prev.map(item =>
+            item.templateId === id
+              ? { ...item, loading: false, image: img, progress: 100, error: undefined }
+              : item
+          ));
+
+          return { success: true, image: img };
+
+        } catch (error) {
+          // ❌ 失败：更新错误状态
+          const errorMessage = error instanceof Error ? error.message : 'Generation failed, please try again';
+
+          setGenerationResults(prev => prev.map(item =>
+            item.templateId === id
+              ? { ...item, loading: false, progress: 0, error: errorMessage }
+              : item
+          ));
+
+          console.error(`模板 ${id} 生成失败:`, error);
+          return { success: false, error: errorMessage };
         }
-
-        // 调用生成服务（参考图 + 模板）
-        const generatedImages = await generateHeadshots(
-          referenceFile,
-          [template],
-          primaryStyle,
-          userId,
-          `${sessionId}_${index}`,
-          uploadedRef.url  // ⭐ NEW: 传递参考图 URL
-        );
-
-        const img = generatedImages[0];
-
-        // Update specific item in state to show it's done
-        setGenerationResults(prev => prev.map(item =>
-             item.templateId === id
-             ? { ...item, loading: false, image: img }
-             : item
-        ));
-
-        return img;
       });
 
-      // Wait for all to complete
-      const completedImages = await Promise.all(promises);
+      // 使用 allSettled 允许部分成功
+      const results = await Promise.allSettled(promises);
+
+      // 提取成功的图片
+      const completedImages = results
+        .filter((r): r is PromiseFulfilledResult<{ success: true; image: GeneratedImage }> =>
+          r.status === 'fulfilled' && r.value.success === true
+        )
+        .map(r => r.value.image);
 
       setIsGenerating(false);
-      const success = await incrementQuota(completedImages.length);
 
-      if (success) {
-        // ⭐ NEW: 保存会话（包含参考图信息）
-        await saveSession({
+      // 检查是否有成功的图片
+      if (completedImages.length > 0) {
+        const success = await incrementQuota(completedImages.length);
+
+        if (success) {
+          // 保存会话（包含参考图信息）
+          await saveSession({
             id: sessionId,
             date: Date.now(),
             style: primaryStyle,
             useCase: UseCase.LinkedIn,
             images: completedImages,
-            referenceImage: uploadedRef,  // 新增参考图信息
-        });
+            referenceImage: uploadedRef,
+          });
 
-        if (onSuccess) onSuccess(completedImages);
+          if (onSuccess) onSuccess(completedImages);
+        } else {
+          setError("Quota exceeded, unable to save results");
+        }
       } else {
-        setError("Quota exceeded during processing.");
+        // 所有模板都失败
+        setError("All templates failed, please check your network and try again");
       }
 
     } catch (err) {
-      console.error('生成失败:', err);
-      setError("Something went wrong. Please try again.");
+      // 这个 catch 只处理意外的系统错误（如状态更新失败）
+      console.error('系统错误:', err);
+      setError("System error, please refresh the page and try again");
       setIsGenerating(false);
+    }
+  };
+
+  // 重试单个失败的模板
+  const retryTemplate = async (templateId: string) => {
+    if (!uploadedReferenceImage?.file || !uploadedReferenceImage?.url) {
+      setError("Reference image lost, please re-upload");
+      return;
+    }
+
+    const template = HEADSHOT_TEMPLATES.find(t => t.id === templateId);
+    if (!template) {
+      console.error(`模板 ${templateId} 未找到`);
+      return;
+    }
+
+    // 重置该模板的状态，并递增重试计数
+    setGenerationResults(prev => prev.map(item =>
+      item.templateId === templateId
+        ? { ...item, loading: true, progress: 0, error: undefined, retryCount: item.retryCount + 1 }
+        : item
+    ));
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id || `anon_${Date.now()}`;
+
+      const generatedImages = await generateHeadshots(
+        uploadedReferenceImage.file,
+        [template],
+        template.category,
+        userId,
+        `${Date.now()}_retry_${templateId}`,
+        uploadedReferenceImage.url,
+        (progress) => {
+          setGenerationResults(prev => prev.map(item =>
+            item.templateId === templateId
+              ? { ...item, progress }
+              : item
+          ));
+        }
+      );
+
+      const img = generatedImages[0];
+
+      // 成功
+      setGenerationResults(prev => prev.map(item =>
+        item.templateId === templateId
+          ? { ...item, loading: false, image: img, progress: 100, error: undefined }
+          : item
+      ));
+
+      // 增加配额
+      await incrementQuota(1);
+
+    } catch (error) {
+      // 失败
+      const errorMessage = error instanceof Error ? error.message : 'Generation failed, please try again';
+
+      setGenerationResults(prev => prev.map(item =>
+        item.templateId === templateId
+          ? { ...item, loading: false, progress: 0, error: errorMessage }
+          : item
+      ));
+
+      console.error(`重试模板 ${templateId} 失败:`, error);
     }
   };
 
@@ -288,7 +397,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
     <div className="flex flex-col h-full animate-in fade-in duration-300">
         <div className="mb-6 text-center">
             <h3 className="text-xl font-bold text-slate-900 mb-2">Step 1: Upload Your Photos</h3>
-            <p className="text-slate-500 max-w-md mx-auto">Upload 3-10 clear selfies. The AI needs variety to learn your face.</p>
+            <p className="text-slate-500 whitespace-nowrap">We recommend uploading 3–5 clear selfies to help the AI better capture your facial features.</p>
         </div>
 
         <div 
@@ -344,7 +453,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                                 </div>
                             );
                          })}
-                         {files.length < 10 && (
+                         {files.length < 5 && (
                             <div className="aspect-square rounded-xl border-2 border-dashed border-primary-300 bg-white flex flex-col items-center justify-center text-primary-600 hover:bg-primary-50 transition-colors">
                                 <Upload size={20} />
                                 <span className="text-xs font-bold mt-1">Add More</span>
@@ -367,10 +476,10 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
         <div className="mt-8 flex justify-end">
              <button
                 onClick={() => setStep(2)}
-                disabled={files.length < 3}
+                disabled={files.length < 1}
                 className={`flex items-center gap-2 px-8 py-3 rounded-xl font-bold text-white transition-all ${
-                    files.length < 3 
-                    ? 'bg-slate-300 cursor-not-allowed' 
+                    files.length < 1
+                    ? 'bg-slate-300 cursor-not-allowed'
                     : 'bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-500/20 hover:scale-105'
                 }`}
             >
@@ -523,13 +632,35 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                             key={result.templateId} 
                             className="relative aspect-square rounded-xl overflow-hidden shadow-md ring-1 ring-slate-200 w-[calc(50%-0.5rem)] md:w-[calc(25%-0.75rem)] flex-shrink-0"
                         >
-                            {result.loading || !result.image ? (
+                            {result.error ? (
+                                // ❌ 错误状态
+                                <div className="w-full h-full bg-red-50 flex flex-col items-center justify-center border-2 border-red-200 p-4">
+                                    <XCircle className="text-red-500 mb-2" size={32} />
+                                    <span className="text-xs font-semibold text-red-700 text-center mb-3">
+                                        {result.error}
+                                    </span>
+                                    {result.retryCount < 1 ? (
+                                        <button
+                                            onClick={() => retryTemplate(result.templateId)}
+                                            className="px-4 py-2 bg-red-500 text-white text-xs font-medium rounded-lg hover:bg-red-600 transition-colors flex items-center gap-1"
+                                        >
+                                            <RefreshCw size={14} />
+                                            Retry
+                                        </button>
+                                    ) : (
+                                        <span className="text-xs text-red-600 italic">Please try again later</span>
+                                    )}
+                                </div>
+                            ) : result.loading || !result.image ? (
+                                // ⏳ 加载状态
                                 <div className="w-full h-full bg-slate-50 flex flex-col items-center justify-center border-2 border-transparent">
                                     <Loader2 className="animate-spin text-primary-600 mb-2" size={32} />
                                     <span className="text-xs font-semibold text-slate-500 animate-pulse">Generating...</span>
+                                    <span className="text-xs text-slate-400 mt-2">Estimated time: 30-60s</span>
                                 </div>
                             ) : (
-                                <div 
+                                // ✅ 成功状态
+                                <div
                                     onClick={() => setSelectedImage(result.image)}
                                     className="w-full h-full group cursor-pointer animate-in fade-in duration-700"
                                 >

@@ -20,7 +20,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       // OAuth 会重定向，所以这里不需要关闭 modal
     } catch (err: any) {
       console.error('登录失败:', err);
-      setError(err.message || '登录失败，请重试');
+      setError(err.message || 'Login failed, please try again');
       setLoading(false);
     }
   };
@@ -46,10 +46,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold text-slate-900 mb-2">
-            欢迎使用专业头像 AI
+            Welcome to Professional Headshot AI
           </h2>
           <p className="text-slate-500 text-sm">
-            使用 Google 账号登录，开始生成你的专业头像
+            Sign in with Google to start generating your professional headshots
           </p>
         </div>
 
@@ -67,7 +67,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           {loading ? (
             <>
               <Loader2 className="animate-spin" size={20} />
-              正在登录...
+              Signing in...
             </>
           ) : (
             <>
@@ -77,16 +77,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
               </svg>
-              使用 Google 账号登录
+              Sign in with Google
             </>
           )}
         </button>
 
         <p className="mt-6 text-center text-xs text-slate-500">
-          登录即表示您同意我们的
-          <a href="/terms" className="text-primary-600 hover:underline mx-1">服务条款</a>
-          和
-          <a href="/privacy" className="text-primary-600 hover:underline ml-1">隐私政策</a>
+          By signing in, you agree to our
+          <a href="/terms" className="text-primary-600 hover:underline mx-1">Terms of Service</a>
+          and
+          <a href="/privacy" className="text-primary-600 hover:underline ml-1">Privacy Policy</a>
         </p>
       </div>
     </div>
