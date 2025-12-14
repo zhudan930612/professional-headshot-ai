@@ -6,17 +6,7 @@ const HISTORY_KEY = 'ai_headshot_history';
 const QUOTA_KEY = 'ai_headshot_quota';
 const USER_ID_KEY = 'ai_headshot_user_id';
 
-// 检查用户是否已登录
-const isUserLoggedIn = async (): Promise<boolean> => {
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    return !!session?.user?.id;
-  } catch {
-    return false;
-  }
-};
-
-// 获取登录用户 ID（仅当已登录时返回）
+// 获取登录用户 ID（用户必须已登录才能生成图片）
 const getUserId = async (): Promise<string | null> => {
   try {
     const { data: { session } } = await supabase.auth.getSession();
@@ -30,19 +20,6 @@ const getUserId = async (): Promise<string | null> => {
 };
 
 export const getHistory = async (): Promise<GenerationSession[]> => {
-  const isLoggedIn = await isUserLoggedIn();
-
-  // 未登录：只从 localStorage 读取
-  if (!isLoggedIn) {
-    try {
-      const data = localStorage.getItem(HISTORY_KEY);
-      return data ? JSON.parse(data) : [];
-    } catch {
-      return [];
-    }
-  }
-
-  // 已登录：从数据库读取
   try {
     const userId = await getUserId();
     if (!userId) {
@@ -88,22 +65,7 @@ export const getHistory = async (): Promise<GenerationSession[]> => {
 };
 
 export const saveSession = async (session: GenerationSession): Promise<void> => {
-  const isLoggedIn = await isUserLoggedIn();
-
-  // 未登录：只保存到 localStorage
-  if (!isLoggedIn) {
-    try {
-      const data = localStorage.getItem(HISTORY_KEY);
-      const history: GenerationSession[] = data ? JSON.parse(data) : [];
-      const updated = [session, ...history.filter(s => s.id !== session.id)];
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
-    } catch (e) {
-      console.error('Error saving session to localStorage:', e);
-    }
-    return;
-  }
-
-  // 已登录：保存到数据库
+  // 用户必须已登录才能生成图片，所以直接保存到数据库
   try {
     const userId = await getUserId();
     if (!userId) {
@@ -146,40 +108,12 @@ export const saveSession = async (session: GenerationSession): Promise<void> => 
     }
   } catch (e) {
     console.error('Error saving session to Supabase:', e);
-    // 降级到 localStorage
-    try {
-      const data = localStorage.getItem(HISTORY_KEY);
-      const history: GenerationSession[] = data ? JSON.parse(data) : [];
-      const updated = [session, ...history.filter(s => s.id !== session.id)];
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
-    } catch (localError) {
-      console.error('Error saving session to localStorage:', localError);
-    }
+    throw e;
   }
 };
 
 export const getQuota = async (): Promise<number> => {
-  const isLoggedIn = await isUserLoggedIn();
-
-  // 未登录：只从 localStorage 读取
-  if (!isLoggedIn) {
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      const data = localStorage.getItem(QUOTA_KEY);
-      if (data) {
-        const parsed: UserQuota = JSON.parse(data);
-        if (parsed.date === today) {
-          return parsed.count;
-        }
-      }
-      localStorage.setItem(QUOTA_KEY, JSON.stringify({ date: today, count: 0 }));
-      return 0;
-    } catch {
-      return 0;
-    }
-  }
-
-  // 已登录：从数据库读取
+  // 用户必须已登录才能生成图片，所以直接从数据库读取
   try {
     const userId = await getUserId();
     if (!userId) {
@@ -217,43 +151,12 @@ export const getQuota = async (): Promise<number> => {
     return 0;
   } catch (e) {
     console.error('Error fetching quota from Supabase:', e);
-    // 降级到 localStorage
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      const data = localStorage.getItem(QUOTA_KEY);
-      if (data) {
-        const parsed: UserQuota = JSON.parse(data);
-        if (parsed.date === today) {
-          return parsed.count;
-        }
-      }
-      localStorage.setItem(QUOTA_KEY, JSON.stringify({ date: today, count: 0 }));
-      return 0;
-    } catch {
-      return 0;
-    }
+    return 0;
   }
 };
 
 export const incrementQuota = async (amount: number): Promise<boolean> => {
-  const isLoggedIn = await isUserLoggedIn();
-
-  // 未登录：只更新 localStorage
-  if (!isLoggedIn) {
-    try {
-      const current = await getQuota();
-      if (current + amount > DAILY_LIMIT) {
-        return false;
-      }
-      const today = new Date().toISOString().split('T')[0];
-      localStorage.setItem(QUOTA_KEY, JSON.stringify({ date: today, count: current + amount }));
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  // 已登录：更新数据库
+  // 用户必须已登录才能生成图片，所以直接更新数据库
   try {
     const current = await getQuota();
     if (current + amount > DAILY_LIMIT) {
@@ -262,10 +165,7 @@ export const incrementQuota = async (amount: number): Promise<boolean> => {
 
     const userId = await getUserId();
     if (!userId) {
-      // 降级到 localStorage
-      const today = new Date().toISOString().split('T')[0];
-      localStorage.setItem(QUOTA_KEY, JSON.stringify({ date: today, count: current + amount }));
-      return true;
+      throw new Error('User ID not available');
     }
 
     const today = new Date().toISOString().split('T')[0];
@@ -283,24 +183,10 @@ export const incrementQuota = async (amount: number): Promise<boolean> => {
 
     if (error) throw error;
 
-    // 同时更新 localStorage
-    localStorage.setItem(QUOTA_KEY, JSON.stringify({ date: today, count: newCount }));
-
     return true;
   } catch (e) {
     console.error('Error incrementing quota in Supabase:', e);
-    // 降级到 localStorage
-    try {
-      const current = await getQuota();
-      if (current + amount > DAILY_LIMIT) {
-        return false;
-      }
-      const today = new Date().toISOString().split('T')[0];
-      localStorage.setItem(QUOTA_KEY, JSON.stringify({ date: today, count: current + amount }));
-      return true;
-    } catch {
-      return false;
-    }
+    return false;
   }
 };
 
