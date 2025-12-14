@@ -778,3 +778,746 @@ export const BLOG_POSTS = [
     content: `<h2>The Most Common AI Headshot Mistake</h2><p>You upload 10 selfies with different angles and wait excitedly for your AI-generated headshots.</p><p>Then they arrive... and you barely recognize yourself. Or worse, you look completely different—different gender presentation, different age, different ethnicity.</p><p><strong>The problem?</strong> 90% of people who get disappointing AI headshots made mistakes during upload.</p><p>The good news? This is completely preventable. Your upload strategy directly determines your output quality.</p><hr/><h2>Why 3-5 Photos Is the Sweet Spot</h2><h3><strong>Why Not Just One Photo?</strong></h3><p>AI learns from variation. One photo tells the AI:</p><ul><li>Your face from one angle only</li><li>One lighting condition</li><li>One expression</li><li>One setting</li></ul><p>Result: The AI might overfit to that single perspective, creating something that looks slightly off because it lacks multiple reference points.</p><h3><strong>Why Not 10+ Photos?</strong></h3><p>AI models trained on multiple photos need variety, but too many similar photos causes:</p><ul><li><strong>Inconsistency:</strong> If photos are all slightly different, AI gets confused about which features are consistent</li><li><strong>Averaging down:</strong> AI might blend all your photos into a "average" version rather than focusing on your best features</li><li><strong>Processing inefficiency:</strong> More data doesn't always mean better results; it means more variables to process</li></ul><h3><strong>Why 3-5 Is Optimal</strong></h3><p>This range gives the AI:</p><ul><li>Enough variation to understand your face from multiple angles �?/li><li>Enough consistency to identify your core features �?/li><li>Enough data to be confident without being confused �?/li><li>Optimal processing without redundancy �?/li></ul><h2>The Scientific Formula: Getting Maximum Variation</h2><p>The AI algorithm learns best when your photos vary across:</p><h3><strong>1. Angle (Most Important - 40% of quality)</strong></h3><p><strong>What you need:</strong></p><ul><li><strong>One straight-on face:</strong> Eyes looking directly at camera</li><li><strong>One 3/4 angle:</strong> Face turned ~30 degrees to one side</li><li><strong>One profile or near-profile:</strong> Shows your side profile</li></ul><p><strong>Why it matters:</strong> Different angles reveal different face proportions. Your cheekbones look different from profile than straight-on. Jaw structure changes with angle. AI needs multiple angles to create a 3D understanding of your face.</p><p><strong>Common mistake:</strong> All 5 photos at the same angle = AI can't generalize beyond that angle</p><h3><strong>2. Lighting (Second Most Important - 35% of quality)</strong></h3><p><strong>What you need:</strong></p><ul><li><strong>Natural window light:</strong> Soft, directional (not harsh)</li><li><strong>Different time of day:</strong> Morning light is different from afternoon light</li><li><strong>Varied intensity:</strong> One brightly lit, one softer lit</li></ul><p><strong>Why it matters:</strong> Lighting dramatically affects how your face is perceived. Professional lighting flatters certain features. Poor lighting can make you look tired, pale, or asymmetrical. AI learns from lighting variation to understand your face structure vs. lighting artifacts.</p><p><strong>Professional note:</strong> Avoid:</p><ul><li>�?Direct sunlight (creates harsh shadows and squinting)</li><li>�?Overhead-only lighting (unflattering, creates shadows under eyes)</li><li>�?Backlighting (you become a silhouette)</li><li>�?Window light at 45-degree angle (goldilocks of headshot lighting)</li><li>�?Overcast day outdoor light (soft, even, flattering)</li></ul><h3><strong>3. Expression (Important - 15% of quality)</strong></h3><p><strong>What you need:</strong></p><ul><li><strong>Genuine smile:</strong> Real smile (not forced; crinkles at eyes)</li><li><strong>Neutral expression:</strong> Relaxed, confident, but not smiling</li><li><strong>Subtle expression variation:</strong> Different eye engagement levels</li></ul><p><strong>Why it matters:</strong> Expressions change the entire feel of a headshot. AI learns which expressions look natural on you vs. forced. A forced smile in all 5 photos means your AI headshots will all look slightly forced.</p><p><strong>Professional note:</strong></p><ul><li>Think of something that makes you genuinely happy (avoid thinking "smile for camera")</li><li>Relax your shoulders (tension shows)</li><li>Engage your eyes (90% of expression happens in the eyes)</li></ul><h3><strong>4. Framing/Background (Less Critical - 10% of quality)</strong></h3><p><strong>What you need:</strong></p><ul><li><strong>Varied backgrounds:</strong> Different rooms, locations, outdoor settings</li><li><strong>Different framing:</strong> Slightly different head position in frame</li></ul><p><strong>Why it matters:</strong> Too consistent backgrounds might cause AI to associate your face with a specific background. Variation teaches AI to focus on your face, not environmental context.</p><p><strong>What works best:</strong></p><ul><li>Neutral walls (white, light gray, beige)</li><li>Natural outdoor backgrounds</li><li>Blurred/out-of-focus backgrounds</li><li>Avoid: Extremely busy backgrounds, logos, text</li></ul><h2>The Ideal Upload Checklist</h2><p>Create 3-5 photos with these characteristics:</p><h3><strong>Photo 1: Straight-On, Natural Light</strong></h3><ul><li>[ ] Face directly facing camera (eyes on lens)</li><li>[ ] Window light coming from 45-degree angle</li><li>[ ] Genuine smile (think happy thought)</li><li>[ ] Neutral background</li><li>[ ] Shoulders relaxed</li><li>[ ] Head position natural (not tilted back or down)</li></ul><h3><strong>Photo 2: 3/4 Angle, Different Lighting</strong></h3><ul><li>[ ] Face turned ~30 degrees to one side</li><li>[ ] Different light source (overcast, different time of day, different room)</li><li>[ ] Neutral or slight smile</li><li>[ ] Different background if possible</li><li>[ ] Shoulders relaxed</li></ul><h3><strong>Photo 3: Profile or More Turned, Different Expression</strong></h3><ul><li>[ ] Face turned more (toward profile)</li><li>[ ] Softer/dimmer lighting</li><li>[ ] Neutral expression (not smiling)</li><li>[ ] Different background</li><li>[ ] Shows your jawline clearly</li></ul><h3><strong>Photo 4: (Optional but recommended) Variation</strong></h3><ul><li>[ ] Whatever angle/lighting combo you haven't captured</li><li>[ ] If possible, outdoor natural light</li><li>[ ] Different expression than your main smile</li><li>[ ] Shows another side of your face personality</li></ul><h3><strong>Photo 5: (Optional but recommended) Backup</strong></h3><ul><li>[ ] Your favorite natural-looking selfie</li><li>[ ] Whatever feels most like "you"</li><li>[ ] Good lighting and clear face visibility</li><li>[ ] Genuine expression</li></ul><h2>Common Failure Cases and How to Avoid Them</h2><h3><strong>Failure Case 1: "I Don't Look Like Me"</strong></h3><p><strong>Cause:</strong> AI was trained on heavily filtered or extreme angle selfies</p><p><strong>Solution:</strong></p><ul><li>Use minimal or no filters</li><li>Avoid extreme selfie angles (camera shouldn't be above or below at extreme angles)</li><li>Include neutral, straight-on photos</li><li>Use natural lighting, not heavy makeup</li></ul><p><strong>Red flag signs you're doing this wrong:</strong></p><ul><li>You look 10+ years younger in photos</li><li>Your face shape seems different</li><li>You have heavy makeup/contouring</li><li>Photos are all from extreme angles/filtered</li></ul><h3><strong>Failure Case 2: "The AI Changed My Gender Expression"</strong></h3><p><strong>Cause:</strong> Upload photos have conflicting signals about gender presentation (or AI overcompensated)</p><p><strong>Solution:</strong></p><ul><li>Be consistent in gender expression across photos</li><li>Use similar styling, hair, clothing tone</li><li>If you want androgynous results, be explicitly androgynous across all photos</li><li>Avoid extreme makeup/no-makeup swings between photos</li><li>Include photos showing your natural gender expression clearly</li></ul><p><strong>Example of confusing AI:</strong></p><ul><li>Photo 1: Heavy makeup, very feminine presentation</li><li>Photo 2: No makeup, more androgynous clothing</li><li>Photo 3: Very masculine styling</li><li>Result: AI gets confused and might overcompensate</li></ul><h3><strong>Failure Case 3: "I Look Like a Different Ethnicity"</strong></h3><p><strong>Cause:</strong> Inconsistent lighting or angle interpretation by AI, or training data bias</p><p><strong>Solution:</strong></p><ul><li>Use consistent, flattering lighting across all photos</li><li>Include true skin tone representation (avoid extreme over/underexposure)</li><li>Vary angles naturally (avoid extreme angles that distort facial structure)</li><li>Use higher quality phone cameras (better color accuracy)</li><li>Include photos showing your natural skin tone clearly</li></ul><p><strong>Example of confusing AI:</strong></p><ul><li>Photo 1: Overexposed (very bright) �?looks lighter</li><li>Photo 2: Underexposed (very dark) �?looks darker/different</li><li>Photo 3: Extreme side angle �?face proportions distorted</li><li>Result: AI struggles to identify consistent features</li></ul><h3><strong>Failure Case 4: "I Look Too Old/Too Young"</strong></h3><p><strong>Cause:</strong> Wide age-appearance variation across photos, or poor lighting making you look older/younger</p><p><strong>Solution:</strong></p><ul><li>Take all photos in similar lighting conditions</li><li>Avoid harsh lighting (makes you look older) and overly soft lighting (can make you look younger)</li><li>Use consistent makeup/styling approach</li><li>Avoid very different hairstyles between photos</li><li>Include at least one photo in natural daylight (most accurate age representation)</li></ul><h2>Technical Photo Requirements</h2><h3><strong>Phone Camera Settings</strong></h3><ul><li><strong>Resolution:</strong> 1080p+ (most modern phones do this automatically)</li><li><strong>Lighting:</strong> Natural light > artificial light (better color accuracy)</li><li><strong>Focus:</strong> Face clearly in focus (use portrait mode if available)</li><li><strong>Stability:</strong> Hold phone steady or use tripod (avoid blurriness)</li><li><strong>Clean lens:</strong> Wipe phone camera lens before shooting</li></ul><h3><strong>File Format</strong></h3><ul><li>JPG, PNG, or HEIC (supported by most tools)</li><li>File size doesn't matter much (AI tools compress automatically)</li></ul><h3><strong>Editing Your Photos</strong></h3><ul><li><strong>Do:</strong> Crop to show head-and-shoulders</li><li><strong>Do:</strong> Adjust brightness/contrast if very dark (but stay natural)</li><li><strong>Don't:</strong> Use heavy filters</li><li><strong>Don't:</strong> Smooth or blur your skin</li><li><strong>Don't:</strong> Change your hair color (unless you want AI to assume that's your natural hair)</li></ul><h2>Pro Tips for Better AI Headshots</h2><h3><strong>Tip 1: The "Golden Hour" Strategy</strong></h3><p>If possible, take one or more photos during golden hour (sunrise/sunset). The light is naturally flattering, warm, and professional-looking. This single photo can dramatically improve your overall results.</p><h3><strong>Tip 2: The "Multiple Takes" Rule</strong></h3><p>Take 15-20 photos in each setup, then choose the best 3-5. You'll be surprised how much facial expression varies between shots. Pick the ones where you look most confident and genuine.</p><h3><strong>Tip 3: The "No Makeup vs. Makeup" Balance</strong></h3><p>If you normally wear makeup:</p><ul><li>Include at least one photo with your normal makeup</li><li>Include one lighter makeup or no-makeup photo</li><li>This helps AI understand your face baseline vs. makeup effects</li></ul><p>If you don't wear makeup:</p><ul><li>Keep it that way across all photos (consistency)</li><li>Don't suddenly add heavy makeup in one photo</li></ul><h3><strong>Tip 4: The "Wardrobe Consistency" Rule</strong></h3><p>Wear similar colors/styles across photos. If your upload includes:</p><ul><li>Bright neon t-shirt</li><li>Formal suit</li><li>Beach casual tank top</li></ul><p>...AI might focus on clothing patterns rather than your face. Stick to neutral, professional colors.</p><h3><strong>Tip 5: The "Background Contrast" Strategy</strong></h3><p>Lighter skin tones + lighter backgrounds = harder for AI to see details (low contrast)<br/>Darker skin tones + darker backgrounds = same problem</p><p><strong>Solution:</strong> Make sure there's visible contrast between your face and background. This is why neutral backgrounds (white, gray) or natural outdoor backgrounds work well.</p><h2>The Pre-Upload Checklist</h2><p>Before uploading to an AI headshot generator:</p><ul><li>[ ] 3-5 photos selected (not 10+, not 1)</li><li>[ ] Faces at different angles (straight-on, 3/4, profile)</li><li>[ ] Different lighting conditions</li><li>[ ] Varied expressions (smiling vs. neutral)</li><li>[ ] Different backgrounds</li><li>[ ] Minimal or no filters</li><li>[ ] Clear face visibility (no sunglasses, no excessive hair in face)</li><li>[ ] Genuine expressions (no forced smiles)</li><li>[ ] Consistent gender presentation</li><li>[ ] Good contrast between face and background</li><li>[ ] High resolution (1080p+)</li><li>[ ] Relaxed, confident posture (shoulders back, neck natural)</li></ul><h2>What to Expect After Upload</h2><p><strong>Good signs:</strong></p><ul><li>Generated headshots look like you</li><li>You recognize yourself immediately</li><li>Face seems naturally enhanced (better lighting, perfect complexion)</li><li>Multiple variations show consistent facial structure</li><li>Hair, eye color, skin tone match your actual appearance</li></ul><p><strong>Red flag signs:</strong></p><ul><li>You don't recognize yourself</li><li>Face shape seems dramatically different</li><li>Ethnic appearance seems changed</li><li>Hair color/style is significantly different</li><li>Expressions seem unnatural or forced</li><li>Age representation is significantly off</li></ul><p>If you see red flags: <strong>Try again with different upload photos.</strong> The problem is usually the input photos, not the AI tool.</p><h2>Final Thought</h2><p>The quality of your AI headshot is 80% determined by your upload photos and 20% determined by the AI tool.</p><p>Spend 20 minutes thoughtfully selecting 3-5 good photos with varied angles, lighting, and expressions. That 20-minute investment will pay dividends in better results.</p><p>Your AI headshot can be absolutely stunning—but only if you give it the right source material to work with.</p>`
   }
 ];
+    name: 'Medical Professional 05',
+
+    category: HeadshotStyle.Medical,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_05.jpg'
+
+  },
+
+  {
+
+    templateId: 'medical_06',
+
+    label: 'Medical Professional 06',
+
+    name: 'Medical Professional 06',
+
+    category: HeadshotStyle.Medical,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_06.jpg'
+
+  },
+
+  {
+
+    templateId: 'medical_07',
+
+    label: 'Medical Professional 07',
+
+    name: 'Medical Professional 07',
+
+    category: HeadshotStyle.Medical,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_07.jpg'
+
+  },
+
+  {
+
+    templateId: 'medical_08',
+
+    label: 'Medical Professional 08',
+
+    name: 'Medical Professional 08',
+
+    category: HeadshotStyle.Medical,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_08.jpg'
+
+  },
+
+  {
+
+    templateId: 'medical_09',
+
+    label: 'Medical Professional 09',
+
+    name: 'Medical Professional 09',
+
+    category: HeadshotStyle.Medical,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_09.jpg'
+
+  },
+
+  {
+
+    templateId: 'medical_10',
+
+    label: 'Medical Professional 10',
+
+    name: 'Medical Professional 10',
+
+    category: HeadshotStyle.Medical,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_10.jpg'
+
+  },
+
+  {
+
+    templateId: 'medical_11',
+
+    label: 'Medical Professional 11',
+
+    name: 'Medical Professional 11',
+
+    category: HeadshotStyle.Medical,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_11.jpg'
+
+  },
+
+  {
+
+    templateId: 'medical_12',
+
+    label: 'Medical Professional 12',
+
+    name: 'Medical Professional 12',
+
+    category: HeadshotStyle.Medical,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_12.jpg'
+
+  },
+
+  {
+
+    templateId: 'medical_13',
+
+    label: 'Medical Professional 13',
+
+    name: 'Medical Professional 13',
+
+    category: HeadshotStyle.Medical,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_13.jpg'
+
+  },
+
+  {
+
+    templateId: 'medical_14',
+
+    label: 'Medical Professional 14',
+
+    name: 'Medical Professional 14',
+
+    category: HeadshotStyle.Medical,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_14.jpg'
+
+  },
+
+  {
+
+    templateId: 'medical_15',
+
+    label: 'Medical Professional 15',
+
+    name: 'Medical Professional 15',
+
+    category: HeadshotStyle.Medical,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_15.jpg'
+
+  },
+
+  {
+
+    templateId: 'medical_16',
+
+    label: 'Medical Professional 16',
+
+    name: 'Medical Professional 16',
+
+    category: HeadshotStyle.Medical,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_16.jpg'
+
+  },
+
+  {
+
+    templateId: 'realestate_01',
+
+    label: 'RealEstate Professional 01',
+
+    name: 'RealEstate Professional 01',
+
+    category: HeadshotStyle.RealEstate,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_01.jpg'
+
+  },
+
+  {
+
+    templateId: 'realestate_02',
+
+    label: 'RealEstate Professional 02',
+
+    name: 'RealEstate Professional 02',
+
+    category: HeadshotStyle.RealEstate,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_02.jpg'
+
+  },
+
+  {
+
+    templateId: 'realestate_03',
+
+    label: 'RealEstate Professional 03',
+
+    name: 'RealEstate Professional 03',
+
+    category: HeadshotStyle.RealEstate,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_03.jpg'
+
+  },
+
+  {
+
+    templateId: 'realestate_04',
+
+    label: 'RealEstate Professional 04',
+
+    name: 'RealEstate Professional 04',
+
+    category: HeadshotStyle.RealEstate,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_04.jpg'
+
+  },
+
+  {
+
+    templateId: 'realestate_05',
+
+    label: 'RealEstate Professional 05',
+
+    name: 'RealEstate Professional 05',
+
+    category: HeadshotStyle.RealEstate,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_05.jpg'
+
+  },
+
+  {
+
+    templateId: 'realestate_06',
+
+    label: 'RealEstate Professional 06',
+
+    name: 'RealEstate Professional 06',
+
+    category: HeadshotStyle.RealEstate,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_06.jpg'
+
+  },
+
+  {
+
+    templateId: 'realestate_07',
+
+    label: 'RealEstate Professional 07',
+
+    name: 'RealEstate Professional 07',
+
+    category: HeadshotStyle.RealEstate,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_07.jpg'
+
+  },
+
+  {
+
+    templateId: 'realestate_08',
+
+    label: 'RealEstate Professional 08',
+
+    name: 'RealEstate Professional 08',
+
+    category: HeadshotStyle.RealEstate,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_08.jpg'
+
+  },
+
+  {
+
+    templateId: 'realestate_09',
+
+    label: 'RealEstate Professional 09',
+
+    name: 'RealEstate Professional 09',
+
+    category: HeadshotStyle.RealEstate,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_09.jpg'
+
+  },
+
+  {
+
+    templateId: 'realestate_10',
+
+    label: 'RealEstate Professional 10',
+
+    name: 'RealEstate Professional 10',
+
+    category: HeadshotStyle.RealEstate,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_10.jpg'
+
+  },
+
+  {
+
+    templateId: 'realestate_11',
+
+    label: 'RealEstate Professional 11',
+
+    name: 'RealEstate Professional 11',
+
+    category: HeadshotStyle.RealEstate,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_11.jpg'
+
+  },
+
+  {
+
+    templateId: 'realestate_12',
+
+    label: 'RealEstate Professional 12',
+
+    name: 'RealEstate Professional 12',
+
+    category: HeadshotStyle.RealEstate,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_12.jpg'
+
+  },
+
+  {
+
+    templateId: 'realestate_13',
+
+    label: 'RealEstate Professional 13',
+
+    name: 'RealEstate Professional 13',
+
+    category: HeadshotStyle.RealEstate,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_13.jpg'
+
+  },
+
+  {
+
+    templateId: 'realestate_14',
+
+    label: 'RealEstate Professional 14',
+
+    name: 'RealEstate Professional 14',
+
+    category: HeadshotStyle.RealEstate,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_14.jpg'
+
+  },
+
+  {
+
+    templateId: 'realestate_15',
+
+    label: 'RealEstate Professional 15',
+
+    name: 'RealEstate Professional 15',
+
+    category: HeadshotStyle.RealEstate,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_15.jpg'
+
+  },
+
+  {
+
+    templateId: 'realestate_16',
+
+    label: 'RealEstate Professional 16',
+
+    name: 'RealEstate Professional 16',
+
+    category: HeadshotStyle.RealEstate,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_16.jpg'
+
+  },
+
+  {
+
+    templateId: 'solidcolor_01',
+
+    label: 'SolidColor Professional 01',
+
+    name: 'SolidColor Professional 01',
+
+    category: HeadshotStyle.SolidColor,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_01.jpg'
+
+  },
+
+  {
+
+    templateId: 'solidcolor_02',
+
+    label: 'SolidColor Professional 02',
+
+    name: 'SolidColor Professional 02',
+
+    category: HeadshotStyle.SolidColor,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_02.jpg'
+
+  },
+
+  {
+
+    templateId: 'solidcolor_03',
+
+    label: 'SolidColor Professional 03',
+
+    name: 'SolidColor Professional 03',
+
+    category: HeadshotStyle.SolidColor,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_03.jpg'
+
+  },
+
+  {
+
+    templateId: 'solidcolor_04',
+
+    label: 'SolidColor Professional 04',
+
+    name: 'SolidColor Professional 04',
+
+    category: HeadshotStyle.SolidColor,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_04.jpg'
+
+  },
+
+  {
+
+    templateId: 'solidcolor_05',
+
+    label: 'SolidColor Professional 05',
+
+    name: 'SolidColor Professional 05',
+
+    category: HeadshotStyle.SolidColor,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_05.jpg'
+
+  },
+
+  {
+
+    templateId: 'solidcolor_06',
+
+    label: 'SolidColor Professional 06',
+
+    name: 'SolidColor Professional 06',
+
+    category: HeadshotStyle.SolidColor,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_06.jpg'
+
+  },
+
+  {
+
+    templateId: 'solidcolor_07',
+
+    label: 'SolidColor Professional 07',
+
+    name: 'SolidColor Professional 07',
+
+    category: HeadshotStyle.SolidColor,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_07.jpg'
+
+  },
+
+  {
+
+    templateId: 'solidcolor_08',
+
+    label: 'SolidColor Professional 08',
+
+    name: 'SolidColor Professional 08',
+
+    category: HeadshotStyle.SolidColor,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_08.jpg'
+
+  },
+
+  {
+
+    templateId: 'solidcolor_09',
+
+    label: 'SolidColor Professional 09',
+
+    name: 'SolidColor Professional 09',
+
+    category: HeadshotStyle.SolidColor,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_09.jpg'
+
+  },
+
+  {
+
+    templateId: 'solidcolor_10',
+
+    label: 'SolidColor Professional 10',
+
+    name: 'SolidColor Professional 10',
+
+    category: HeadshotStyle.SolidColor,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_10.jpg'
+
+  },
+
+  {
+
+    templateId: 'solidcolor_11',
+
+    label: 'SolidColor Professional 11',
+
+    name: 'SolidColor Professional 11',
+
+    category: HeadshotStyle.SolidColor,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_11.jpg'
+
+  },
+
+  {
+
+    templateId: 'solidcolor_12',
+
+    label: 'SolidColor Professional 12',
+
+    name: 'SolidColor Professional 12',
+
+    category: HeadshotStyle.SolidColor,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_12.jpg'
+
+  },
+
+  {
+
+    templateId: 'solidcolor_13',
+
+    label: 'SolidColor Professional 13',
+
+    name: 'SolidColor Professional 13',
+
+    category: HeadshotStyle.SolidColor,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_13.jpg'
+
+  },
+
+  {
+
+    templateId: 'solidcolor_14',
+
+    label: 'SolidColor Professional 14',
+
+    name: 'SolidColor Professional 14',
+
+    category: HeadshotStyle.SolidColor,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_14.jpg'
+
+  },
+
+  {
+
+    templateId: 'solidcolor_15',
+
+    label: 'SolidColor Professional 15',
+
+    name: 'SolidColor Professional 15',
+
+    category: HeadshotStyle.SolidColor,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_15.jpg'
+
+  },
+
+  {
+
+    templateId: 'solidcolor_16',
+
+    label: 'SolidColor Professional 16',
+
+    name: 'SolidColor Professional 16',
+
+    category: HeadshotStyle.SolidColor,
+
+    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_16.jpg'
+
+  }
+
+];
+
+
+
+// 生成完整的模板列表（兼容现有代码）
+
+export const HEADSHOT_TEMPLATES: HeadshotTemplate[] = BASE_TEMPLATES.map((template) => ({
+
+  ...template,
+
+  id: template.templateId,
+
+}));
+
+
+
+export const STYLE_OPTIONS = [
+
+  { value: HeadshotStyle.Corporate, label: 'Corporate', desc: 'Suit and tie, studio background' },
+
+  { value: HeadshotStyle.General, label: 'General', desc: 'Blazer, open collar, office blur' },
+
+  { value: HeadshotStyle.Creative, label: 'Creative', desc: 'Artistic lighting, modern background' },
+
+  { value: HeadshotStyle.Medical, label: 'Medical', desc: 'White coat, clinical setting' },
+
+];
+
+
+
+export const USE_CASE_OPTIONS = [
+
+  { value: UseCase.LinkedIn, label: 'LinkedIn', icon: 'briefcase' },
+
+  { value: UseCase.Resume, label: 'Resume / CV', icon: 'file-text' },
+
+  { value: UseCase.Portfolio, label: 'Personal Website', icon: 'globe' },
+
+  { value: UseCase.SocialMedia, label: 'Social Media', icon: 'user' },
+
+];
+
+
+
+export const FAQ_ITEMS = [
+
+  {
+
+    question: "What is a professional headshot?",
+
+    answer: "A professional headshot is a high-quality photo focused on your face, typically used for business profiles like LinkedIn, resumes, and company websites to convey professionalism and approachability."
+
+  },
+
+  {
+
+    question: "Do I really just need selfies to start?",
+
+    answer: "Yes! Our AI analyzes your facial features from 1-5 varied selfies to construct a photorealistic professional image. No studio required."
+
+  },
+
+  {
+
+    question: "How many headshots can I generate per day?",
+
+    answer: `Currently, our free plan allows you to generate up to ${DAILY_LIMIT} headshots every 24 hours. The quota resets at midnight UTC.`
+
+  },
+
+  {
+
+    question: "Will the headshots still look like me?",
+
+    answer: "We strive for high fidelity. The more angles and lighting conditions you provide in your input selfies, the more accurate the result will be."
+
+  },
+
+  {
+
+    question: "Is my data private?",
+
+    answer: "Absolutely. Your uploaded photos are processed solely for the purpose of generating your headshots and are deleted from our processing servers shortly after generation."
+
+  }
+
+];
+
+
+
+export const BLOG_POSTS = [
+
+  {
+
+    id: '1',
+
+    title: 'What to Wear for a Professional Headshot',
+
+    excerpt: 'Discover the best color palettes and clothing styles to make your LinkedIn profile stand out.',
+
+    date: 'Oct 12, 2023',
+
+    readTime: '5 min read'
+  },
+
+  {
+
+    id: '2',
+
+    title: 'Top 5 Mistakes in Resume Photos',
+
+    excerpt: 'Are you making these common errors? Learn how to fix your CV image instantly.',
+
+    date: 'Nov 04, 2023',
+
+    readTime: '4 min read'
+  },
+
+  {
+
+    id: '3',
+
+    title: 'Lighting 101: Studio vs. Natural',
+
+    excerpt: 'Understanding how lighting affects the mood and professionalism of your portrait.',
+
+    date: 'Dec 01, 2023',
+
+    readTime: '6 min read'
+  }
+
+];
+
