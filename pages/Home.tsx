@@ -88,7 +88,7 @@ export const Home = () => {
               </div>
               
               <div className="mt-8 flex items-center justify-center gap-6 text-sm text-slate-500">
-                <span className="flex items-center gap-1"><CheckCircle size={16} className="text-green-500" /> 5 Free Uses Daily</span>
+                <span className="flex items-center gap-1"><CheckCircle size={16} className="text-green-500" /> Sign In for 5 Free Uses</span>
                 <span className="flex items-center gap-1"><CheckCircle size={16} className="text-green-500" /> No Credit Card Required</span>
               </div>
             </div>

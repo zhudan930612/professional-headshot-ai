@@ -433,14 +433,16 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
             setDisplayImages(new Map(Object.entries(watermarkedUrls)));
           }
 
-          // 保存会话（不包含参考图信息，参考图不保存到数据库）
-          await saveSession({
-            id: sessionId,
-            date: Date.now(),
-            style: primaryStyle,
-            useCase: UseCase.LinkedIn,
-            images: completedImages,
-          });
+          // 保存会话（只有登录用户才保存到数据库）
+          if (user) {
+            await saveSession({
+              id: sessionId,
+              date: Date.now(),
+              style: primaryStyle,
+              useCase: UseCase.LinkedIn,
+              images: completedImages,
+            });
+          }
 
           if (onSuccess) onSuccess(completedImages);
         } catch (err) {
@@ -925,14 +927,9 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                                         // Use watermarked URL if available for Free users
                                         src={displayImages.get(result.image.id) || result.image.url}
                                         alt="Result"
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                         loading="eager"
                                     />
-                                    <div className="absolute right-0 bottom-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3 backdrop-blur-sm rounded-xl">
-                                        <div className="bg-white/20 backdrop-blur-md p-3 rounded-full text-white hover:bg-white/30 transition-colors">
-                                            <Maximize2 size={24} />
-                                        </div>
-                                    </div>
                                 </div>
                             )}
                         </div>

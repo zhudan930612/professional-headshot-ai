@@ -42,21 +42,24 @@ const Navbar = () => {
   }, [location, user]);
 
   const handleSignOut = async () => {
+    setIsUserMenuOpen(false);
+    // Clear all user-related data from localStorage
+    localStorage.removeItem('ai_headshot_history');
+    localStorage.removeItem('ai_headshot_quota');
+    localStorage.removeItem('ai_headshot_user_id');
+    localStorage.removeItem('auth_return_path');
+    // Clear sessionStorage as well
+    sessionStorage.clear();
+    
     try {
-      setIsUserMenuOpen(false);
-      // Clear session storage and local storage related to user data
-      localStorage.removeItem('ai_headshot_history');
-      localStorage.removeItem('ai_headshot_quota');
-      localStorage.removeItem('ai_headshot_user_id');
       // Sign out from Supabase
       await signOut();
-      // Force full page reload to clear all state
-      window.location.replace(window.location.origin + '/#/');
     } catch (error) {
       console.error('登出失败:', error);
-      // Even if signOut fails, reload the page
-      window.location.replace(window.location.origin + '/#/');
     }
+    
+    // Force complete page reload - this clears all React state
+    window.location.href = window.location.origin;
   };
 
   const navLinks = [

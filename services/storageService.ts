@@ -23,43 +23,70 @@ export const getHistory = async (): Promise<GenerationSession[]> => {
   try {
     const userId = await getUserId();
     if (!userId) {
+      console.log('[getHistory] 用户未登录，返回空历史');
       return [];
     }
+    console.log('[getHistory] 正在获取用户历史记录, userId:', userId);
 
-    const { data: sessions, error } = await supabase
+    // 1. 获取用户的所有会话
+    const { data: sessions, error: sessionsError } = await supabase
       .from('generation_sessions')
-      .select(`
-        session_id,
-        date,
-        style,
-        use_case,
-        generated_images (
-          image_id,
-          url,
-          created_at_timestamp
-        )
-      `)
+      .select('session_id, date, style, use_case')
       .eq('user_id', userId)
       .order('date', { ascending: false });
 
-    if (error) throw error;
+    if (sessionsError) {
+      console.error('[getHistory] 获取会话失败:', sessionsError);
+      throw sessionsError;
+    }
 
-    // 转换为应用格式
-    const history: GenerationSession[] = sessions?.map((session: any) => ({
+    if (!sessions || sessions.length === 0) {
+      console.log('[getHistory] 没有找到任何会话');
+      return [];
+    }
+    console.log('[getHistory] 找到会话数量:', sessions.length);
+
+    // 2. 获取这些会话的所有图片
+    const sessionIds = sessions.map(s => s.session_id);
+    const { data: images, error: imagesError } = await supabase
+      .from('generated_images')
+      .select('session_id, image_id, url, created_at_timestamp')
+      .in('session_id', sessionIds);
+
+    if (imagesError) {
+      console.error('[getHistory] 获取图片失败:', imagesError);
+      throw imagesError;
+    }
+    console.log('[getHistory] 找到图片数量:', images?.length || 0);
+
+    // 3. 按 session_id 分组图片
+    const imagesBySession = new Map<string, any[]>();
+    images?.forEach(img => {
+      const list = imagesBySession.get(img.session_id) || [];
+      list.push(img);
+      imagesBySession.set(img.session_id, list);
+    });
+
+    // 4. 转换为应用格式
+    const history: GenerationSession[] = sessions.map((session: any) => ({
       id: session.session_id,
       date: session.date,
       style: session.style,
       useCase: session.use_case,
-      images: session.generated_images?.map((img: any) => ({
+      images: (imagesBySession.get(session.session_id) || []).map((img: any) => ({
         id: img.image_id,
         url: img.url,
         createdAt: img.created_at_timestamp,
-      })) || [],
-    })) || [];
+      })),
+    }));
 
-    return history;
+    // 过滤掉没有图片的会话
+    const filteredHistory = history.filter(s => s.images.length > 0);
+    console.log('[getHistory] 返回会话数量（有图片的）:', filteredHistory.length);
+
+    return filteredHistory;
   } catch (e) {
-    console.error('Error fetching history from Supabase:', e);
+    console.error('[getHistory] Error fetching history from Supabase:', e);
     return [];
   }
 };
@@ -69,8 +96,10 @@ export const saveSession = async (session: GenerationSession): Promise<void> => 
   try {
     const userId = await getUserId();
     if (!userId) {
+      console.error('[saveSession] 用户未登录，无法保存');
       throw new Error('User ID not available');
     }
+    console.log('[saveSession] 开始保存会话, userId:', userId, 'sessionId:', session.id);
 
     // 准备会话数据（不包含参考图信息，参考图不保存到数据库）
     const sessionData: any = {
@@ -82,14 +111,20 @@ export const saveSession = async (session: GenerationSession): Promise<void> => 
     };
 
     // 保存会话到 Supabase
+    console.log('[saveSession] 保存会话数据:', sessionData);
     const { error: sessionError } = await supabase
       .from('generation_sessions')
       .insert(sessionData);
 
-    if (sessionError) throw sessionError;
+    if (sessionError) {
+      console.error('[saveSession] 保存会话失败:', sessionError);
+      throw sessionError;
+    }
+    console.log('[saveSession] 会话保存成功');
 
     // 保存图片到 Supabase（包含存储路径等元数据）
     if (session.images && session.images.length > 0) {
+      console.log('[saveSession] 保存图片数量:', session.images.length);
       const imageRecords = session.images.map(img => ({
         session_id: session.id,
         image_id: img.id,
@@ -99,15 +134,22 @@ export const saveSession = async (session: GenerationSession): Promise<void> => 
         file_size: img.fileSize,
         mime_type: img.mimeType,
       }));
+      console.log('[saveSession] 图片记录:', imageRecords);
 
       const { error: imagesError } = await supabase
         .from('generated_images')
         .insert(imageRecords);
 
-      if (imagesError) throw imagesError;
+      if (imagesError) {
+        console.error('[saveSession] 保存图片失败:', imagesError);
+        throw imagesError;
+      }
+      console.log('[saveSession] ✅ 图片保存成功');
+    } else {
+      console.log('[saveSession] 没有图片需要保存');
     }
   } catch (e) {
-    console.error('Error saving session to Supabase:', e);
+    console.error('[saveSession] Error saving session to Supabase:', e);
     throw e;
   }
 };
