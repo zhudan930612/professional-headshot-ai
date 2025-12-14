@@ -140,7 +140,7 @@ export const Pricing: React.FC = () => {
                       )}
                     </div>
                     <p className={`text-sm font-medium ${isPopular ? 'text-primary-700' : 'text-slate-600'}`}>
-                      {plan.id === 'free' ? 'Per day limit' : 'Never expires'}
+                      {plan.id === 'free' ? 'Lifetime quota' : 'Never expires'}
                     </p>
                   </div>
 

@@ -1,5 +1,4 @@
 import { GenerationSession, UserQuota, GeneratedImage, QuotaInfo, UserSubscription } from '../types';
-import { DAILY_LIMIT } from '../constants';
 import { supabase } from '../lib/supabase';
 
 const HISTORY_KEY = 'ai_headshot_history';
@@ -197,39 +196,13 @@ export const getQuota = async (): Promise<number> => {
   }
 };
 
+/**
+ * @deprecated 已废弃：现在所有用户都使用永久配额系统，不再使用每日配额
+ * 请使用 decrementQuota() 函数代替
+ */
 export const incrementQuota = async (amount: number): Promise<boolean> => {
-  // 用户必须已登录才能生成图片，所以直接更新数据库
-  try {
-    const current = await getQuota();
-    if (current + amount > DAILY_LIMIT) {
-      return false;
-    }
-
-    const userId = await getUserId();
-    if (!userId) {
-      throw new Error('User ID not available');
-    }
-
-    const today = new Date().toISOString().split('T')[0];
-    const newCount = current + amount;
-
-    const { error } = await supabase
-      .from('user_quotas')
-      .upsert({
-        user_id: userId,
-        date: today,
-        count: newCount,
-      }, {
-        onConflict: 'user_id,date'
-      });
-
-    if (error) throw error;
-
-    return true;
-  } catch (e) {
-    console.error('Error incrementing quota in Supabase:', e);
-    return false;
-  }
+  console.warn('incrementQuota() is deprecated. All users now use permanent quota system.');
+  return true;
 };
 
 export const getRemainingQuota = async (): Promise<number> => {
@@ -237,15 +210,15 @@ export const getRemainingQuota = async (): Promise<number> => {
     const quotaInfo = await getUserQuotaInfo();
     return quotaInfo.remaining_quota;
   } catch (error) {
-    console.error('获取剩余配额失败，回退到每日配额:', error);
-    const current = await getQuota();
-    return Math.max(0, DAILY_LIMIT - current);
+    console.error('获取剩余配额失败:', error);
+    // 默认返回 0，不再回退到每日配额系统
+    return 0;
   }
 };
 
 /**
  * 获取用户完整配额信息（支持订阅系统）
- * Free 用户返回每日配额信息，付费用户返回永久配额信息
+ * 所有用户（包括免费用户）都返回永久配额信息
  */
 export const getUserQuotaInfo = async (): Promise<QuotaInfo> => {
   const userId = await getUserId();

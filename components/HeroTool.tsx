@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Upload, Sparkles, Image as ImageIcon, CheckCircle, AlertCircle, Loader2, Check, Download, RefreshCw, ArrowRight, ArrowLeft, X as XIconLucide, Maximize2, XCircle } from 'lucide-react';
 import { HEADSHOT_TEMPLATES } from '../constants';
 import { HeadshotStyle, UseCase, GeneratedImage, ReferenceImage, QuotaInfo } from '../types';
-import { getRemainingQuota, incrementQuota, saveSession, mockGenerateImages, getUserQuotaInfo, decrementQuota } from '../services/storageService';
+import { getRemainingQuota, saveSession, mockGenerateImages, getUserQuotaInfo, decrementQuota } from '../services/storageService';
 import { selectReferenceImage, validateImageFiles } from '../services/imageService';
 import { generateHeadshots } from '../services/generationService';
 import { addWatermark, downloadImageWithWatermark } from '../services/watermarkService';
@@ -431,12 +431,6 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
               }
             } catch (quotaErr) {
               console.error('[HeroTool] 配额扣减失败:', quotaErr);
-            }
-          } else {
-            // For non-logged-in users: use legacy increment system
-            const success = await incrementQuota(completedImages.length);
-            if (!success) {
-              console.warn('[HeroTool] 配额增加失败');
             }
           }
 

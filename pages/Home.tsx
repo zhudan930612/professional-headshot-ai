@@ -311,7 +311,7 @@ export const Home = () => {
                     <div className="space-y-6">
                         {[
                             { icon: Clock, title: "Save Time", desc: "No booking photographers or traveling to studios. Done in minutes." },
-                            { icon: DollarSign, title: "Save Money", desc: "Professional shoots cost $200+. Get 5 free generations daily." },
+                            { icon: DollarSign, title: "Save Money", desc: "Professional shoots cost $200+. Get 5 free lifetime generations." },
                             { icon: Shield, title: "Private & Secure", desc: "We process your photos securely and delete them afterwards." }
                         ].map((item, i) => (
                             <div key={i} className="flex gap-4">

@@ -114,24 +114,41 @@ export default async function handler(
       if (!plan) {
         console.error('套餐配置不存在:', planType);
       } else {
-        // 创建或更新用户订阅
-        // 首先删除旧的 Free 订阅（如果存在）
+        // 1. 查询用户当前所有订阅，获取已使用配额
+        const { data: existingSubscriptions } = await supabase
+          .from('user_subscriptions')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('status', 'active');
+
+        // 计算当前已使用的总配额
+        const currentUsedQuota = existingSubscriptions?.reduce((sum, sub) => sum + (sub.used_quota || 0), 0) || 0;
+
+        // 2. 计算累加后的配额（保留之前的配额 + 新购买的配额）
+        const existingPurchasedQuota = existingSubscriptions?.reduce((sum, sub) => sum + (sub.purchased_quota || 0), 0) || 0;
+        const existingBonusQuota = existingSubscriptions?.reduce((sum, sub) => sum + (sub.bonus_quota || 0), 0) || 0;
+        
+        const totalPurchasedQuota = existingPurchasedQuota + plan.quota;
+        const totalBonusQuota = existingBonusQuota + plan.bonus_quota;
+
+        console.log(`📊 配额累加: 之前 ${existingPurchasedQuota}+${existingBonusQuota}, 新增 ${plan.quota}+${plan.bonus_quota}, 已使用 ${currentUsedQuota}`);
+
+        // 3. 删除所有旧订阅（包括 free 和其他付费订阅）
         await supabase
           .from('user_subscriptions')
           .delete()
-          .eq('user_id', userId)
-          .eq('plan_type', 'free');
+          .eq('user_id', userId);
 
-        // 插入新的付费订阅
+        // 4. 插入新的合并订阅（累加所有配额，保留已使用次数）
         const { error: subscriptionError } = await supabase
           .from('user_subscriptions')
           .insert({
             user_id: userId,
             plan_type: planType,
             status: 'active',
-            purchased_quota: plan.quota,
-            bonus_quota: plan.bonus_quota,
-            used_quota: 0,
+            purchased_quota: totalPurchasedQuota,
+            bonus_quota: totalBonusQuota,
+            used_quota: currentUsedQuota,  // 保留之前的使用次数
             payment_id: webhookData.order_id,
             amount: plan.price,
             currency: webhookData.currency,
@@ -142,7 +159,7 @@ export default async function handler(
           console.error('创建订阅失败:', subscriptionError);
           // 继续处理，不中断 webhook
         } else {
-          console.log(`✅ 为用户 ${userId} 创建了 ${planType} 订阅`);
+          console.log(`✅ 为用户 ${userId} 创建了 ${planType} 订阅，总配额: ${totalPurchasedQuota}+${totalBonusQuota}，已使用: ${currentUsedQuota}`);
 
           // 可选：发送邮件确认
           await sendSubscriptionConfirmationEmail(userId, planType, plan.price);

@@ -19,7 +19,7 @@ export const Terms = () => (
         </ul>
 
         <h2 className="text-xl font-bold mt-8 mb-3">2. Usage Limits and Quotas</h2>
-        <p className="mb-4">Free users are limited to <strong>100 headshot generations per day</strong>. This limit resets daily at UTC midnight. We reserve the right to:</p>
+        <p className="mb-4">Free users receive <strong>5 headshot generations</strong> as a permanent quota. We reserve the right to:</p>
         <ul className="list-disc list-inside mb-4 space-y-1">
           <li>Modify usage limits at any time with notice</li>
           <li>Suspend service for accounts violating these terms</li>

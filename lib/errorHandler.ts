@@ -72,6 +72,6 @@ export const Errors = {
   forbidden: () => new APIError(403, 'FORBIDDEN', 'Access denied'),
   notFound: (resource: string) => new APIError(404, 'NOT_FOUND', `${resource} not found`),
   badRequest: (message: string) => new APIError(400, 'BAD_REQUEST', message),
-  quotaExceeded: () => new APIError(429, 'QUOTA_EXCEEDED', 'Daily quota exceeded'),
+  quotaExceeded: () => new APIError(429, 'QUOTA_EXCEEDED', 'Quota exceeded'),
   internalError: (message?: string) => new APIError(500, 'INTERNAL_ERROR', message || 'Internal server error'),
 };

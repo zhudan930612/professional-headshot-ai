@@ -47,14 +47,14 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
         {/* Title */}
         <h2 className="text-2xl font-bold text-center text-slate-900 mb-3">
-          Daily Limit Reached
+          Quota Limit Reached
         </h2>
 
         {/* Description */}
         <p className="text-slate-600 text-center mb-8">
           {remainingQuota === 0
-            ? "You've used all your free daily generations. Upgrade to continue creating professional headshots!"
-            : `You've reached your daily generation limit. Upgrade to unlimited generations!`}
+            ? "You've used all your free generations. Upgrade to continue creating professional headshots!"
+            : `You've reached your generation limit. Upgrade for more generations!`}
         </p>
 
         {/* Features Highlight */}
@@ -103,7 +103,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
         {/* Footer */}
         <p className="text-xs text-slate-500 text-center mt-6">
-          Free plan renews at midnight UTC
+          Upgrade now to get more lifetime credits
         </p>
       </div>
 

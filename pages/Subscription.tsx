@@ -31,10 +31,10 @@ export const Subscription: React.FC = () => {
 
   const planFeatures = {
     free: [
-      '5 images per day',
+      '5 lifetime images',
       'Standard quality (1K)',
       'With watermarks',
-      'Resets daily at midnight UTC'
+      'Permanent quota'
     ],
     professional: [
       '30 lifetime images',
@@ -97,7 +97,7 @@ export const Subscription: React.FC = () => {
                   {quotaInfo.plan_type.charAt(0).toUpperCase() + quotaInfo.plan_type.slice(1)}
                 </h2>
                 <p className="text-slate-600">
-                  {quotaInfo.is_paid ? 'Premium plan - Never expires' : 'Resets daily at midnight UTC'}
+                  {quotaInfo.is_paid ? 'Premium plan - Never expires' : 'Free plan - Permanent quota'}
                 </p>
               </div>
 
