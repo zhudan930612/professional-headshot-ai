@@ -47,14 +47,40 @@ const toAbsoluteUrl = (url: string): string => {
     return url;
   }
 
-  // 获取当前域名
-  if (typeof window !== 'undefined') {
-    return `${window.location.origin}${url}`;
+  // 获取基础 URL
+  let baseUrl: string;
+
+  // 优先使用环境变量（生产环境）
+  if (import.meta.env.VITE_APP_URL) {
+    const envUrl = import.meta.env.VITE_APP_URL;
+    // 确保环境变量 URL 格式正确
+    if (envUrl.startsWith('http://') || envUrl.startsWith('https://')) {
+      baseUrl = envUrl;
+    } else {
+      baseUrl = 'http://localhost:3000';
+    }
+  } else if (typeof window !== 'undefined') {
+    // 浏览器环境：验证 window.location.origin
+    const origin = window.location.origin;
+    // 验证 origin 是否有效（包含协议和主机名）
+    if (origin && origin !== 'null' && origin.includes('://')) {
+      baseUrl = origin;
+    } else {
+      // 如果 origin 无效，从 window.location.href 解析
+      try {
+        const parsedUrl = new URL(window.location.href);
+        baseUrl = `${parsedUrl.protocol}//${parsedUrl.host}`;
+      } catch (e) {
+        console.warn('Failed to parse window.location.href:', e);
+        baseUrl = 'http://localhost:3000';
+      }
+    }
+  } else {
+    // 最终回退
+    baseUrl = 'http://localhost:3000';
   }
 
-  // 降级到环境变量 (Vercel/生产环境)
-  const appUrl = import.meta.env.VITE_APP_URL || 'http://localhost:3000';
-  return `${appUrl}${url}`;
+  return `${baseUrl}${url}`;
 };
 
 /**
