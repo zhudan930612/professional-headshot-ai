@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { HeroTool } from '../components/HeroTool';
 import { FAQ_ITEMS, USE_CASE_OPTIONS } from '../constants';
 import { CheckCircle, Upload, Sliders, Download, ArrowRight, Shield, Clock, DollarSign, X, MoveRight, Sparkles, LayoutTemplate } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 // Data structure for comparison (Simulated data)
 interface ComparisonPair {
@@ -23,6 +24,22 @@ const ROW_2_DATA: ComparisonPair[] = Array.from({ length: 10 }).map((_, i) => ({
 
 export const Home = () => {
   const [selectedComparison, setSelectedComparison] = useState<ComparisonPair | null>(null);
+  const { user, openAuthModal } = useAuth();
+  const location = useLocation();
+
+  const handleCreateHeadshots = () => {
+    // Always scroll to the tool
+    const element = document.getElementById('upload-tool');
+    if (element) {
+      const offsetTop = element.getBoundingClientRect().top + window.scrollY - 100;
+      window.scrollTo({ top: offsetTop, behavior: 'smooth' });
+    }
+
+    // If not logged in, show auth modal with return path
+    if (!user) {
+      openAuthModal(location.pathname);
+    }
+  };
 
   return (
     <div className="space-y-24 pb-24">
@@ -49,13 +66,7 @@ export const Home = () => {
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button
-                  onClick={() => {
-                    const element = document.getElementById('upload-tool');
-                    if (element) {
-                      const offsetTop = element.getBoundingClientRect().top + window.scrollY - 100;
-                      window.scrollTo({ top: offsetTop, behavior: 'smooth' });
-                    }
-                  }}
+                  onClick={handleCreateHeadshots}
                   className="px-6 py-3.5 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-all shadow-lg shadow-primary-500/20"
                 >
                   Create Headshots Free

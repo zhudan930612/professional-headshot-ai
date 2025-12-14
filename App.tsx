@@ -1,7 +1,8 @@
 import React, { useLayoutEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { GoogleOneTap } from './components/GoogleOneTap';
+import { AuthModal } from './components/AuthModal';
 import { Layout } from './components/Layout';
 import { Home } from './pages/Home';
 import { History } from './pages/History';
@@ -20,11 +21,19 @@ const ScrollToTop = () => {
   return null;
 };
 
+// Global AuthModal component that uses AuthContext
+const GlobalAuthModal = () => {
+  const { isAuthModalOpen, closeAuthModal } = useAuth();
+  return <AuthModal isOpen={isAuthModalOpen} onClose={closeAuthModal} />;
+};
+
 const App: React.FC = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
         <ScrollToTop />
+        {/* Global AuthModal - rendered once at the top level */}
+        <GlobalAuthModal />
         {/* Google One Tap 快捷登录 */}
         <GoogleOneTap />
         <Routes>

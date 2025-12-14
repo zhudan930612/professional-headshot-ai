@@ -5,8 +5,9 @@ import { HeadshotStyle, UseCase, GeneratedImage, ReferenceImage } from '../types
 import { getRemainingQuota, incrementQuota, saveSession, mockGenerateImages } from '../services/storageService';
 import { selectReferenceImage, validateImageFiles } from '../services/imageService';
 import { generateHeadshots } from '../services/generationService';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
 
 interface HeroToolProps {
   onSuccess?: (images: GeneratedImage[]) => void;
@@ -32,8 +33,10 @@ const CATEGORIES = [
 
 export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const allPreviewUrlsRef = useRef<Set<string>>(new Set());
+  const { user, openAuthModal } = useAuth();
 
   // State
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -224,7 +227,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
   const startGeneration = async () => {
     const quota = await getRemainingQuota();
     if (quota <= 0) {
-      setError("You've reached your daily limit of 5 generations. Come back tomorrow for more!");
+      setError("You've reached your daily limit of 100 generations. Come back tomorrow for more!");
       return;
     }
 
@@ -625,7 +628,13 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
 
         <div className="mt-8 flex justify-end">
              <button
-                onClick={() => setStep(2)}
+                onClick={() => {
+                  if (!user) {
+                    openAuthModal(location.pathname);
+                    return;
+                  }
+                  setStep(2);
+                }}
                 disabled={files.length < 1}
                 className={`flex items-center gap-2 px-8 py-3 rounded-xl font-bold text-white transition-all ${
                     files.length < 1

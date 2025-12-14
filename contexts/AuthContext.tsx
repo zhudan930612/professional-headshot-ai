@@ -7,16 +7,28 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signInWithGoogle: () => Promise<void>;
+  signInWithGoogle: (returnTo?: string) => Promise<void>;
   signOut: () => Promise<void>;
+  isAuthModalOpen: boolean;
+  openAuthModal: (returnTo?: string) => void;
+  closeAuthModal: () => void;
+  getReturnPath: () => string;
+  clearReturnPath: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const RETURN_PATH_KEY = 'auth_return_path';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  // 从 localStorage 读取返回路径，默认为 /
+  const [returnPath, setReturnPath] = useState<string>(() => {
+    return typeof window !== 'undefined' ? localStorage.getItem(RETURN_PATH_KEY) || '/' : '/';
+  });
 
   useEffect(() => {
     // Get initial session
@@ -48,11 +60,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (returnTo?: string) => {
+    // Save return path to localStorage before OAuth redirect
+    if (returnTo && typeof returnTo === 'string') {
+      localStorage.setItem(RETURN_PATH_KEY, returnTo);
+    }
+
+    // Build redirect URL with return path as query parameter
+    const callbackUrl = new URL(`${window.location.origin}/auth/callback`);
+    if (returnTo && typeof returnTo === 'string') {
+      callbackUrl.searchParams.set('returnTo', returnTo);
+    }
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: callbackUrl.toString(),
       },
     });
 
@@ -76,6 +99,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loading,
     signInWithGoogle,
     signOut,
+    isAuthModalOpen,
+    openAuthModal: (returnTo?: string) => {
+      if (returnTo) {
+        // Save to localStorage immediately
+        localStorage.setItem(RETURN_PATH_KEY, returnTo);
+        setReturnPath(returnTo);
+      }
+      setIsAuthModalOpen(true);
+    },
+    closeAuthModal: () => setIsAuthModalOpen(false),
+    getReturnPath: () => returnPath,
+    clearReturnPath: () => {
+      localStorage.removeItem(RETURN_PATH_KEY);
+      setReturnPath('/');
+    },
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

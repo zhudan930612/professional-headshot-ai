@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
+const RETURN_PATH_KEY = 'auth_return_path';
+
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -16,7 +18,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     try {
       setLoading(true);
       setError(null);
-      await signInWithGoogle();
+      // Get the return path directly from localStorage (more reliable than Context)
+      const returnPath = localStorage.getItem(RETURN_PATH_KEY) || '/';
+      console.log('AuthModal: signInWithGoogle with returnPath:', returnPath);
+      await signInWithGoogle(returnPath);
       // OAuth 会重定向，所以这里不需要关闭 modal
     } catch (err: any) {
       console.error('登录失败:', err);

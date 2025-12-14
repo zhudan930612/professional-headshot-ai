@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Camera, Menu, X, User, LogIn, LogOut, ChevronDown } from 'lucide-react';
 import { getRemainingQuota } from '../services/storageService';
-import { AuthModal } from './AuthModal';
 import { useAuth } from '../contexts/AuthContext';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const [quota, setQuota] = useState(0);
-  const { user, signOut } = useAuth();
+  const { user, signOut, openAuthModal } = useAuth();
 
   // Update quota display on route change or periodically
   useEffect(() => {
@@ -28,6 +27,12 @@ const Navbar = () => {
     try {
       await signOut();
       setIsUserMenuOpen(false);
+      // Clear session storage and local storage related to user data
+      localStorage.removeItem('ai_headshot_history');
+      localStorage.removeItem('ai_headshot_quota');
+      localStorage.removeItem('ai_headshot_user_id');
+      // Navigate to home page
+      navigate('/');
     } catch (error) {
       console.error('登出失败:', error);
     }
@@ -139,7 +144,7 @@ const Navbar = () => {
                 ) : (
                   /* 未登录：显示登录按钮 */
                   <button
-                    onClick={() => setIsAuthOpen(true)}
+                    onClick={() => openAuthModal(location.pathname)}
                     className="text-slate-600 hover:text-primary-600 font-medium text-sm px-3 py-2 transition-colors flex items-center gap-2"
                   >
                     <LogIn size={18} />
@@ -224,7 +229,7 @@ const Navbar = () => {
                   <button
                     onClick={() => {
                       setIsOpen(false);
-                      setIsAuthOpen(true);
+                      openAuthModal(location.pathname);
                     }}
                     className="flex w-full items-center gap-2 px-3 py-2 text-slate-600 font-medium hover:bg-slate-50 rounded-md"
                   >
@@ -237,8 +242,6 @@ const Navbar = () => {
           </div>
         )}
       </nav>
-      
-      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
     </>
   );
 };

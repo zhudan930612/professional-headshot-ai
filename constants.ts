@@ -1,6 +1,6 @@
 import { HeadshotStyle, HeadshotTemplate, UseCase } from './types';
 
-export const DAILY_LIMIT = 5;
+export const DAILY_LIMIT = 100;
 
 // 案例模板（静态资源）- 96张图片
 // 图片位置: public/reference-templates/

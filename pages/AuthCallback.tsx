@@ -1,10 +1,13 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Loader2 } from 'lucide-react';
 
+const RETURN_PATH_KEY = 'auth_return_path';
+
 export const AuthCallback = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     // Handle OAuth callback
@@ -21,8 +24,15 @@ export const AuthCallback = () => {
 
         if (session) {
           console.log('Login successful:', session.user);
-          // Redirect to home page after successful login
-          navigate('/', { replace: true });
+          // Get return path from URL params first, then localStorage, then default to /
+          let returnPath = searchParams.get('returnTo') || localStorage.getItem(RETURN_PATH_KEY) || '/';
+          // Ensure returnPath is a valid string starting with /
+          if (!returnPath || !returnPath.startsWith('/')) {
+            returnPath = '/';
+          }
+          localStorage.removeItem(RETURN_PATH_KEY);
+          console.log('Navigating to:', returnPath);
+          navigate(returnPath, { replace: true });
         } else {
           // No session, redirect to home page
           navigate('/', { replace: true });
@@ -41,12 +51,19 @@ export const AuthCallback = () => {
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
         console.log('Auth state changed: user signed in');
-        navigate('/', { replace: true });
+        let returnPath = searchParams.get('returnTo') || localStorage.getItem(RETURN_PATH_KEY) || '/';
+        // Ensure returnPath is a valid string starting with /
+        if (!returnPath || !returnPath.startsWith('/')) {
+          returnPath = '/';
+        }
+        localStorage.removeItem(RETURN_PATH_KEY);
+        console.log('Navigating to:', returnPath);
+        navigate(returnPath, { replace: true });
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, searchParams]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50">
