@@ -45,6 +45,7 @@ export interface NanoBananaGenerationRequest {
   referenceImageUrl: string;  // 用户参考图 URL (Image 1)
   templateImageUrl: string;   // 模板图 URL (Image 2)
   prompt?: string;            // 可选的自定义 prompt
+  quality?: '1K' | '2K';      // 图片质量（新增）
 }
 
 /**
@@ -70,6 +71,7 @@ export async function submitGenerationTask(
         action: 'submitTask',
         referenceImageUrl: request.referenceImageUrl,
         templateImageUrl: request.templateImageUrl,
+        quality: request.quality || '2K',  // 传递质量参数
       }),
     });
 

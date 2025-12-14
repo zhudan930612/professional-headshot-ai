@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getHistory } from '../services/storageService';
 import { GenerationSession, GeneratedImage } from '../types';
+import { Layout } from '../components/Layout';
 import { Download, Calendar, ArrowLeft, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -74,7 +75,7 @@ export const History = () => {
   };
 
   return (
-    <>
+    <Layout>
       <div className="bg-slate-50 min-h-[80vh] py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
@@ -177,6 +178,6 @@ export const History = () => {
                 </button>
             </div>
         )}
-    </>
+    </Layout>
   );
 };

@@ -1,10 +1,12 @@
 import React from 'react';
 import { BLOG_POSTS } from '../constants';
+import { Layout } from '../components/Layout';
 import { Link } from 'react-router-dom';
 
 export const Blog = () => {
   return (
-    <div className="bg-slate-50 py-16 min-h-screen">
+    <Layout>
+      <div className="bg-slate-50 py-16 min-h-screen">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h1 className="text-4xl font-bold text-slate-900 mb-4">Headshot Guides & Tips</h1>
@@ -36,6 +38,7 @@ export const Blog = () => {
           ))}
         </div>
       </div>
-    </div>
+      </div>
+    </Layout>
   );
 };

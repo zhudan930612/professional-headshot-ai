@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Camera, Menu, X, User, LogIn, LogOut, ChevronDown } from 'lucide-react';
-import { getRemainingQuota } from '../services/storageService';
+import { Camera, Menu, X, User, LogIn, LogOut, ChevronDown, Zap } from 'lucide-react';
+import { getRemainingQuota, getUserQuotaInfo } from '../services/storageService';
 import { useAuth } from '../contexts/AuthContext';
+import type { QuotaInfo } from '../types';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,18 +11,35 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [quota, setQuota] = useState(0);
+  const [quotaInfo, setQuotaInfo] = useState<QuotaInfo | null>(null);
   const { user, signOut, openAuthModal } = useAuth();
 
   // Update quota display on route change or periodically
   useEffect(() => {
     const loadQuota = async () => {
-      const remainingQuota = await getRemainingQuota();
-      setQuota(remainingQuota);
+      try {
+        if (user) {
+          // For logged-in users: load subscription quota info
+          const info = await getUserQuotaInfo();
+          setQuotaInfo(info);
+          setQuota(info.remaining_quota);
+        } else {
+          // For non-logged-in users: use legacy quota system
+          const remainingQuota = await getRemainingQuota();
+          setQuota(remainingQuota);
+          setQuotaInfo(null);
+        }
+      } catch (err) {
+        console.error('Failed to load quota info:', err);
+        // Fallback to legacy system
+        const remainingQuota = await getRemainingQuota();
+        setQuota(remainingQuota);
+      }
     };
     loadQuota();
-    const interval = setInterval(loadQuota, 2000);
+    const interval = setInterval(loadQuota, 5000);
     return () => clearInterval(interval);
-  }, [location]);
+  }, [location, user]);
 
   const handleSignOut = async () => {
     try {
@@ -41,6 +59,7 @@ const Navbar = () => {
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'My Headshots', path: '/history' },
+    { name: 'Pricing', path: '/pricing' },
     { name: 'Blog', path: '/blog' },
   ];
 
@@ -85,9 +104,31 @@ const Navbar = () => {
                   {link.name}
                 </Link>
               ))}
-              {user && (
-                <div className="px-3 py-1 bg-slate-100 rounded-full text-xs font-semibold text-slate-600">
-                   {quota} uses left today
+
+              {user && quotaInfo && (
+                <div className="flex items-center gap-3">
+                  {/* Plan Badge */}
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    quotaInfo.plan_type === 'executive' ? 'bg-amber-100 text-amber-800' :
+                    quotaInfo.plan_type === 'professional' ? 'bg-blue-100 text-blue-800' :
+                    'bg-slate-100 text-slate-600'
+                  }`}>
+                    {quotaInfo.plan_type.toUpperCase()}
+                  </span>
+
+                  {/* Quota Display */}
+                  <div className="px-3 py-1 bg-slate-100 rounded-full text-xs font-semibold text-slate-600 flex items-center gap-1.5">
+                    <Zap size={12} className="text-primary-600" />
+                    {quota} {quotaInfo.is_paid ? 'credits' : 'uses'} left
+                  </div>
+
+                  {/* Subscription Link */}
+                  <Link
+                    to="/subscription"
+                    className="text-xs font-medium text-primary-600 hover:text-primary-700 transition-colors"
+                  >
+                    Details
+                  </Link>
                 </div>
               )}
 
@@ -130,6 +171,22 @@ const Navbar = () => {
                             <User size={16} />
                             My Headshots
                           </Link>
+                          <Link
+                            to="/subscription"
+                            onClick={() => setIsUserMenuOpen(false)}
+                            className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                          >
+                            <Zap size={16} />
+                            My Subscription
+                          </Link>
+                          <Link
+                            to="/pricing"
+                            onClick={() => setIsUserMenuOpen(false)}
+                            className="flex items-center gap-2 px-4 py-2 text-sm text-primary-600 hover:bg-primary-50"
+                          >
+                            <Zap size={16} />
+                            Upgrade Plan
+                          </Link>
                           <button
                             onClick={handleSignOut}
                             className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
@@ -156,7 +213,11 @@ const Navbar = () => {
 
             {/* Mobile menu button */}
             <div className="flex items-center md:hidden gap-3">
-              {user && <span className="text-xs font-medium text-slate-500">{quota} uses left</span>}
+              {user && quotaInfo && (
+                <span className="text-xs font-medium text-slate-500">
+                  {quotaInfo.plan_type.toUpperCase()} • {quota} left
+                </span>
+              )}
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="text-slate-500 hover:text-slate-900 focus:outline-none"
@@ -212,6 +273,22 @@ const Navbar = () => {
                     >
                       <User size={18} />
                       My Headshots
+                    </Link>
+                    <Link
+                      to="/subscription"
+                      onClick={() => setIsOpen(false)}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-slate-600 font-medium hover:bg-slate-50 rounded-md"
+                    >
+                      <Zap size={18} />
+                      My Subscription
+                    </Link>
+                    <Link
+                      to="/pricing"
+                      onClick={() => setIsOpen(false)}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-primary-600 font-medium hover:bg-primary-50 rounded-md"
+                    >
+                      <Zap size={18} />
+                      Upgrade Plan
                     </Link>
                     <button
                       onClick={() => {
@@ -275,6 +352,7 @@ const Footer = () => {
         <ul className="space-y-2 text-sm">
           <li><Link to="/" className="hover:text-white transition-colors">Generator</Link></li>
           <li><Link to="/history" className="hover:text-white transition-colors">My Headshots</Link></li>
+          <li><Link to="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
         </ul>
       </div>
       <div>

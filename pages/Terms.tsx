@@ -1,7 +1,9 @@
 import React from 'react';
+import { Layout } from '../components/Layout';
 
 export const Terms = () => (
-  <div className="max-w-3xl mx-auto px-4 py-16">
+  <Layout>
+    <div className="max-w-3xl mx-auto px-4 py-16">
     <h1 className="text-3xl font-bold mb-6">Terms of Service</h1>
     <div className="space-y-4 text-slate-700">
         <p className="mb-4">Last updated: December 2024</p>
@@ -72,10 +74,12 @@ export const Terms = () => (
         <p className="mb-4">For questions about these terms, please contact us through our website.</p>
     </div>
   </div>
+  </Layout>
 );
 
 export const Privacy = () => (
-  <div className="max-w-3xl mx-auto px-4 py-16">
+  <Layout>
+    <div className="max-w-3xl mx-auto px-4 py-16">
     <h1 className="text-3xl font-bold mb-6">Privacy Policy</h1>
     <div className="space-y-4 text-slate-700">
         <p className="mb-4">Last updated: December 2024</p>
@@ -166,4 +170,5 @@ export const Privacy = () => (
         <p className="mb-4">We may update this Privacy Policy periodically. We will notify you of material changes by updating the "Last updated" date and posting the new policy on this page.</p>
     </div>
   </div>
+  </Layout>
 );

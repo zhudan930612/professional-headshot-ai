@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { HeroTool } from '../components/HeroTool';
+import { Layout } from '../components/Layout';
 import { FAQ_ITEMS, USE_CASE_OPTIONS } from '../constants';
 import { CheckCircle, Upload, Sliders, Download, ArrowRight, Shield, Clock, DollarSign, X, MoveRight, Sparkles, LayoutTemplate } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
@@ -42,7 +43,8 @@ export const Home = () => {
   };
 
   return (
-    <div className="space-y-24 pb-24">
+    <Layout>
+      <div className="space-y-24 pb-24">
       {/* Hero Section */}
       <section className="relative pt-12 pb-16 md:pt-20 md:pb-24 overflow-hidden bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -371,6 +373,7 @@ export const Home = () => {
             </div>
         </div>
       </section>
-    </div>
+      </div>
+    </Layout>
   );
 };

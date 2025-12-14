@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { BLOG_POSTS } from '../constants';
+import { Layout } from '../components/Layout';
 import { ArrowLeft, Clock, Calendar } from 'lucide-react';
 import type { BlogPost as BlogPostType } from '../types';
 
@@ -16,20 +17,23 @@ export const BlogPost = () => {
 
   if (!post) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center p-4">
-        <h2 className="text-2xl font-bold text-slate-900 mb-4">Article not found</h2>
-        <button 
-          onClick={() => navigate('/blog')}
-          className="text-primary-600 hover:underline flex items-center gap-2"
-        >
-          <ArrowLeft size={16} /> Back to Blog
-        </button>
-      </div>
+      <Layout>
+        <div className="min-h-[60vh] flex flex-col items-center justify-center p-4">
+          <h2 className="text-2xl font-bold text-slate-900 mb-4">Article not found</h2>
+          <button
+            onClick={() => navigate('/blog')}
+            className="text-primary-600 hover:underline flex items-center gap-2"
+          >
+            <ArrowLeft size={16} /> Back to Blog
+          </button>
+        </div>
+      </Layout>
     );
   }
 
   return (
-    <div className="bg-white min-h-screen pb-20">
+    <Layout>
+      <div className="bg-white min-h-screen pb-20">
       {/* Header Image */}
       <div className="h-64 md:h-96 w-full relative">
          <img 
@@ -94,6 +98,7 @@ export const BlogPost = () => {
             </div>
         </div>
       </div>
-    </div>
+      </div>
+    </Layout>
   );
 };

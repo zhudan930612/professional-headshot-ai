@@ -1,6 +1,7 @@
-import { HeadshotStyle, GeneratedImage, ReferenceImage, HeadshotTemplate } from '../types';
+import { HeadshotStyle, GeneratedImage, ReferenceImage, HeadshotTemplate, ImageQuality } from '../types';
 import { uploadGeneratedImage, downloadAndUploadGeneratedImage, uploadReferenceImage } from './uploadService';
 import { generateHeadshotWithNanoBanana } from './nanoBananaAPI.secure';
+import { getUserQuotaInfo } from './storageService';
 import { supabase } from '../lib/supabase';
 
 // 检查用户是否已登录
@@ -24,6 +25,8 @@ export interface GenerationAPIRequest {
   userId: string;                 // 用户 ID
   sessionId: string;              // 会话 ID
   onProgress?: (progress: number) => void; // 进度回调
+  quality?: ImageQuality;         // 图片质量（可选）
+  isRetry?: boolean;              // 是否为重新生成（可选）
 }
 
 /**
@@ -90,11 +93,12 @@ const callGenerationAPI = async (
       console.log(`   模板图 URL: ${templateUrl}`);
 
       try {
-        // 调用 Nano Banana API
+        // 调用 Nano Banana API（传递质量参数）
         const generatedImageUrl = await generateHeadshotWithNanoBanana(
           {
             referenceImageUrl,
             templateImageUrl: templateUrl,
+            quality: request.quality || '2K',  // 使用传递来的质量参数
           },
           (progress) => {
             // 进度回调
@@ -141,11 +145,12 @@ const callGenerationAPI = async (
  * 生成专业头像（主函数）
  *
  * 完整流程：
- * 1. 调用 AI 生图 API（传递参考图 + 模板图）
- * 2. 根据登录状态处理生成结果：
+ * 1. 获取用户配额信息和图片质量
+ * 2. 调用 AI 生图 API（传递参考图 + 模板图 + 质量参数）
+ * 3. 根据登录状态处理生成结果：
  *    - 未登录：直接使用 API 返回的 URL，不保存到数据库
  *    - 已登录：下载并上传到 Supabase Storage，保存到数据库
- * 3. 返回 GeneratedImage 对象数组
+ * 4. 返回 GeneratedImage 对象数组
  *
  * @param referenceImage 参考图文件
  * @param templates 选择的模板数组
@@ -154,6 +159,7 @@ const callGenerationAPI = async (
  * @param sessionId 会话 ID
  * @param referenceImageUrl 可选的参考图 URL（如果已上传）
  * @param onProgress 可选的进度回调
+ * @param isRetry 是否为重新生成（不消耗配额）
  * @returns 生成的图片数组
  */
 export const generateHeadshots = async (
@@ -163,17 +169,34 @@ export const generateHeadshots = async (
   userId: string,
   sessionId: string,
   referenceImageUrl?: string,
-  onProgress?: (progress: number) => void
+  onProgress?: (progress: number) => void,
+  isRetry: boolean = false
 ): Promise<GeneratedImage[]> => {
   try {
-    // 1. 检查用户登录状态
+    // 1. 检查用户登录状态和获取配额信息
     const isLoggedIn = await isUserLoggedIn();
     console.log('用户登录状态:', isLoggedIn ? '已登录' : '未登录');
+
+    let quality: ImageQuality = '2K';  // 默认最高质量
+
+    if (isLoggedIn) {
+      try {
+        const quotaInfo = await getUserQuotaInfo();
+        quality = quotaInfo.quality;
+        console.log('用户套餐配置:', {
+          plan: quotaInfo.plan_type,
+          quality: quotaInfo.quality,
+          remaining: quotaInfo.remaining_quota
+        });
+      } catch (error) {
+        console.warn('获取配额信息失败，使用默认 2K 质量:', error);
+      }
+    }
 
     // 2. 准备模板图片 URL
     const templateImageUrls = templates.map(t => t.imageUrl);
 
-    // 3. 调用 AI 生图 API
+    // 3. 调用 AI 生图 API（传递质量参数）
     console.log('🎨 开始生成专业头像...');
     const apiResponse = await callGenerationAPI({
       referenceImage,
@@ -183,6 +206,8 @@ export const generateHeadshots = async (
       userId,
       sessionId,
       onProgress,
+      quality,  // 传递质量参数
+      isRetry   // 传递重试标志
     });
 
     if (!apiResponse.success || !apiResponse.images || apiResponse.images.length === 0) {

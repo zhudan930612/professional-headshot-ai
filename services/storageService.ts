@@ -1,4 +1,4 @@
-import { GenerationSession, UserQuota, GeneratedImage } from '../types';
+import { GenerationSession, UserQuota, GeneratedImage, QuotaInfo, UserSubscription } from '../types';
 import { DAILY_LIMIT } from '../constants';
 import { supabase } from '../lib/supabase';
 
@@ -191,8 +191,69 @@ export const incrementQuota = async (amount: number): Promise<boolean> => {
 };
 
 export const getRemainingQuota = async (): Promise<number> => {
-  const current = await getQuota();
-  return Math.max(0, DAILY_LIMIT - current);
+  try {
+    const quotaInfo = await getUserQuotaInfo();
+    return quotaInfo.remaining_quota;
+  } catch (error) {
+    console.error('获取剩余配额失败，回退到每日配额:', error);
+    const current = await getQuota();
+    return Math.max(0, DAILY_LIMIT - current);
+  }
+};
+
+/**
+ * 获取用户完整配额信息（支持订阅系统）
+ * Free 用户返回每日配额信息，付费用户返回永久配额信息
+ */
+export const getUserQuotaInfo = async (): Promise<QuotaInfo> => {
+  const userId = await getUserId();
+  if (!userId) {
+    throw new Error('用户未登录');
+  }
+
+  try {
+    const { data, error } = await supabase
+      .rpc('get_user_quota_info', { p_user_id: userId });
+
+    if (error) throw error;
+
+    return data as QuotaInfo;
+  } catch (error) {
+    console.error('获取配额信息失败:', error);
+    throw error;
+  }
+};
+
+/**
+ * 扣减配额（支持订阅系统，重试不扣减）
+ */
+export const decrementQuota = async (
+  amount: number = 1,
+  isRetry: boolean = false
+): Promise<{ success: boolean; remaining: number }> => {
+  const userId = await getUserId();
+  if (!userId) {
+    throw new Error('用户未登录');
+  }
+
+  try {
+    const { data, error } = await supabase
+      .rpc('decrement_subscription_quota_safe', {
+        p_user_id: userId,
+        p_amount: amount,
+        p_is_retry: isRetry
+      });
+
+    if (error) throw error;
+
+    return {
+      success: data.success,
+      remaining: data.remaining
+    };
+  } catch (error) {
+    console.error('扣减配额失败:', error);
+    throw error;
+  }
 };
 
 /**

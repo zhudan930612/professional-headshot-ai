@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Upload, Sparkles, Image as ImageIcon, CheckCircle, AlertCircle, Loader2, Check, Download, RefreshCw, ArrowRight, ArrowLeft, X as XIconLucide, Maximize2, XCircle } from 'lucide-react';
 import { HEADSHOT_TEMPLATES } from '../constants';
-import { HeadshotStyle, UseCase, GeneratedImage, ReferenceImage } from '../types';
-import { getRemainingQuota, incrementQuota, saveSession, mockGenerateImages } from '../services/storageService';
+import { HeadshotStyle, UseCase, GeneratedImage, ReferenceImage, QuotaInfo } from '../types';
+import { getRemainingQuota, incrementQuota, saveSession, mockGenerateImages, getUserQuotaInfo, decrementQuota } from '../services/storageService';
 import { selectReferenceImage, validateImageFiles } from '../services/imageService';
 import { generateHeadshots } from '../services/generationService';
+import { addWatermark, downloadImageWithWatermark } from '../services/watermarkService';
+import { UpgradeModal } from './UpgradeModal';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -56,14 +58,44 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
   const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null);
   const [remainingQuota, setRemainingQuota] = useState<number>(0);
 
+  // Subscription State
+  const [quotaInfo, setQuotaInfo] = useState<QuotaInfo | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [displayImages, setDisplayImages] = useState<Map<string, string>>(new Map());
+
   // Load quota on mount and when generation completes
   useEffect(() => {
     const loadQuota = async () => {
-      const quota = await getRemainingQuota();
-      setRemainingQuota(quota);
+      try {
+        if (user) {
+          // Logged in: get subscription quota info
+          const info = await getUserQuotaInfo();
+          setQuotaInfo(info);
+          setRemainingQuota(info.remaining_quota);
+        } else {
+          // Not logged in: use legacy quota system
+          const quota = await getRemainingQuota();
+          setRemainingQuota(quota);
+          // Create a default QuotaInfo for non-logged-in users
+          setQuotaInfo({
+            plan_type: 'free',
+            total_quota: 5,
+            used_quota: 5 - quota,
+            remaining_quota: quota,
+            is_paid: false,
+            quality: '1K',
+            has_watermark: true
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load quota info:', err);
+        // Fallback to legacy system
+        const quota = await getRemainingQuota();
+        setRemainingQuota(quota);
+      }
     };
     loadQuota();
-  }, [isGenerating]);
+  }, [isGenerating, user]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -225,9 +257,21 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
   };
 
   const startGeneration = async () => {
-    const quota = await getRemainingQuota();
-    if (quota <= 0) {
-      setError("You've reached your daily limit of 100 generations. Come back tomorrow for more!");
+    // Refresh quota info
+    let currentQuotaInfo = quotaInfo;
+    try {
+      if (user) {
+        const info = await getUserQuotaInfo();
+        currentQuotaInfo = info;
+        setQuotaInfo(info);
+      }
+    } catch (err) {
+      console.error('Failed to refresh quota info:', err);
+    }
+
+    // Check if user has enough quota
+    if (!currentQuotaInfo || currentQuotaInfo.remaining_quota < selectedTemplateIds.length) {
+      setShowUpgradeModal(true);
       return;
     }
 
@@ -354,9 +398,41 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
 
       // 检查是否有成功的图片
       if (completedImages.length > 0) {
-        const success = await incrementQuota(completedImages.length);
+        try {
+          // For logged-in users: deduct from subscription quota
+          if (user) {
+            const { success } = await decrementQuota(completedImages.length, false);
+            if (!success) {
+              setError("Quota exceeded, unable to save results");
+              return;
+            }
+          } else {
+            // For non-logged-in users: use legacy increment system
+            const success = await incrementQuota(completedImages.length);
+            if (!success) {
+              setError("Quota exceeded, unable to save results");
+              return;
+            }
+          }
 
-        if (success) {
+          // Apply watermarks if Free user
+          let imagesToDisplay = completedImages;
+          if (quotaInfo?.has_watermark) {
+            console.log('Applying watermarks to Free tier images...');
+            const watermarkedUrls: { [key: string]: string } = {};
+            for (const img of completedImages) {
+              try {
+                const watermarkedUrl = await addWatermark(img.url);
+                watermarkedUrls[img.id] = watermarkedUrl;
+                displayImages.set(img.id, watermarkedUrl);
+              } catch (err) {
+                console.error('Failed to add watermark to image:', err);
+                watermarkedUrls[img.id] = img.url; // Fallback to original
+              }
+            }
+            setDisplayImages(new Map(Object.entries(watermarkedUrls)));
+          }
+
           // 保存会话（不包含参考图信息，参考图不保存到数据库）
           await saveSession({
             id: sessionId,
@@ -367,8 +443,9 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
           });
 
           if (onSuccess) onSuccess(completedImages);
-        } else {
-          setError("Quota exceeded, unable to save results");
+        } catch (err) {
+          console.error('Error processing completed images:', err);
+          setError("Failed to process results. Please try again.");
         }
       } else {
         // 所有模板都失败
@@ -408,6 +485,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
       const userId = session?.user?.id || `anon_${Date.now()}`;
 
       const referenceFile = files[selectedReferenceIndex];
+      // Pass isRetry=true so quota is not deducted
       const generatedImages = await generateHeadshots(
         referenceFile,
         [template],
@@ -423,7 +501,8 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
               ? { ...item, progress: cappedProgress }
               : item
           ));
-        }
+        },
+        true // isRetry = true, 不消耗配额
       );
 
       const img = generatedImages[0];
@@ -443,8 +522,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
           : item
       ));
 
-      // 增加配额
-      await incrementQuota(1);
+      // 重试不消耗配额，所以不调用 incrementQuota 或 decrementQuota
 
     } catch (error) {
       // 失败
@@ -474,6 +552,17 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
   // Download image directly
   const handleDownloadImage = async (imageUrl: string) => {
     try {
+      // Check if Free user with watermark
+      if (quotaInfo?.has_watermark) {
+        // For Free users, use watermarked version if available
+        const watermarkedUrl = displayImages.get(imageUrl);
+        if (watermarkedUrl) {
+          await downloadImageWithWatermark(watermarkedUrl, `professional-headshot-${Date.now()}.jpg`);
+          return;
+        }
+      }
+
+      // For paid users or fallback: direct download without watermark
       const response = await fetch(imageUrl);
       const blob = await response.blob();
 
@@ -833,7 +922,8 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                                     className="w-full h-full group cursor-pointer animate-in fade-in duration-700"
                                 >
                                     <img
-                                        src={result.image.url}
+                                        // Use watermarked URL if available for Free users
+                                        src={displayImages.get(result.image.id) || result.image.url}
                                         alt="Result"
                                         className="w-full h-full object-cover"
                                         loading="eager"
@@ -880,6 +970,13 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
 
   return (
     <>
+        {/* UpgradeModal */}
+        <UpgradeModal
+          isOpen={showUpgradeModal}
+          onClose={() => setShowUpgradeModal(false)}
+          remainingQuota={quotaInfo?.remaining_quota || 0}
+        />
+
         <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden min-h-[600px] flex flex-col">
             {/* Header Progress Indicators */}
             <div className="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
@@ -887,21 +984,21 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                     <Sparkles className="text-primary-600" size={20} />
                     AI Studio
                 </h2>
-                
+
                 <div className="flex items-center gap-2">
                     {[1, 2, 3].map((s) => {
                         // 判断第三步是否已完成：step === 3 且所有图片都生成完成
                         const isStep3Completed = s === 3 && step === 3 && !generationResults.some(r => r.loading) && generationResults.length > 0;
                         const isCompleted = step > s || isStep3Completed;
                         const isActive = step === s && !isStep3Completed;
-                        
+
                         return (
                             <div key={s} className="flex items-center">
                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
                                     isActive
-                                    ? 'bg-primary-600 text-white' 
+                                    ? 'bg-primary-600 text-white'
                                     : isCompleted
-                                        ? 'bg-green-500 text-white' 
+                                        ? 'bg-green-500 text-white'
                                         : 'bg-slate-200 text-slate-500'
                                 }`}>
                                     {isCompleted ? <Check size={16} /> : s}

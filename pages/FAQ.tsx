@@ -1,10 +1,12 @@
 import React from 'react';
 import { FAQ_ITEMS } from '../constants';
+import { Layout } from '../components/Layout';
 import { Mail, HelpCircle } from 'lucide-react';
 
 export const FAQ = () => {
   return (
-    <div className="bg-white py-16 min-h-screen">
+    <Layout>
+      <div className="bg-white py-16 min-h-screen">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
             <div className="inline-flex items-center justify-center p-3 bg-primary-100 text-primary-600 rounded-full mb-4">
@@ -41,6 +43,7 @@ export const FAQ = () => {
             </a>
         </div>
       </div>
-    </div>
+      </div>
+    </Layout>
   );
 };

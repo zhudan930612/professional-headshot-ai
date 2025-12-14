@@ -74,3 +74,81 @@ export interface BlogPost {
   readTime: string;
   content: string;  // HTML content
 }
+
+// ========================================
+// 订阅系统类型定义
+// ========================================
+
+// 订阅套餐类型
+export type SubscriptionPlan = 'free' | 'professional' | 'executive';
+
+// 订阅状态
+export type SubscriptionStatus = 'active' | 'expired' | 'cancelled';
+
+// 图片质量
+export type ImageQuality = '1K' | '2K';
+
+// 用户订阅信息
+export interface UserSubscription {
+  id: string;
+  user_id: string;
+  plan_type: SubscriptionPlan;
+  status: SubscriptionStatus;
+  purchased_quota: number;
+  bonus_quota: number;
+  used_quota: number;
+  subscribed_at: string;
+  expires_at: string | null;
+  payment_id: string | null;
+  amount: number | null;
+  currency: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// 配额信息（统一接口）
+export interface QuotaInfo {
+  plan_type: SubscriptionPlan;
+  total_quota: number;
+  used_quota: number;
+  remaining_quota: number;
+  is_paid: boolean;
+  quality: ImageQuality;
+  has_watermark: boolean;
+  resets_at?: string;  // 仅 Free 用户有
+}
+
+// 套餐配置
+export interface SubscriptionPlanConfig {
+  id: SubscriptionPlan;
+  name: string;
+  display_name: string;
+  price: number;
+  quota: number;
+  bonus_quota: number;
+  quality: ImageQuality;
+  has_watermark: boolean;
+  features: string[];
+  is_active: boolean;
+  is_popular?: boolean;
+  sort_order: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// 支付交易记录
+export interface PaymentTransaction {
+  id: string;
+  user_id: string;
+  subscription_id: string | null;
+  creem_order_id: string;
+  creem_transaction_id: string | null;
+  plan_type: SubscriptionPlan;
+  amount: number;
+  currency: string;
+  status: 'pending' | 'completed' | 'failed' | 'refunded';
+  metadata: any;
+  created_at: string;
+  completed_at: string | null;
+  updated_at: string;
+}

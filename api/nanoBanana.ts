@@ -24,10 +24,14 @@ interface NanoBananaTaskResponse {
 
 /**
  * 提交生成任务
+ * @param referenceImageUrl 参考图 URL
+ * @param templateImageUrl 模板图 URL
+ * @param quality 生成质量 ('1K' 或 '2K'，默认 '2K')
  */
 async function submitGenerationTask(
   referenceImageUrl: string,
-  templateImageUrl: string
+  templateImageUrl: string,
+  quality: '1K' | '2K' = '2K'
 ): Promise<{ taskId: string; estimatedTime: number }> {
   const defaultPrompt =
     "Generate a realistic professional headshot using the user's uploaded photo as the only and exclusive source of identity. " +
@@ -42,7 +46,7 @@ async function submitGenerationTask(
     model: 'gemini-3-pro-image-preview',
     prompt: defaultPrompt,
     size: '3:4',
-    quality: '2K',
+    quality: quality,  // 动态质量参数
     image_urls: [referenceImageUrl, templateImageUrl],
   };
 
@@ -183,10 +187,15 @@ export default async function handler(
   }
 
   try {
-    const { action, referenceImageUrl, templateImageUrl } = req.body;
+    const { action, referenceImageUrl, templateImageUrl, quality = '2K' } = req.body;
 
     if (!action) {
       return res.status(400).json({ error: 'Missing action parameter' });
+    }
+
+    // 验证 quality 参数
+    if (!['1K', '2K'].includes(quality)) {
+      return res.status(400).json({ error: 'Invalid quality parameter' });
     }
 
     // 提交生成任务
@@ -195,7 +204,11 @@ export default async function handler(
         return res.status(400).json({ error: 'Missing image URLs' });
       }
 
-      const result = await submitGenerationTask(referenceImageUrl, templateImageUrl);
+      const result = await submitGenerationTask(
+        referenceImageUrl,
+        templateImageUrl,
+        quality as '1K' | '2K'
+      );
       return res.status(200).json(result);
     }
 
@@ -231,7 +244,8 @@ export default async function handler(
       // 1. 提交任务
       const { taskId, estimatedTime } = await submitGenerationTask(
         referenceImageUrl,
-        templateImageUrl
+        templateImageUrl,
+        quality as '1K' | '2K'
       );
 
       // 2. 等待完成
