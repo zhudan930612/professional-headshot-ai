@@ -49,8 +49,8 @@ const Navbar = () => {
       localStorage.removeItem('ai_headshot_history');
       localStorage.removeItem('ai_headshot_quota');
       localStorage.removeItem('ai_headshot_user_id');
-      // Navigate to home page
-      navigate('/');
+      // Refresh page and navigate to home
+      window.location.href = '/';
     } catch (error) {
       console.error('登出失败:', error);
     }
