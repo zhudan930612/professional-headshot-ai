@@ -36,7 +36,7 @@ export const FAQ = () => {
                 Can't find the answer you're looking for? Our support team is here to help you get the perfect headshot.
             </p>
             <a
-                href="mailto:hsupport@professionalheadshotai.ink"
+                href="mailto:support@professionalheadshotai.ink"
                 className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-primary-600 hover:bg-primary-700 transition-colors shadow-sm hover:shadow-md"
             >
                 Contact Support

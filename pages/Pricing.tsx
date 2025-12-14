@@ -8,8 +8,8 @@ import type { SubscriptionPlanConfig } from '../types';
 
 // Creem 支付链接映射
 const CREEM_PAYMENT_LINKS: { [key: string]: string } = {
-  professional: 'https://www.creem.io/payment/prod_2f5kzehLdsDFRGh4z76Tk6',
-  executive: 'https://www.creem.io/payment/prod_7XbKaEikf64HQgEpA0liu3'
+  professional: 'https://www.creem.io/payment/prod_3VuEcSLV7nUFQIFYByNkaG',
+  executive: 'https://www.creem.io/payment/prod_3goNXcJoP80L3mmWoAdkZs'
 };
 
 export const Pricing: React.FC = () => {
@@ -51,8 +51,12 @@ export const Pricing: React.FC = () => {
       return;
     }
 
-    // 直接跳转到 Creem 支付页面
-    window.location.href = paymentUrl;
+    // 构建带有 return_url 的完整支付链接
+    const returnUrl = `${window.location.origin}/#/subscription`;
+    const fullPaymentUrl = `${paymentUrl}?return_url=${encodeURIComponent(returnUrl)}`;
+
+    // 跳转到 Creem 支付页面
+    window.location.href = fullPaymentUrl;
   };
 
   return (
