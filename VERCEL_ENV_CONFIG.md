@@ -1,5 +1,12 @@
 # Vercel 环境变量配置指南
 
+## ⚠️ 重要提示
+
+**这是一个 Vite 项目，不是 Next.js！**
+
+- ✅ 前端环境变量必须使用 `VITE_` 前缀（不是 `NEXT_PUBLIC_`）
+- ✅ Vercel 需要特殊配置才能注入 `VITE_*` 环境变量到构建中
+
 ## 📋 从 Creem Dashboard 截图确认的信息
 
 ### Webhook 配置
@@ -34,9 +41,9 @@ CREEM_WEBHOOK_SECRET=whsec_4R7zfH1u7jmfyD9n7nAtq
 
 ### 2. Supabase URL (Public)
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_URL=https://osxwjhvlntrornibhkfu.supabase.co
 ```
-**说明**: Supabase 项目的公开 URL
+**说明**: Supabase 项目的公开 URL（⚠️ 必须用 `VITE_` 前缀）
 
 ### 3. Supabase Service Role Key (Private)
 ```bash
@@ -49,9 +56,9 @@ SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ### 4. Supabase Anon Key (Public)
 ```bash
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
-**说明**: 前端使用的公开 Key，受 Row Level Security 保护
+**说明**: 前端使用的公开 Key，受 Row Level Security 保护（⚠️ 必须用 `VITE_` 前缀）
 
 ### 5. Google OAuth (可选)
 ```bash
@@ -100,16 +107,16 @@ vercel env ls
 
 创建 `.env.local` 文件（不要提交到 Git）：
 ```bash
-# Creem
+# Creem (Serverless Functions)
 CREEM_WEBHOOK_SECRET=whsec_4R7zfH1u7jmfyD9n7nAtq
-
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
+# Supabase (Frontend - ⚠️ 必须用 VITE_ 前缀)
+VITE_SUPABASE_URL=https://osxwjhvlntrornibhkfu.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
 # Google (可选)
-NEXT_PUBLIC_GOOGLE_CLIENT_ID=xxxxx.apps.googleusercontent.com
+VITE_GOOGLE_CLIENT_ID=xxxxx.apps.googleusercontent.com
 ```
 
 ### 生产环境验证
@@ -148,8 +155,8 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID=xxxxx.apps.googleusercontent.com
 | 环境变量 | 使用位置 | 访问权限 |
 |---------|---------|---------|
 | `CREEM_WEBHOOK_SECRET` | `api/auth/creem/webhook.ts` | 服务端 |
-| `NEXT_PUBLIC_SUPABASE_URL` | 前端 + 服务端 | 公开 |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | 前端 | 公开 |
+| `VITE_SUPABASE_URL` | 前端（编译时注入） | 公开 |
+| `VITE_SUPABASE_ANON_KEY` | 前端（编译时注入） | 公开 |
 | `SUPABASE_SERVICE_ROLE_KEY` | `api/auth/creem/webhook.ts` | 服务端 |
 
 ## 🧪 测试 Webhook
@@ -211,3 +218,4 @@ vercel logs --follow
 **配置日期**: 2025-12-14
 **Webhook Secret**: `whsec_4R7zfH1u7jmfyD9n7nAtq`
 **Webhook URL**: `https://www.professionalheadshotai.ink/api/auth/creem/webhook`
+
