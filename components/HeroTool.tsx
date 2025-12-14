@@ -400,26 +400,47 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
       if (completedImages.length > 0) {
         try {
           console.log('[HeroTool] 处理完成的图片, 数量:', completedImages.length, 'user:', !!user);
-          // For logged-in users: deduct from subscription quota
+          
+          // 1. 先保存会话（只有登录用户才保存到数据库）
+          // 保存优先，确保用户不会丢失生成的图片
+          if (user) {
+            console.log('[HeroTool] 调用 saveSession...');
+            try {
+              await saveSession({
+                id: sessionId,
+                date: Date.now(),
+                style: primaryStyle,
+                useCase: UseCase.LinkedIn,
+                images: completedImages,
+              });
+              console.log('[HeroTool] saveSession 完成');
+            } catch (saveErr) {
+              console.error('[HeroTool] saveSession 失败:', saveErr);
+              // 保存失败不阻止后续流程
+            }
+          }
+
+          // 2. 扣减配额（失败不影响已保存的会话）
           if (user) {
             console.log('[HeroTool] 扣减配额...');
-            const { success } = await decrementQuota(completedImages.length, false);
-            console.log('[HeroTool] 扣减配额结果:', success);
-            if (!success) {
-              setError("Quota exceeded, unable to save results");
-              return;
+            try {
+              const { success } = await decrementQuota(completedImages.length, false);
+              console.log('[HeroTool] 扣减配额结果:', success);
+              if (!success) {
+                console.warn('[HeroTool] 配额扣减返回 false，但会话已保存');
+              }
+            } catch (quotaErr) {
+              console.error('[HeroTool] 配额扣减失败:', quotaErr);
             }
           } else {
             // For non-logged-in users: use legacy increment system
             const success = await incrementQuota(completedImages.length);
             if (!success) {
-              setError("Quota exceeded, unable to save results");
-              return;
+              console.warn('[HeroTool] 配额增加失败');
             }
           }
 
-          // Apply watermarks if Free user
-          let imagesToDisplay = completedImages;
+          // 3. Apply watermarks if Free user
           if (quotaInfo?.has_watermark) {
             console.log('Applying watermarks to Free tier images...');
             const watermarkedUrls: { [key: string]: string } = {};
@@ -434,22 +455,6 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
               }
             }
             setDisplayImages(new Map(Object.entries(watermarkedUrls)));
-          }
-
-          // 保存会话（只有登录用户才保存到数据库）
-          console.log('[HeroTool] 准备保存会话, user:', !!user, 'sessionId:', sessionId);
-          if (user) {
-            console.log('[HeroTool] 调用 saveSession...');
-            await saveSession({
-              id: sessionId,
-              date: Date.now(),
-              style: primaryStyle,
-              useCase: UseCase.LinkedIn,
-              images: completedImages,
-            });
-            console.log('[HeroTool] saveSession 完成');
-          } else {
-            console.log('[HeroTool] 用户未登录，跳过保存');
           }
 
           if (onSuccess) onSuccess(completedImages);
