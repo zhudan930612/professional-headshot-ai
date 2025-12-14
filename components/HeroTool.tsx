@@ -399,9 +399,12 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
       // 检查是否有成功的图片
       if (completedImages.length > 0) {
         try {
+          console.log('[HeroTool] 处理完成的图片, 数量:', completedImages.length, 'user:', !!user);
           // For logged-in users: deduct from subscription quota
           if (user) {
+            console.log('[HeroTool] 扣减配额...');
             const { success } = await decrementQuota(completedImages.length, false);
+            console.log('[HeroTool] 扣减配额结果:', success);
             if (!success) {
               setError("Quota exceeded, unable to save results");
               return;
@@ -434,7 +437,9 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
           }
 
           // 保存会话（只有登录用户才保存到数据库）
+          console.log('[HeroTool] 准备保存会话, user:', !!user, 'sessionId:', sessionId);
           if (user) {
+            console.log('[HeroTool] 调用 saveSession...');
             await saveSession({
               id: sessionId,
               date: Date.now(),
@@ -442,6 +447,9 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
               useCase: UseCase.LinkedIn,
               images: completedImages,
             });
+            console.log('[HeroTool] saveSession 完成');
+          } else {
+            console.log('[HeroTool] 用户未登录，跳过保存');
           }
 
           if (onSuccess) onSuccess(completedImages);
