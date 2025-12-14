@@ -43,16 +43,19 @@ const Navbar = () => {
 
   const handleSignOut = async () => {
     try {
-      await signOut();
       setIsUserMenuOpen(false);
       // Clear session storage and local storage related to user data
       localStorage.removeItem('ai_headshot_history');
       localStorage.removeItem('ai_headshot_quota');
       localStorage.removeItem('ai_headshot_user_id');
-      // Refresh page and navigate to home
-      window.location.href = '/';
+      // Sign out from Supabase
+      await signOut();
+      // Force full page reload to clear all state
+      window.location.replace(window.location.origin + '/#/');
     } catch (error) {
       console.error('登出失败:', error);
+      // Even if signOut fails, reload the page
+      window.location.replace(window.location.origin + '/#/');
     }
   };
 
