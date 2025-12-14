@@ -50,17 +50,8 @@ const toAbsoluteUrl = (url: string): string => {
   // 获取基础 URL
   let baseUrl: string;
 
-  // 优先使用环境变量（生产环境）
-  if (import.meta.env.VITE_APP_URL) {
-    const envUrl = import.meta.env.VITE_APP_URL;
-    // 确保环境变量 URL 格式正确
-    if (envUrl.startsWith('http://') || envUrl.startsWith('https://')) {
-      baseUrl = envUrl;
-    } else {
-      baseUrl = 'http://localhost:3000';
-    }
-  } else if (typeof window !== 'undefined') {
-    // 浏览器环境：验证 window.location.origin
+  // 优先使用 window.location.origin（运行时动态获取，确保正确）
+  if (typeof window !== 'undefined') {
     const origin = window.location.origin;
     // 验证 origin 是否有效（包含协议和主机名）
     if (origin && origin !== 'null' && origin.includes('://')) {
@@ -74,6 +65,14 @@ const toAbsoluteUrl = (url: string): string => {
         console.warn('Failed to parse window.location.href:', e);
         baseUrl = 'http://localhost:3000';
       }
+    }
+  } else if (import.meta.env.VITE_APP_URL) {
+    // 回退到环境变量（仅用于 SSR 或特殊情况）
+    const envUrl = import.meta.env.VITE_APP_URL;
+    if (envUrl.startsWith('http://') || envUrl.startsWith('https://')) {
+      baseUrl = envUrl;
+    } else {
+      baseUrl = 'http://localhost:3000';
     }
   } else {
     // 最终回退
