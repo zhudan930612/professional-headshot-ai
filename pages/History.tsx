@@ -131,9 +131,10 @@ export const History = () => {
                         onClick={() => setSelectedImage(img)}
                       >
                         <img 
-                          src={img.webpUrl || img.url} 
+                          src={`${img.webpUrl || img.url}?width=400&quality=75`}
                           alt="Generated Headshot" 
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
                         />
                         {showWatermark && (
                           <div className="pointer-events-none absolute inset-0 flex items-end justify-end">

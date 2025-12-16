@@ -429,6 +429,8 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
               if (!success) {
                 console.warn('[HeroTool] 配额扣减返回 false，但会话已保存');
               }
+              // 通知全局刷新额度显示
+              window.dispatchEvent(new Event('quota-updated'));
             } catch (quotaErr) {
               console.error('[HeroTool] 配额扣减失败:', quotaErr);
             }

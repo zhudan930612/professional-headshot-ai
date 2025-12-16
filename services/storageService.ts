@@ -27,16 +27,16 @@ export const getHistory = async (): Promise<GenerationSession[]> => {
     }
     console.log('[getHistory] 正在获取用户历史记录, userId:', userId);
 
-    // 1. 获取用户的所有会话
-    const { data: sessions, error: sessionsError } = await supabase
+    // 1. 获取用户所有会话
+    const { data: sessions, error: sessionError } = await supabase
       .from('generation_sessions')
-      .select('session_id, date, style, use_case')
+      .select('*')
       .eq('user_id', userId)
       .order('date', { ascending: false });
 
-    if (sessionsError) {
-      console.error('[getHistory] 获取会话失败:', sessionsError);
-      throw sessionsError;
+    if (sessionError) {
+      console.error('[getHistory] 获取会话失败:', sessionError);
+      throw sessionError;
     }
 
     if (!sessions || sessions.length === 0) {
@@ -240,7 +240,16 @@ export const getUserQuotaInfo = async (): Promise<QuotaInfo> => {
     return data as QuotaInfo;
   } catch (error) {
     console.error('获取配额信息失败:', error);
-    throw error;
+    // 兜底：返回免费配额，避免页面完全空白
+    return {
+      plan_type: 'free',
+      total_quota: 0,
+      used_quota: 0,
+      remaining_quota: 0,
+      is_paid: false,
+      quality: '1K',
+      has_watermark: true,
+    } as QuotaInfo;
   }
 };
 

@@ -14,7 +14,7 @@ const Navbar = () => {
   const [quotaInfo, setQuotaInfo] = useState<QuotaInfo | null>(null);
   const { user, signOut, openAuthModal } = useAuth();
 
-  // Update quota display on route change or periodically
+  // Update quota display on route change; no polling. Also refresh when收到 quota-updated 事件。
   useEffect(() => {
     const loadQuota = async () => {
       try {
@@ -31,14 +31,27 @@ const Navbar = () => {
         }
       } catch (err) {
         console.error('Failed to load quota info:', err);
-        // Fallback to legacy system
+        // Fallback: legacy system + default free quota info, so UI 仍可展示
         const remainingQuota = await getRemainingQuota();
         setQuota(remainingQuota);
+        setQuotaInfo({
+          plan_type: 'free',
+          total_quota: remainingQuota,
+          used_quota: 0,
+          remaining_quota: remainingQuota,
+          is_paid: false,
+          quality: '1K',
+          has_watermark: true,
+        } as QuotaInfo);
       }
     };
     loadQuota();
-    const interval = setInterval(loadQuota, 5000);
-    return () => clearInterval(interval);
+
+    const handleQuotaUpdate = () => loadQuota();
+    window.addEventListener('quota-updated', handleQuotaUpdate);
+    return () => {
+      window.removeEventListener('quota-updated', handleQuotaUpdate);
+    };
   }, [location, user]);
 
   const handleSignOut = async () => {
