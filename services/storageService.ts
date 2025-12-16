@@ -256,6 +256,17 @@ export const decrementQuota = async (
     throw new Error('用户未登录');
   }
 
+  // 重试请求不扣减配额
+  if (isRetry) {
+    try {
+      const remaining = await getRemainingQuota();
+      return { success: true, remaining };
+    } catch (e) {
+      console.error('重试获取配额失败:', e);
+      return { success: true, remaining: 0 };
+    }
+  }
+
   try {
     const { data, error } = await supabase
       .rpc('decrement_subscription_quota_safe', {
@@ -271,8 +282,39 @@ export const decrementQuota = async (
       remaining: data.remaining
     };
   } catch (error) {
-    console.error('扣减配额失败:', error);
-    throw error;
+    console.error('扣减配额失败，尝试回退方案:', error);
+
+    // 回退：直接更新 user_quotas（主要针对免费用户或 RPC 缺失场景）
+    try {
+      const quotaInfo = await getUserQuotaInfo();
+      const today = new Date().toISOString().split('T')[0];
+
+      const { data: current, error: selectError } = await supabase
+        .from('user_quotas')
+        .select('count')
+        .eq('user_id', userId)
+        .eq('date', today)
+        .single();
+
+      if (selectError && selectError.code !== 'PGRST116') {
+        throw selectError;
+      }
+
+      const currentCount = current?.count ?? 0;
+      const newCount = currentCount + amount;
+
+      const { error: upsertError } = await supabase
+        .from('user_quotas')
+        .upsert({ user_id: userId, date: today, count: newCount });
+
+      if (upsertError) throw upsertError;
+
+      const remaining = Math.max((quotaInfo.total_quota || 0) - newCount, 0);
+      return { success: true, remaining };
+    } catch (fallbackError) {
+      console.error('扣减配额回退失败:', fallbackError);
+      throw fallbackError;
+    }
   }
 };
 

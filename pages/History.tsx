@@ -1,32 +1,52 @@
-import React, { useEffect, useState } from 'react';
-import { getHistory } from '../services/storageService';
-import { GenerationSession, GeneratedImage } from '../types';
+import React, { useEffect, useState, useCallback } from 'react';
+import { getHistory, getUserQuotaInfo } from '../services/storageService';
+import { GenerationSession, GeneratedImage, QuotaInfo } from '../types';
 import { Layout } from '../components/Layout';
 import { Download, Calendar, ArrowLeft, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { downloadImageWithWatermark } from '../services/watermarkService';
 
 export const History = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [sessions, setSessions] = useState<GenerationSession[]>([]);
   const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null);
+  const [quotaInfo, setQuotaInfo] = useState<QuotaInfo | null>(null);
+
+  const loadData = useCallback(async () => {
+    const history = await getHistory();
+    setSessions(history);
+
+    if (user) {
+      try {
+        const info = await getUserQuotaInfo();
+        setQuotaInfo(info);
+      } catch (err) {
+        console.error('加载配额信息失败:', err);
+      }
+    } else {
+      setQuotaInfo(null);
+    }
+  }, [user]);
 
   useEffect(() => {
-    const loadHistory = async () => {
-      const history = await getHistory();
-      setSessions(history);
-    };
-    loadHistory();
+    loadData();
 
     const handleMigrationComplete = () => {
-      loadHistory();
+      loadData();
+    };
+    const handleFocus = () => {
+      loadData();
     };
     window.addEventListener('history-migrated', handleMigrationComplete);
+    window.addEventListener('focus', handleFocus);
 
     return () => {
       window.removeEventListener('history-migrated', handleMigrationComplete);
+      window.removeEventListener('focus', handleFocus);
     };
-  }, [user]);
+  }, [user, loadData]);
 
   const formatDate = (ts: number) => {
     const date = new Date(ts);
@@ -38,13 +58,22 @@ export const History = () => {
 
   const handleDownloadImage = async (image: GeneratedImage) => {
     try {
-      const response = await fetch(image.url);
+      const baseUrl = image.webpUrl || image.url;
+      if (quotaInfo?.has_watermark) {
+        try {
+          await downloadImageWithWatermark(baseUrl, `professional-headshot-${Date.now()}.png`);
+          return;
+        } catch (e) {
+          console.error('水印下载失败，回退原图:', e);
+        }
+      }
+
+      const response = await fetch(baseUrl);
       const blob = await response.blob();
-      const extension = 'png';
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `professional-headshot-${Date.now()}.${extension}`;
+      link.download = `professional-headshot-${Date.now()}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -54,6 +83,12 @@ export const History = () => {
       // Fallback: open in new tab
       window.open(image.url, '_blank');
     }
+  };
+
+  const showWatermark = quotaInfo?.has_watermark;
+
+  const handleUpgrade = () => {
+    navigate('/pricing');
   };
 
   return (
@@ -100,6 +135,13 @@ export const History = () => {
                           alt="Generated Headshot" 
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
                         />
+                        {showWatermark && (
+                          <div className="pointer-events-none absolute inset-0 flex items-end justify-end">
+                            <div className="m-2 px-2 py-1 bg-black/60 text-[10px] font-bold uppercase tracking-wide text-white rounded">
+                              Free Version
+                            </div>
+                          </div>
+                        )}
                       </div>
                       
                       {/* Date */}
@@ -124,30 +166,56 @@ export const History = () => {
                 ></div>
                 
                 {/* Content wrapper */}
-                <div className="relative z-10 w-full max-w-5xl flex flex-col items-center justify-center gap-6 animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
-                    <div className="relative rounded-xl overflow-hidden shadow-2xl bg-black/50 ring-1 ring-white/10">
+                <div className="relative z-10 max-w-5xl flex flex-col items-center justify-center gap-6 animate-in zoom-in-95 duration-200 pointer-events-none" style={{ marginTop: '0px' }}>
+                    <div className="relative rounded-xl overflow-hidden shadow-2xl bg-black/50 ring-1 ring-white/10 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
                         {/* Image */}
                         <img 
                             src={selectedImage.webpUrl || selectedImage.url} 
                             alt="Full size" 
                             className="max-h-[75vh] w-auto max-w-full object-contain"
                         />
+                        {showWatermark && (
+                          <div className="pointer-events-none absolute inset-0 flex items-end justify-end p-3">
+                            <div className="px-3 py-1.5 bg-black/60 text-xs font-bold uppercase tracking-wide text-white rounded">
+                              Free Version
+                            </div>
+                          </div>
+                        )}
                     </div>
                     
                     {/* Buttons */}
-                    <div className="flex items-center gap-4">
-                        <button 
-                            onClick={() => setSelectedImage(null)}
-                            className="px-6 py-2.5 bg-white text-slate-900 rounded-full font-bold text-sm hover:bg-slate-200 transition-colors shadow-lg"
-                        >
-                            Close
-                        </button>
+                    <div className="flex flex-col gap-2 w-full items-center pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center gap-3">
                         <button 
                             onClick={() => handleDownloadImage(selectedImage)}
-                            className="px-6 py-2.5 bg-primary-600 text-white rounded-full font-bold text-sm hover:bg-primary-700 transition-colors shadow-lg flex items-center gap-2"
+                            className="px-5 py-2.5 bg-primary-600 text-white rounded-full font-bold text-sm hover:bg-primary-700 transition-colors shadow-lg flex items-center gap-2"
+                            style={{ minWidth: '150px' }}
                         >
-                            <Download size={16} /> Download High Res
+                            <Download size={16} /> Download
                         </button>
+                        {showWatermark && (
+                          <div className="relative inline-block">
+                            <button
+                              onClick={handleUpgrade}
+                              className="px-6 py-2.5 bg-amber-500 text-white rounded-full font-bold text-sm hover:bg-amber-600 transition-colors shadow"
+                              style={{ minWidth: '200px' }}
+                            >
+                              Upgrade Plan
+                            </button>
+                            <span
+                              className="absolute -top-2 -right-[25px] inline-block text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg"
+                              style={{ background: 'linear-gradient(to right, #3b82f6, #2563eb)' }}
+                            >
+                              ⭐ Popular
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      {showWatermark && (
+                        <div className="text-xs text-slate-200 text-center mt-1 whitespace-nowrap">
+                          Download watermark-free professional headshots
+                        </div>
+                      )}
                     </div>
                 </div>
 

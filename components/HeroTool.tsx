@@ -1004,51 +1004,67 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
 
         {/* Full Screen Image Modal */}
         {selectedImage && (
-            <div className="fixed inset-0 z-[100] overflow-hidden">
-                <div
-                    className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
-                    onClick={() => setSelectedImage(null)}
-                ></div>
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8" style={{ maxHeight: '100dvh' }}>
+            <div 
+                className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+                onClick={() => setSelectedImage(null)}
+            ></div>
 
-                {/* Content wrapper - Absolutely centered */}
-                <div
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-6 animate-in zoom-in-95 duration-200 w-full px-4"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <div className="relative rounded-xl overflow-hidden shadow-2xl bg-black/50 ring-1 ring-white/10">
-                        {/* Image */}
-                        <img
-                            src={displayImages.get(selectedImage.id) || selectedImage.webpUrl || selectedImage.url}
-                            alt="Full size"
-                            className="max-h-[75vh] w-auto max-w-[90vw] object-contain"
-                        />
-                    </div>
-
-                    {/* Buttons */}
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => setSelectedImage(null)}
-                            className="px-6 py-2.5 bg-white text-slate-900 rounded-full font-bold text-sm hover:bg-slate-200 transition-colors shadow-lg"
-                        >
-                            Close
-                        </button>
-                        <button
-                            onClick={() => handleDownloadImage(selectedImage)}
-                            className="px-6 py-2.5 bg-primary-600 text-white rounded-full font-bold text-sm hover:bg-primary-700 transition-colors shadow-lg flex items-center gap-2"
-                        >
-                            <Download size={16} /> Download High Res
-                        </button>
-                    </div>
+            {/* Content wrapper */}
+            <div className="relative z-10 max-w-5xl flex flex-col items-center justify-center gap-6 animate-in zoom-in-95 duration-200 pointer-events-none" style={{ marginTop: '0px' }}>
+                <div className="relative rounded-xl overflow-hidden shadow-2xl bg-black/50 ring-1 ring-white/10 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+                    {/* Image */}
+                    <img
+                        src={displayImages.get(selectedImage.id) || selectedImage.webpUrl || selectedImage.url}
+                        alt="Full size"
+                        className="max-h-[75vh] w-auto max-w-[90vw] object-contain"
+                    />
                 </div>
 
-                {/* Top right close button */}
-                <button 
-                    className="absolute top-4 right-4 text-white/50 hover:text-white p-2 transition-colors z-20"
-                    onClick={() => setSelectedImage(null)}
-                >
-                    <XIconLucide size={32} />
-                </button>
+                {/* Buttons */}
+                <div className="flex flex-col gap-2 w-full items-center pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center gap-3">
+                    <button 
+                        onClick={() => handleDownloadImage(selectedImage)}
+                        className="px-5 py-2.5 bg-primary-600 text-white rounded-full font-bold text-sm hover:bg-primary-700 transition-colors shadow-lg flex items-center gap-2"
+                        style={{ minWidth: '150px' }}
+                    >
+                        <Download size={16} /> Download
+                    </button>
+                    {quotaInfo?.has_watermark && (
+                      <div className="relative inline-block">
+                        <button
+                          onClick={() => setShowUpgradeModal(true)}
+                          className="px-6 py-2.5 bg-amber-500 text-white rounded-full font-bold text-sm hover:bg-amber-600 transition-colors shadow"
+                          style={{ minWidth: '200px' }}
+                        >
+                          Upgrade Plan
+                        </button>
+                        <span
+                          className="absolute -top-2 -right-[25px] inline-block text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg"
+                          style={{ background: 'linear-gradient(to right, #3b82f6, #2563eb)' }}
+                        >
+                          ⭐ Popular
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  {quotaInfo?.has_watermark && (
+                    <div className="text-xs text-slate-200 text-center mt-1 whitespace-nowrap">
+                      Download watermark-free professional headshots
+                    </div>
+                  )}
+                </div>
             </div>
+
+            {/* Top right close button */}
+            <button 
+                className="absolute top-4 right-4 text-white/50 hover:text-white p-2 transition-colors z-20"
+                onClick={() => setSelectedImage(null)}
+            >
+                <XIconLucide size={32} />
+            </button>
+          </div>
         )}
     </>
   );
