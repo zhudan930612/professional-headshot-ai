@@ -357,7 +357,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
             const preloadImg = new Image();
             preloadImg.onload = () => resolve();
             preloadImg.onerror = () => reject(new Error('Failed to load image'));
-            preloadImg.src = img.url;
+            preloadImg.src = img.webpUrl || img.url;
           });
 
           // ✅ 成功：图片真正加载完成后才更新状态
@@ -521,7 +521,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
         const preloadImg = new Image();
         preloadImg.onload = () => resolve();
         preloadImg.onerror = () => reject(new Error('Failed to load image'));
-        preloadImg.src = img.url;
+        preloadImg.src = img.webpUrl || img.url;
       });
 
       // 成功：图片真正加载完成后才更新状态
@@ -558,41 +558,15 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
       setUploadedReferenceImage(null);
   }
 
-  // Download image directly
-  const handleDownloadImage = async (imageUrl: string) => {
+  // Download PNG（主资源），Free 用户可使用已生成的水印版本
+  const handleDownloadImage = async (image: GeneratedImage) => {
     try {
-      // Check if Free user with watermark
-      if (quotaInfo?.has_watermark) {
-        // For Free users, use watermarked version if available
-        const watermarkedUrl = displayImages.get(imageUrl);
-        if (watermarkedUrl) {
-          await downloadImageWithWatermark(watermarkedUrl, `professional-headshot-${Date.now()}.jpg`);
-          return;
-        }
-      }
+      const watermarkedUrl = quotaInfo?.has_watermark ? displayImages.get(image.id) : undefined;
+      const downloadUrl = watermarkedUrl || image.url;
 
-      // For paid users or fallback: direct download without watermark
-      const response = await fetch(imageUrl);
+      const response = await fetch(downloadUrl);
       const blob = await response.blob();
-
-      // Determine file extension from blob MIME type or URL
-      let extension = 'jpg'; // default
-      const mimeType = blob.type;
-
-      if (mimeType === 'image/png') {
-        extension = 'png';
-      } else if (mimeType === 'image/jpeg' || mimeType === 'image/jpg') {
-        extension = 'jpg';
-      } else if (mimeType === 'image/webp') {
-        extension = 'webp';
-      } else {
-        // Fallback: try to extract from URL
-        const urlMatch = imageUrl.match(/\.(png|jpg|jpeg|webp)(\?|$)/i);
-        if (urlMatch) {
-          extension = urlMatch[1].toLowerCase();
-        }
-      }
-
+      const extension = 'png';
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -604,7 +578,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
     } catch (error) {
       console.error('Download failed:', error);
       // Fallback: open in new tab
-      window.open(imageUrl, '_blank');
+      window.open(image.url, '_blank');
     }
   }
 
@@ -641,9 +615,9 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                         <p className="text-xs text-slate-500 font-medium mb-3 text-center">Example Photos:</p>
                         <div className="flex gap-4 justify-center">
                             {[
-                                'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=faces',
-                                'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=faces',
-                                'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=faces'
+                                '/hero-img/hero_01.webp',
+                                '/hero-img/hero_02.webp',
+                                '/hero-img/hero_03.webp'
                             ].map((url, idx) => (
                                 <div key={idx} className="w-24 aspect-[3/4] rounded-xl overflow-hidden border-2 border-slate-300 shadow-md hover:shadow-lg transition-shadow">
                                     <img src={url} alt={`Example ${idx + 1}`} className="w-full h-full object-cover" />
@@ -932,7 +906,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                                 >
                                     <img
                                         // Use watermarked URL if available for Free users
-                                        src={displayImages.get(result.image.id) || result.image.url}
+                                        src={displayImages.get(result.image.id) || result.image.webpUrl || result.image.url}
                                         alt="Result"
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                         loading="eager"
@@ -1044,7 +1018,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                     <div className="relative rounded-xl overflow-hidden shadow-2xl bg-black/50 ring-1 ring-white/10">
                         {/* Image */}
                         <img
-                            src={selectedImage.url}
+                            src={displayImages.get(selectedImage.id) || selectedImage.webpUrl || selectedImage.url}
                             alt="Full size"
                             className="max-h-[75vh] w-auto max-w-[90vw] object-contain"
                         />
@@ -1059,7 +1033,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                             Close
                         </button>
                         <button
-                            onClick={() => handleDownloadImage(selectedImage.url)}
+                            onClick={() => handleDownloadImage(selectedImage)}
                             className="px-6 py-2.5 bg-primary-600 text-white rounded-full font-bold text-sm hover:bg-primary-700 transition-colors shadow-lg flex items-center gap-2"
                         >
                             <Download size={16} /> Download High Res

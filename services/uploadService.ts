@@ -5,6 +5,68 @@ import { ReferenceImage, GeneratedImage } from '../types';
 const USER_UPLOADS_BUCKET = 'user-uploads';
 const GENERATED_IMAGES_BUCKET = 'generated-headshots';
 
+// 将图片 Blob 转换为指定格式（基于浏览器 Canvas，失败时回退原始 Blob）
+const convertBlobToFormat = async (
+  blob: Blob,
+  mimeType: 'image/png' | 'image/webp',
+  quality: number = 0.92
+): Promise<Blob> => {
+  // 仅在浏览器环境转换；SSR/函数环境直接返回原始 Blob
+  if (typeof document === 'undefined' || typeof FileReader === 'undefined' || typeof Image === 'undefined') return blob;
+
+  return new Promise((resolve) => {
+    try {
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width || 1;
+            canvas.height = img.height || 1;
+
+            const ctx = canvas.getContext('2d');
+            if (!ctx) throw new Error('无法获取 Canvas 上下文');
+
+            ctx.drawImage(img, 0, 0);
+
+            canvas.toBlob((converted) => {
+              if (converted) {
+                resolve(converted);
+              } else {
+                resolve(blob);
+              }
+            }, mimeType, quality);
+          } catch (err) {
+            console.warn('转换图片失败，回退原始 Blob:', err);
+            resolve(blob);
+          }
+        };
+
+        img.onerror = () => {
+          console.warn('图片加载失败，回退原始 Blob');
+          resolve(blob);
+        };
+
+        img.src = reader.result as string;
+      };
+
+      reader.onerror = () => {
+        console.warn('读取图片失败，回退原始 Blob');
+        resolve(blob);
+      };
+
+      reader.readAsDataURL(blob);
+    } catch (err) {
+      console.warn('转换过程异常，回退原始 Blob:', err);
+      resolve(blob);
+    }
+  });
+};
+
 /**
  * 上传参考图到 Supabase Storage
  *
@@ -76,38 +138,64 @@ export const uploadGeneratedImage = async (
   index: number
 ): Promise<GeneratedImage> => {
   try {
-    // 生成唯一文件名
+    // 统一转成 PNG 作为主存
+    const pngBlob = await convertBlobToFormat(imageBlob, 'image/png');
     const timestamp = Date.now();
-    const fileName = `${sessionId}_${index}.jpg`;
-    const filePath = `${userId}/${fileName}`;
+    const baseName = `${sessionId}_${index}`;
+    const pngPath = `${userId}/${baseName}.png`;
 
-    // 上传到 Supabase Storage
-    const { data, error } = await supabase.storage
+    const { error: pngErr } = await supabase.storage
       .from(GENERATED_IMAGES_BUCKET)
-      .upload(filePath, imageBlob, {
+      .upload(pngPath, pngBlob, {
         cacheControl: '3600',
         upsert: false,
-        contentType: 'image/jpeg',
+        contentType: 'image/png',
       });
 
-    if (error) {
-      console.error('上传生成图片失败:', error);
-      throw new Error(`上传失败: ${error.message}`);
+    if (pngErr) {
+      console.error('上传 PNG 失败:', pngErr);
+      throw new Error(`上传失败: ${pngErr.message}`);
     }
 
-    // 获取公开访问 URL
-    const { data: { publicUrl } } = supabase.storage
+    const { data: { publicUrl: pngUrl } } = supabase.storage
       .from(GENERATED_IMAGES_BUCKET)
-      .getPublicUrl(filePath);
+      .getPublicUrl(pngPath);
+
+    // 从 PNG 派生 WebP 展示
+    let webpUrl: string | undefined;
+    try {
+      const webpBlob = await convertBlobToFormat(pngBlob, 'image/webp', 0.8);
+      const webpPath = `${userId}/${baseName}.webp`;
+
+      const { error: webpErr } = await supabase.storage
+        .from(GENERATED_IMAGES_BUCKET)
+        .upload(webpPath, webpBlob, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: 'image/webp',
+        });
+
+      if (!webpErr) {
+        const { data: { publicUrl } } = supabase.storage
+          .from(GENERATED_IMAGES_BUCKET)
+          .getPublicUrl(webpPath);
+        webpUrl = publicUrl;
+      } else {
+        console.warn('上传 WebP 失败，前端将回退 PNG:', webpErr);
+      }
+    } catch (err) {
+      console.warn('生成 WebP 失败，前端将回退 PNG:', err);
+    }
 
     // 构建 GeneratedImage 对象
     const generatedImage: GeneratedImage = {
       id: `gen_${timestamp}_${index}`,
-      url: publicUrl,
-      storagePath: filePath,
-      fileSize: imageBlob.size,
-      mimeType: 'image/jpeg',
+      url: pngUrl,
+      storagePath: pngPath,
+      fileSize: pngBlob.size,
+      mimeType: 'image/png',
       createdAt: timestamp,
+      webpUrl,
     };
 
     return generatedImage;

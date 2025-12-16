@@ -36,29 +36,11 @@ export const History = () => {
     return `${month} ${day}, ${year}`;
   };
 
-  const handleDownloadImage = async (imageUrl: string) => {
+  const handleDownloadImage = async (image: GeneratedImage) => {
     try {
-      const response = await fetch(imageUrl);
+      const response = await fetch(image.url);
       const blob = await response.blob();
-
-      // Determine file extension from blob MIME type or URL
-      let extension = 'jpg'; // default
-      const mimeType = blob.type;
-
-      if (mimeType === 'image/png') {
-        extension = 'png';
-      } else if (mimeType === 'image/jpeg' || mimeType === 'image/jpg') {
-        extension = 'jpg';
-      } else if (mimeType === 'image/webp') {
-        extension = 'webp';
-      } else {
-        // Fallback: try to extract from URL
-        const urlMatch = imageUrl.match(/\.(png|jpg|jpeg|webp)(\?|$)/i);
-        if (urlMatch) {
-          extension = urlMatch[1].toLowerCase();
-        }
-      }
-
+      const extension = 'png';
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -70,7 +52,7 @@ export const History = () => {
     } catch (error) {
       console.error('Download failed:', error);
       // Fallback: open in new tab
-      window.open(imageUrl, '_blank');
+      window.open(image.url, '_blank');
     }
   };
 
@@ -114,7 +96,7 @@ export const History = () => {
                         onClick={() => setSelectedImage(img)}
                       >
                         <img 
-                          src={img.url} 
+                          src={img.webpUrl || img.url} 
                           alt="Generated Headshot" 
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
                         />
@@ -146,7 +128,7 @@ export const History = () => {
                     <div className="relative rounded-xl overflow-hidden shadow-2xl bg-black/50 ring-1 ring-white/10">
                         {/* Image */}
                         <img 
-                            src={selectedImage.url} 
+                            src={selectedImage.webpUrl || selectedImage.url} 
                             alt="Full size" 
                             className="max-h-[75vh] w-auto max-w-full object-contain"
                         />
@@ -161,7 +143,7 @@ export const History = () => {
                             Close
                         </button>
                         <button 
-                            onClick={() => handleDownloadImage(selectedImage.url)}
+                            onClick={() => handleDownloadImage(selectedImage)}
                             className="px-6 py-2.5 bg-primary-600 text-white rounded-full font-bold text-sm hover:bg-primary-700 transition-colors shadow-lg flex items-center gap-2"
                         >
                             <Download size={16} /> Download High Res

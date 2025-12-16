@@ -49,7 +49,7 @@ export const getHistory = async (): Promise<GenerationSession[]> => {
     const sessionIds = sessions.map(s => s.session_id);
     const { data: images, error: imagesError } = await supabase
       .from('generated_images')
-      .select('session_id, image_id, url, created_at_timestamp')
+      .select('session_id, image_id, url, webp_url, storage_path, file_size, mime_type, created_at_timestamp')
       .in('session_id', sessionIds);
 
     if (imagesError) {
@@ -76,6 +76,10 @@ export const getHistory = async (): Promise<GenerationSession[]> => {
         id: img.image_id,
         url: img.url,
         createdAt: img.created_at_timestamp,
+        storagePath: img.storage_path,
+        fileSize: img.file_size,
+        mimeType: img.mime_type,
+        webpUrl: img.webp_url,
       })),
     }));
 
@@ -132,6 +136,7 @@ export const saveSession = async (session: GenerationSession): Promise<void> => 
         storage_path: img.storagePath,
         file_size: img.fileSize,
         mime_type: img.mimeType,
+        webp_url: img.webpUrl,
       }));
       console.log('[saveSession] 图片记录:', imageRecords);
 
@@ -344,6 +349,10 @@ export const migrateLocalHistoryToDatabase = async (userId: string): Promise<voi
             image_id: img.id,
             url: img.url,
             created_at_timestamp: img.createdAt,
+            storage_path: img.storagePath,
+            file_size: img.fileSize,
+            mime_type: img.mimeType,
+            webp_url: img.webpUrl,
           }));
 
           const { error: imagesError } = await supabase

@@ -32,11 +32,12 @@ export interface HeadshotTemplate {
 
 export interface GeneratedImage {
   id: string;
-  url: string;
+  url: string;             // PNG 主资源 URL
   createdAt: number;
-  storagePath?: string;    // Supabase Storage 路径
-  fileSize?: number;       // 文件大小（字节）
-  mimeType?: string;       // MIME 类型（如 image/jpeg）
+  storagePath?: string;    // Supabase Storage 路径（PNG）
+  fileSize?: number;       // 文件大小（字节，PNG）
+  mimeType?: string;       // MIME 类型，默认 image/png
+  webpUrl?: string;        // WebP 展示 URL（可选）
 }
 
 // 参考图（用户上传的照片）
