@@ -33,6 +33,19 @@ const CATEGORIES = [
   HeadshotStyle.SolidColor,
 ];
 
+// Helper function: Convert HeadshotStyle to SEO-friendly style name
+const getStyleName = (category: HeadshotStyle): string => {
+  const styleMap: Record<HeadshotStyle, string> = {
+    [HeadshotStyle.General]: 'professional',
+    [HeadshotStyle.Medical]: 'medical professional',
+    [HeadshotStyle.RealEstate]: 'real estate agent',
+    [HeadshotStyle.Corporate]: 'corporate executive',
+    [HeadshotStyle.Creative]: 'creative professional',
+    [HeadshotStyle.SolidColor]: 'professional'
+  };
+  return styleMap[category];
+};
+
 export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -178,7 +191,6 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
     // ⭐ NEW: 如果删除的是参考图，重新选择
     if (index === selectedReferenceIndex) {
       setSelectedReferenceIndex(null);
-      setUploadedReferenceImage(null);
 
       if (updatedFiles.length > 0) {
         try {
@@ -357,7 +369,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
             const preloadImg = new Image();
             preloadImg.onload = () => resolve();
             preloadImg.onerror = () => reject(new Error('Failed to load image'));
-            preloadImg.src = img.webpUrl || img.url;
+            preloadImg.src = img.jpgUrl || img.url;
           });
 
           // ✅ 成功：图片真正加载完成后才更新状态
@@ -523,7 +535,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
         const preloadImg = new Image();
         preloadImg.onload = () => resolve();
         preloadImg.onerror = () => reject(new Error('Failed to load image'));
-        preloadImg.src = img.webpUrl || img.url;
+        preloadImg.src = img.jpgUrl || img.url;
       });
 
       // 成功：图片真正加载完成后才更新状态
@@ -557,7 +569,6 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
       setIsGenerating(false);
       // ⭐ NEW: 重置参考图状态
       setSelectedReferenceIndex(null);
-      setUploadedReferenceImage(null);
   }
 
   // Download PNG（主资源），Free 用户可使用已生成的水印版本
@@ -768,7 +779,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                         >
                             <img
                                 src={template.imageUrl}
-                                alt={`${template.label} - Professional headshot reference template for ${template.category}`}
+                                alt={`AI-generated ${getStyleName(template.category)} headshot for LinkedIn and resume${template.description ? `, ${template.description}` : ''}`}
                                 loading="lazy"
                                 className="w-full h-full object-cover"
                             />
@@ -908,7 +919,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                                 >
                                     <img
                                         // Use watermarked URL if available for Free users
-                                        src={displayImages.get(result.image.id) || result.image.webpUrl || result.image.url}
+                                        src={displayImages.get(result.image.id) || result.image.jpgUrl || result.image.url}
                                         alt="Result"
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                         loading="eager"
@@ -1017,7 +1028,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                 <div className="relative rounded-xl overflow-hidden shadow-2xl bg-black/50 ring-1 ring-white/10 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
                     {/* Image */}
                     <img
-                        src={displayImages.get(selectedImage.id) || selectedImage.webpUrl || selectedImage.url}
+                        src={displayImages.get(selectedImage.id) || selectedImage.jpgUrl || selectedImage.url}
                         alt="Full size"
                         className="max-h-[75vh] w-auto max-w-[90vw] object-contain"
                     />

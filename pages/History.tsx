@@ -58,7 +58,7 @@ export const History = () => {
 
   const handleDownloadImage = async (image: GeneratedImage) => {
     try {
-      const baseUrl = image.webpUrl || image.url;
+      const baseUrl = image.jpgUrl || image.url;
       if (quotaInfo?.has_watermark) {
         try {
           await downloadImageWithWatermark(baseUrl, `professional-headshot-${Date.now()}.png`);
@@ -131,7 +131,7 @@ export const History = () => {
                         onClick={() => setSelectedImage(img)}
                       >
                         <img 
-                          src={`${img.webpUrl || img.url}?width=400&quality=75`}
+                          src={`${img.jpgUrl || img.url}?width=400&quality=75`}
                           alt="Generated Headshot" 
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           loading="lazy"
@@ -171,7 +171,7 @@ export const History = () => {
                     <div className="relative rounded-xl overflow-hidden shadow-2xl bg-black/50 ring-1 ring-white/10 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
                         {/* Image */}
                         <img 
-                            src={selectedImage.webpUrl || selectedImage.url} 
+                            src={selectedImage.jpgUrl || selectedImage.url} 
                             alt="Full size" 
                             className="max-h-[75vh] w-auto max-w-full object-contain"
                         />

@@ -8,7 +8,7 @@ const GENERATED_IMAGES_BUCKET = 'generated-headshots';
 // 将图片 Blob 转换为指定格式（基于浏览器 Canvas，失败时回退原始 Blob）
 const convertBlobToFormat = async (
   blob: Blob,
-  mimeType: 'image/png' | 'image/webp',
+  mimeType: 'image/png' | 'image/webp' | 'image/jpeg',
   quality: number = 0.92
 ): Promise<Blob> => {
   // 仅在浏览器环境转换；SSR/函数环境直接返回原始 Blob
@@ -161,30 +161,30 @@ export const uploadGeneratedImage = async (
       .from(GENERATED_IMAGES_BUCKET)
       .getPublicUrl(pngPath);
 
-    // 从 PNG 派生 WebP 展示
-    let webpUrl: string | undefined;
+    // 从 PNG 派生 JPG 展示（替代 WebP，更好的兼容性）
+    let jpgUrl: string | undefined;
     try {
-      const webpBlob = await convertBlobToFormat(pngBlob, 'image/webp', 0.8);
-      const webpPath = `${userId}/${baseName}.webp`;
+      const jpgBlob = await convertBlobToFormat(pngBlob, 'image/jpeg', 0.85);
+      const jpgPath = `${userId}/${baseName}.jpg`;
 
-      const { error: webpErr } = await supabase.storage
+      const { error: jpgErr } = await supabase.storage
         .from(GENERATED_IMAGES_BUCKET)
-        .upload(webpPath, webpBlob, {
+        .upload(jpgPath, jpgBlob, {
           cacheControl: '3600',
           upsert: false,
-          contentType: 'image/webp',
+          contentType: 'image/jpeg',
         });
 
-      if (!webpErr) {
+      if (!jpgErr) {
         const { data: { publicUrl } } = supabase.storage
           .from(GENERATED_IMAGES_BUCKET)
-          .getPublicUrl(webpPath);
-        webpUrl = publicUrl;
+          .getPublicUrl(jpgPath);
+        jpgUrl = publicUrl;
       } else {
-        console.warn('上传 WebP 失败，前端将回退 PNG:', webpErr);
+        console.warn('上传 JPG 失败，前端将回退 PNG:', jpgErr);
       }
     } catch (err) {
-      console.warn('生成 WebP 失败，前端将回退 PNG:', err);
+      console.warn('生成 JPG 失败，前端将回退 PNG:', err);
     }
 
     // 构建 GeneratedImage 对象
@@ -195,7 +195,7 @@ export const uploadGeneratedImage = async (
       fileSize: pngBlob.size,
       mimeType: 'image/png',
       createdAt: timestamp,
-      webpUrl,
+      jpgUrl,
     };
 
     return generatedImage;

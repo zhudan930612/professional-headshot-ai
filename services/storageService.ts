@@ -136,7 +136,7 @@ export const saveSession = async (session: GenerationSession): Promise<void> => 
         storage_path: img.storagePath,
         file_size: img.fileSize,
         mime_type: img.mimeType,
-        webp_url: img.webpUrl,
+        jpg_url: img.jpgUrl,
       }));
       console.log('[saveSession] 图片记录:', imageRecords);
 
@@ -403,7 +403,7 @@ export const migrateLocalHistoryToDatabase = async (userId: string): Promise<voi
             storage_path: img.storagePath,
             file_size: img.fileSize,
             mime_type: img.mimeType,
-            webp_url: img.webpUrl,
+            jpg_url: img.jpgUrl,
           }));
 
           const { error: imagesError } = await supabase
