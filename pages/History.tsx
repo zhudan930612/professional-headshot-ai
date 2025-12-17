@@ -8,29 +8,17 @@ import { useAuth } from '../contexts/AuthContext';
 import { downloadImageWithWatermark } from '../services/watermarkService';
 
 export const History = () => {
-  const { user } = useAuth();
+  const { user, quotaInfo } = useAuth();
   const navigate = useNavigate();
   const [sessions, setSessions] = useState<GenerationSession[]>([]);
   const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null);
-  const [quotaInfo, setQuotaInfo] = useState<QuotaInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadData = useCallback(async () => {
-    setIsLoading(true);
+  const loadData = useCallback(async (silenceLoading = false) => {
+    if (!silenceLoading) setIsLoading(true);
     try {
       const history = await getHistory();
       setSessions(history);
-
-      if (user) {
-        try {
-          const info = await getUserQuotaInfo();
-          setQuotaInfo(info);
-        } catch (err) {
-          console.error('加载配额信息失败:', err);
-        }
-      } else {
-        setQuotaInfo(null);
-      }
     } finally {
       setIsLoading(false);
     }
@@ -43,7 +31,8 @@ export const History = () => {
       loadData();
     };
     const handleFocus = () => {
-      loadData();
+      // Don't show skeleton on focus refresh
+      loadData(true);
     };
     window.addEventListener('history-migrated', handleMigrationComplete);
     window.addEventListener('focus', handleFocus);

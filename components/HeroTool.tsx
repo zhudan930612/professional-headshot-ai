@@ -51,7 +51,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
   const location = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const allPreviewUrlsRef = useRef<Set<string>>(new Set());
-  const { user, openAuthModal } = useAuth();
+  const { user, openAuthModal, quotaInfo: authQuotaInfo, refreshQuota } = useAuth();
 
   // State
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -69,48 +69,43 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
   const [error, setError] = useState<string | null>(null);
   const [generationResults, setGenerationResults] = useState<GenerationResult[]>([]);
   const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null);
-  const [remainingQuota, setRemainingQuota] = useState<number>(0);
-
   // Subscription State
-  const [quotaInfo, setQuotaInfo] = useState<QuotaInfo | null>(null);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [localQuotaInfo, setLocalQuotaInfo] = useState<QuotaInfo | null>(null);
+  const showUpgradeModalState = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = showUpgradeModalState;
   const [upgradeModalSource, setUpgradeModalSource] = useState<'step1' | 'step2'>('step2');
   const [requiredQuotaCount, setRequiredQuotaCount] = useState(1);
   const [displayImages, setDisplayImages] = useState<Map<string, string>>(new Map());
 
-  // Load quota on mount and when generation completes
+  // Derived state
+  const quotaInfo = user ? authQuotaInfo : localQuotaInfo;
+  const remainingQuota = quotaInfo?.remaining_quota ?? 0;
+
+  // Load quota for non-logged-in users
   useEffect(() => {
-    const loadQuota = async () => {
-      try {
-        if (user) {
-          // Logged in: get subscription quota info
-          const info = await getUserQuotaInfo();
-          setQuotaInfo(info);
-          setRemainingQuota(info.remaining_quota);
-        } else {
+    const loadLegacyQuota = async () => {
+      if (!user) {
+        try {
           // Not logged in: use legacy quota system
           const quota = await getRemainingQuota();
-          setRemainingQuota(quota);
-          // Create a default QuotaInfo for non-logged-in users
-          setQuotaInfo({
+          setLocalQuotaInfo({
             plan_type: 'free',
             total_quota: 5,
             used_quota: 5 - quota,
             remaining_quota: quota,
             is_paid: false,
             quality: '1K',
-            has_watermark: true
+            has_watermark: true,
           });
+        } catch (err) {
+          console.error('Failed to load legacy quota:', err);
         }
-      } catch (err) {
-        console.error('Failed to load quota info:', err);
-        // Fallback to legacy system
-        const quota = await getRemainingQuota();
-        setRemainingQuota(quota);
+      } else {
+        setLocalQuotaInfo(null);
       }
     };
-    loadQuota();
-  }, [isGenerating, user]);
+    loadLegacyQuota();
+  }, [user]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -275,9 +270,15 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
     let currentQuotaInfo = quotaInfo;
     try {
       if (user) {
-        const info = await getUserQuotaInfo();
+        await refreshQuota();
+        currentQuotaInfo = authQuotaInfo; // Note: authQuotaInfo might not be updated within this closure yet due to React state batching, but since we await, maybe? Actually refreshQuota is async but state update is async. 
+        // Ideally we should trust the context to be fresh enough or use the return value if refreshQuota returned it.
+        // For now, let's assume refreshQuota invalidates cache.
+        // Actually, to be safe, we can re-fetch just for the check here, OR rely on the fact that we refresh on mount/interaction.
+        // Let's stick to using `quotaInfo` (from props/context) but since we want FRESH check:
+        // Better:
+        const info = await getUserQuotaInfo(); // Keep this manual check for safety before generation
         currentQuotaInfo = info;
-        setQuotaInfo(info);
       }
     } catch (err) {
       console.error('Failed to refresh quota info:', err);
@@ -446,7 +447,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                 console.warn('[HeroTool] 配额扣减返回 false，但会话已保存');
               }
               // 通知全局刷新额度显示
-              window.dispatchEvent(new Event('quota-updated'));
+              await refreshQuota();
             } catch (quotaErr) {
               console.error('[HeroTool] 配额扣减失败:', quotaErr);
             }

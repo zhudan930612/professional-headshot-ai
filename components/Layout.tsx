@@ -11,48 +11,37 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [quota, setQuota] = useState(0);
-  const [quotaInfo, setQuotaInfo] = useState<QuotaInfo | null>(null);
-  const { user, signOut, openAuthModal } = useAuth();
+  // 对于未登录用户，我们维护一个本地 legacyQuota 状态（用于显示剩余配额）
+  // 对于已登录用户，直接使用全局 authQuotaInfo
+  const { user, signOut, openAuthModal, quotaInfo: authQuotaInfo } = useAuth();
 
-  // Update quota display on route change; no polling. Also refresh when收到 quota-updated 事件。
+  // Update quota display for non-logged-in users
   useEffect(() => {
-    const loadQuota = async () => {
-      try {
-        if (user) {
-          // For logged-in users: load subscription quota info
-          const info = await getUserQuotaInfo();
-          setQuotaInfo(info);
-          setQuota(info.remaining_quota);
-        } else {
-          // For non-logged-in users: use legacy quota system
+    const loadLegacyQuota = async () => {
+      if (!user) {
+        try {
           const remainingQuota = await getRemainingQuota();
           setQuota(remainingQuota);
-          setQuotaInfo(null);
+        } catch (err) {
+          console.error('Failed to load legacy quota:', err);
+          setQuota(0);
         }
-      } catch (err) {
-        console.error('Failed to load quota info:', err);
-        // Fallback: legacy system + default free quota info, so UI 仍可展示
-        const remainingQuota = await getRemainingQuota();
-        setQuota(remainingQuota);
-        setQuotaInfo({
-          plan_type: 'free',
-          total_quota: remainingQuota,
-          used_quota: 0,
-          remaining_quota: remainingQuota,
-          is_paid: false,
-          quality: '1K',
-          has_watermark: true,
-        } as QuotaInfo);
       }
     };
-    loadQuota();
 
-    const handleQuotaUpdate = () => loadQuota();
+    loadLegacyQuota();
+
+    // Listen for updates (for legacy flow)
+    const handleQuotaUpdate = () => loadLegacyQuota();
     window.addEventListener('quota-updated', handleQuotaUpdate);
     return () => {
       window.removeEventListener('quota-updated', handleQuotaUpdate);
     };
-  }, [location, user]);
+  }, [user]);
+
+  // Derived state for display
+  const displayQuotaInfo = user ? authQuotaInfo : null;
+  const displayQuota = user ? (authQuotaInfo?.remaining_quota ?? 0) : quota;
 
   const handleSignOut = async () => {
     setIsUserMenuOpen(false);
@@ -125,20 +114,20 @@ const Navbar = () => {
 
               {user && (
                 <div className="flex items-center gap-3">
-                  {quotaInfo ? (
+                  {authQuotaInfo ? (
                     <>
                       {/* Plan Badge */}
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${quotaInfo.plan_type === 'executive' ? 'bg-amber-100 text-amber-800' :
-                          quotaInfo.plan_type === 'professional' ? 'bg-blue-100 text-blue-800' :
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${authQuotaInfo.plan_type === 'executive' ? 'bg-amber-100 text-amber-800' :
+                          authQuotaInfo.plan_type === 'professional' ? 'bg-blue-100 text-blue-800' :
                             'bg-slate-100 text-slate-600'
                         }`}>
-                        {quotaInfo.plan_type.toUpperCase()}
+                        {authQuotaInfo.plan_type.toUpperCase()}
                       </span>
 
                       {/* Quota Display */}
                       <div className="px-3 py-1 bg-slate-100 rounded-full text-xs font-semibold text-slate-600 flex items-center gap-1.5">
                         <Zap size={12} className="text-primary-600" />
-                        {quota} {quotaInfo.is_paid ? 'credits' : 'uses'} left
+                        {displayQuota} {authQuotaInfo.is_paid ? 'credits' : 'uses'} left
                       </div>
 
                       {/* Subscription Link */}
@@ -241,9 +230,9 @@ const Navbar = () => {
             {/* Mobile menu button */}
             <div className="flex items-center md:hidden gap-3">
               {user && (
-                quotaInfo ? (
+                authQuotaInfo ? (
                   <span className="text-xs font-medium text-slate-500">
-                    {quotaInfo.plan_type.toUpperCase()} • {quota} left
+                    {authQuotaInfo.plan_type.toUpperCase()} • {displayQuota} left
                   </span>
                 ) : (
                   <div className="h-4 w-24 bg-slate-100 rounded animate-pulse"></div>

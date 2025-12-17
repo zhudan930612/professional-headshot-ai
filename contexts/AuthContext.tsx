@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import type { User, Session } from '@supabase/supabase-js';
-import { migrateLocalHistoryToDatabase } from '../services/storageService';
+import { migrateLocalHistoryToDatabase, getUserQuotaInfo } from '../services/storageService';
+import type { QuotaInfo } from '../types';
 
 interface AuthContextType {
   user: User | null;
@@ -14,6 +15,8 @@ interface AuthContextType {
   closeAuthModal: () => void;
   getReturnPath: () => string;
   clearReturnPath: () => void;
+  quotaInfo: QuotaInfo | null;
+  refreshQuota: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,12 +32,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [returnPath, setReturnPath] = useState<string>(() => {
     return typeof window !== 'undefined' ? localStorage.getItem(RETURN_PATH_KEY) || '/' : '/';
   });
+  const [quotaInfo, setQuotaInfo] = useState<QuotaInfo | null>(null);
+
+  const refreshQuota = async () => {
+    if (!user) {
+      setQuotaInfo(null);
+      return;
+    }
+    try {
+      const info = await getUserQuotaInfo();
+      setQuotaInfo(info);
+    } catch (error) {
+      console.error('Failed to refresh quota:', error);
+    }
+  };
 
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+
+      // Fetch initial quota if user is logged in
+      if (session?.user) {
+        getUserQuotaInfo().then(setQuotaInfo).catch(console.error);
+      } else {
+        setQuotaInfo(null);
+      }
+
       setLoading(false);
     });
 
@@ -44,6 +69,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+
+      // Handle quota updates on auth state change
+      if (session?.user) {
+        // Delay slightly to ensure DB triggers might have finished if this is a signup
+        getUserQuotaInfo().then(setQuotaInfo).catch(console.error);
+      } else {
+        setQuotaInfo(null);
+      }
+
       setLoading(false);
 
       // 登录后迁移本地历史记录到数据库，并通知前端刷新
@@ -114,6 +148,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.removeItem(RETURN_PATH_KEY);
       setReturnPath('/');
     },
+    quotaInfo,
+    refreshQuota,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
