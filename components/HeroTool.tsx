@@ -718,6 +718,13 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                     openAuthModal(location.pathname);
                     return;
                   }
+                  
+                  // ⭐ 新增：配额为 0 时显示弹窗，阻止进入 Step 2
+                  if (quotaInfo && quotaInfo.remaining_quota === 0) {
+                    setShowUpgradeModal(true);
+                    return;
+                  }
+                  
                   setStep(2);
                 }}
                 disabled={files.length < 1}
@@ -1047,7 +1054,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                     {quotaInfo?.has_watermark && (
                       <div className="relative inline-block">
                         <button
-                          onClick={() => setShowUpgradeModal(true)}
+                          onClick={() => navigate('/pricing')}
                           className="px-6 py-2.5 bg-amber-500 text-white rounded-full font-bold text-sm hover:bg-amber-600 transition-colors shadow"
                           style={{ minWidth: '200px' }}
                         >
