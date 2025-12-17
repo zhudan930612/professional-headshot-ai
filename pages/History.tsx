@@ -58,7 +58,8 @@ export const History = () => {
 
   const handleDownloadImage = async (image: GeneratedImage) => {
     try {
-      const baseUrl = image.jpgUrl || image.url;
+      // ⭐ 下载始终使用 PNG（高质量，适合打印）
+      const baseUrl = image.url;
       if (quotaInfo?.has_watermark) {
         try {
           await downloadImageWithWatermark(baseUrl, `professional-headshot-${Date.now()}.png`);
