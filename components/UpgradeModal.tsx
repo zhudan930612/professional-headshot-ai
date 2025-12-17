@@ -1,39 +1,41 @@
 import React from 'react';
-import { X, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { X, Sparkles, Check } from 'lucide-react';
 
-interface UpgradeModalProps {
+// --- 1. 基础布局组件 (内部使用) ---
+interface UpgradeModalLayoutProps {
   isOpen: boolean;
   onClose: () => void;
-  remainingQuota?: number;
+  title: string;
+  description: React.ReactNode;
+  secondaryButton: React.ReactNode;
 }
 
-/**
- * 升级提示弹窗
- * 在 Free 用户配额不足时显示
- */
-export const UpgradeModal: React.FC<UpgradeModalProps> = ({
+const UpgradeModalLayout: React.FC<UpgradeModalLayoutProps> = ({
   isOpen,
   onClose,
-  remainingQuota = 0,
+  title,
+  description,
+  secondaryButton,
 }) => {
   const navigate = useNavigate();
 
   if (!isOpen) return null;
 
-  const handleUpgrade = () => {
-    navigate('/pricing');
-    onClose();
-  };
-
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-fade-in">
-      <div className="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl relative animate-scale-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+        onClick={onClose}
+      />
+
+      {/* Modal Content */}
+      <div className="relative bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl transform transition-all animate-in zoom-in-95 duration-200 text-left">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors"
-          aria-label="Close"
+          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
         >
           <X size={24} />
         </button>
@@ -46,97 +48,132 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
         </div>
 
         {/* Title */}
-        <h2 className="text-2xl font-bold text-center text-slate-900 mb-3">
-          Quota Limit Reached
+        <h2 className="text-2xl font-bold text-slate-900 mb-3 text-center">
+          {title}
         </h2>
 
         {/* Description */}
-        <p className="text-slate-600 text-center mb-8">
-          {remainingQuota === 0
-            ? "You've used all your free generations. Upgrade to continue creating professional headshots!"
-            : `You've reached your generation limit. Upgrade for more generations!`}
-        </p>
+        <div className="text-slate-600 mb-8 text-center">
+          {description}
+        </div>
 
         {/* Features Highlight */}
-        <div className="bg-slate-50 rounded-lg p-6 mb-8 space-y-3">
+        <div className="bg-slate-50 rounded-2xl p-4 mb-8 space-y-3">
           <div className="flex items-start gap-3">
-            <span className="text-blue-600 font-bold mt-0.5">✓</span>
+            <div className="mt-0.5 text-blue-600"><Check size={18} /></div>
             <div>
-              <div className="font-semibold text-slate-900">Professional Plan</div>
-              <div className="text-sm text-slate-600">30 lifetime credits</div>
+              <div className="font-semibold text-slate-900 text-sm">Professional Plan</div>
+              <div className="text-xs text-slate-500">30 lifetime credits</div>
             </div>
           </div>
-
           <div className="flex items-start gap-3">
-            <span className="text-blue-600 font-bold mt-0.5">✓</span>
+            <div className="mt-0.5 text-blue-600"><Check size={18} /></div>
             <div>
-              <div className="font-semibold text-slate-900">Executive Plan</div>
-              <div className="text-sm text-slate-600">70 credits + 10 bonus + High quality</div>
+              <div className="font-semibold text-slate-900 text-sm">Executive Plan</div>
+              <div className="text-xs text-slate-500">70 credits + 10 bonus + High quality</div>
             </div>
           </div>
-
           <div className="flex items-start gap-3">
-            <span className="text-blue-600 font-bold mt-0.5">✓</span>
+            <div className="mt-0.5 text-blue-600"><Check size={18} /></div>
             <div>
-              <div className="font-semibold text-slate-900">No Watermarks</div>
-              <div className="text-sm text-slate-600">Save unlimited full resolution images</div>
+              <div className="font-semibold text-slate-900 text-sm">No Watermarks</div>
+              <div className="text-xs text-slate-500">Save unlimited full resolution images</div>
             </div>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="space-y-3">
+        {/* Actions */}
+        <div className="flex flex-col gap-3">
           <button
-            onClick={handleUpgrade}
-            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl"
+            onClick={() => {
+              navigate('/pricing');
+              onClose();
+            }}
+            className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-blue-500/30 hover:scale-[1.02] active:scale-[0.98]"
           >
             View Pricing Plans
           </button>
 
-          <button
-            onClick={onClose}
-            className="w-full bg-slate-100 text-slate-900 py-3 rounded-lg font-semibold hover:bg-slate-200 transition-colors"
-          >
-            Remind Me Later
-          </button>
+          {secondaryButton}
+
+          <p className="text-center text-xs text-slate-400 mt-2">
+            Upgrade now to get more lifetime credits
+          </p>
         </div>
-
-        {/* Footer */}
-        <p className="text-xs text-slate-500 text-center mt-6">
-          Upgrade now to get more lifetime credits
-        </p>
       </div>
-
-      {/* Animation Styles */}
-      <style>{`
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-
-        @keyframes scale-up {
-          from {
-            opacity: 0;
-            transform: scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-
-        .animate-fade-in {
-          animation: fade-in 0.2s ease-out;
-        }
-
-        .animate-scale-up {
-          animation: scale-up 0.3s ease-out cubic-bezier(0.16, 1, 0.3, 1);
-        }
-      `}</style>
     </div>
+  );
+};
+
+// --- 2. Step 1 专用弹窗: 配额耗尽 (Empty) ---
+interface EmptyQuotaModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onBrowseCase: () => void;
+}
+
+export const EmptyQuotaModal: React.FC<EmptyQuotaModalProps> = ({
+  isOpen,
+  onClose,
+  onBrowseCase,
+}) => {
+  return (
+    <UpgradeModalLayout
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Quota Limit Reached"
+      description="You've used all your free generations. Upgrade to continue creating professional headshots!"
+      secondaryButton={
+        <button
+          onClick={() => {
+            onClose(); // 先关闭弹窗
+            onBrowseCase(); // 再跳转
+          }}
+          className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors"
+        >
+          Browse Case Images
+        </button>
+      }
+    />
+  );
+};
+
+// --- 3. Step 2 专用弹窗: 配额不足 (Insufficient) ---
+interface InsufficientQuotaModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  remainingQuota: number;
+  requiredQuota: number;
+}
+
+export const InsufficientQuotaModal: React.FC<InsufficientQuotaModalProps> = ({
+  isOpen,
+  onClose,
+  remainingQuota,
+  requiredQuota,
+}) => {
+  const shortAmount = requiredQuota - remainingQuota;
+
+  return (
+    <UpgradeModalLayout
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Quota Limit Reached"
+      description={
+        <p>
+          You have <strong>{remainingQuota}</strong> credit{remainingQuota !== 1 ? 's' : ''} remaining, but need <strong>{requiredQuota}</strong>.
+          <br />
+          You're <strong>{shortAmount}</strong> short. Upgrade for more!
+        </p>
+      }
+      secondaryButton={
+        <button
+          onClick={onClose}
+          className="w-full py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors"
+        >
+          Remind Me Later
+        </button>
+      }
+    />
   );
 };

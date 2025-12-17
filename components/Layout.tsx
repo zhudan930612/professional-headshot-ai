@@ -63,14 +63,14 @@ const Navbar = () => {
     localStorage.removeItem('auth_return_path');
     // Clear sessionStorage as well
     sessionStorage.clear();
-    
+
     try {
       // Sign out from Supabase
       await signOut();
     } catch (error) {
       console.error('登出失败:', error);
     }
-    
+
     // Force complete page reload - this clears all React state
     window.location.href = window.location.origin;
   };
@@ -116,38 +116,46 @@ const Navbar = () => {
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }
                   }}
-                  className={`text-sm font-medium transition-colors ${
-                    location.pathname === link.path ? 'text-primary-600' : 'text-slate-500 hover:text-slate-900'
-                  }`}
+                  className={`text-sm font-medium transition-colors ${location.pathname === link.path ? 'text-primary-600' : 'text-slate-500 hover:text-slate-900'
+                    }`}
                 >
                   {link.name}
                 </Link>
               ))}
 
-              {user && quotaInfo && (
+              {user && (
                 <div className="flex items-center gap-3">
-                  {/* Plan Badge */}
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    quotaInfo.plan_type === 'executive' ? 'bg-amber-100 text-amber-800' :
-                    quotaInfo.plan_type === 'professional' ? 'bg-blue-100 text-blue-800' :
-                    'bg-slate-100 text-slate-600'
-                  }`}>
-                    {quotaInfo.plan_type.toUpperCase()}
-                  </span>
+                  {quotaInfo ? (
+                    <>
+                      {/* Plan Badge */}
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${quotaInfo.plan_type === 'executive' ? 'bg-amber-100 text-amber-800' :
+                          quotaInfo.plan_type === 'professional' ? 'bg-blue-100 text-blue-800' :
+                            'bg-slate-100 text-slate-600'
+                        }`}>
+                        {quotaInfo.plan_type.toUpperCase()}
+                      </span>
 
-                  {/* Quota Display */}
-                  <div className="px-3 py-1 bg-slate-100 rounded-full text-xs font-semibold text-slate-600 flex items-center gap-1.5">
-                    <Zap size={12} className="text-primary-600" />
-                    {quota} {quotaInfo.is_paid ? 'credits' : 'uses'} left
-                  </div>
+                      {/* Quota Display */}
+                      <div className="px-3 py-1 bg-slate-100 rounded-full text-xs font-semibold text-slate-600 flex items-center gap-1.5">
+                        <Zap size={12} className="text-primary-600" />
+                        {quota} {quotaInfo.is_paid ? 'credits' : 'uses'} left
+                      </div>
 
-                  {/* Subscription Link */}
-                  <Link
-                    to="/subscription"
-                    className="text-xs font-medium text-primary-600 hover:text-primary-700 transition-colors"
-                  >
-                    Details
-                  </Link>
+                      {/* Subscription Link */}
+                      <Link
+                        to="/subscription"
+                        className="text-xs font-medium text-primary-600 hover:text-primary-700 transition-colors"
+                      >
+                        Details
+                      </Link>
+                    </>
+                  ) : (
+                    /* Skeleton for Quota Info */
+                    <div className="animate-pulse flex items-center gap-3">
+                      <div className="h-6 w-20 bg-slate-100 rounded-full"></div>
+                      <div className="h-6 w-24 bg-slate-100 rounded-full"></div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -232,10 +240,14 @@ const Navbar = () => {
 
             {/* Mobile menu button */}
             <div className="flex items-center md:hidden gap-3">
-              {user && quotaInfo && (
-                <span className="text-xs font-medium text-slate-500">
-                  {quotaInfo.plan_type.toUpperCase()} • {quota} left
-                </span>
+              {user && (
+                quotaInfo ? (
+                  <span className="text-xs font-medium text-slate-500">
+                    {quotaInfo.plan_type.toUpperCase()} • {quota} left
+                  </span>
+                ) : (
+                  <div className="h-4 w-24 bg-slate-100 rounded animate-pulse"></div>
+                )
               )}
               <button
                 onClick={() => setIsOpen(!isOpen)}
@@ -261,9 +273,8 @@ const Navbar = () => {
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }
                   }}
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
-                     location.pathname === link.path ? 'bg-primary-50 text-primary-600' : 'text-slate-600 hover:bg-slate-50'
-                  }`}
+                  className={`block px-3 py-2 rounded-md text-base font-medium ${location.pathname === link.path ? 'bg-primary-50 text-primary-600' : 'text-slate-600 hover:bg-slate-50'
+                    }`}
                 >
                   {link.name}
                 </Link>
@@ -346,53 +357,53 @@ const Footer = () => {
   const location = useLocation();
 
   return (
-  <footer className="bg-slate-900 text-slate-300 py-12">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
-      <div className="col-span-1 md:col-span-1">
-        <Link
-          to="/"
-          onClick={(e) => {
-            if (location.pathname === '/') {
-              e.preventDefault();
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-          }}
-          className="flex items-center gap-2.5 mb-4 text-white"
-        >
-          <img src="/logo.svg" alt="Professional Headshot AI" className="w-8 h-8" />
-          <span className="font-bold text-xl tracking-tight">Professional Headshot<span className="text-primary-400 ml-1.5">AI</span></span>
-        </Link>
-        <p className="text-sm text-slate-400">
-          Professional AI-generated headshots for your career success. Fast, free, and private.
-        </p>
+    <footer className="bg-slate-900 text-slate-300 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="col-span-1 md:col-span-1">
+          <Link
+            to="/"
+            onClick={(e) => {
+              if (location.pathname === '/') {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
+            className="flex items-center gap-2.5 mb-4 text-white"
+          >
+            <img src="/logo.svg" alt="Professional Headshot AI" className="w-8 h-8" />
+            <span className="font-bold text-xl tracking-tight">Professional Headshot<span className="text-primary-400 ml-1.5">AI</span></span>
+          </Link>
+          <p className="text-sm text-slate-400">
+            Professional AI-generated headshots for your career success. Fast, free, and private.
+          </p>
+        </div>
+        <div>
+          <h4 className="text-white font-semibold mb-4">Product</h4>
+          <ul className="space-y-2 text-sm">
+            <li><Link to="/" className="hover:text-white transition-colors">Generator</Link></li>
+            <li><Link to="/history" className="hover:text-white transition-colors">My Headshots</Link></li>
+            <li><Link to="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
+          </ul>
+        </div>
+        <div>
+          <h4 className="text-white font-semibold mb-4">Resources</h4>
+          <ul className="space-y-2 text-sm">
+            <li><Link to="/blog" className="hover:text-white transition-colors">Blog</Link></li>
+            <li><Link to="/faq" className="hover:text-white transition-colors">Help Center</Link></li>
+          </ul>
+        </div>
+        <div>
+          <h4 className="text-white font-semibold mb-4">Legal</h4>
+          <ul className="space-y-2 text-sm">
+            <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+            <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+          </ul>
+        </div>
       </div>
-      <div>
-        <h4 className="text-white font-semibold mb-4">Product</h4>
-        <ul className="space-y-2 text-sm">
-          <li><Link to="/" className="hover:text-white transition-colors">Generator</Link></li>
-          <li><Link to="/history" className="hover:text-white transition-colors">My Headshots</Link></li>
-          <li><Link to="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
-        </ul>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-8 border-t border-slate-800 text-center text-xs text-slate-500">
+        © {new Date().getFullYear()} Professional Headshot AI. All rights reserved.
       </div>
-      <div>
-        <h4 className="text-white font-semibold mb-4">Resources</h4>
-        <ul className="space-y-2 text-sm">
-          <li><Link to="/blog" className="hover:text-white transition-colors">Blog</Link></li>
-          <li><Link to="/faq" className="hover:text-white transition-colors">Help Center</Link></li>
-        </ul>
-      </div>
-      <div>
-        <h4 className="text-white font-semibold mb-4">Legal</h4>
-        <ul className="space-y-2 text-sm">
-          <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-          <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
-        </ul>
-      </div>
-    </div>
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-8 border-t border-slate-800 text-center text-xs text-slate-500">
-      © {new Date().getFullYear()} Professional Headshot AI. All rights reserved.
-    </div>
-  </footer>
+    </footer>
   );
 };
 

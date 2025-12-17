@@ -13,20 +13,26 @@ export const History = () => {
   const [sessions, setSessions] = useState<GenerationSession[]>([]);
   const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null);
   const [quotaInfo, setQuotaInfo] = useState<QuotaInfo | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const loadData = useCallback(async () => {
-    const history = await getHistory();
-    setSessions(history);
+    setIsLoading(true);
+    try {
+      const history = await getHistory();
+      setSessions(history);
 
-    if (user) {
-      try {
-        const info = await getUserQuotaInfo();
-        setQuotaInfo(info);
-      } catch (err) {
-        console.error('加载配额信息失败:', err);
+      if (user) {
+        try {
+          const info = await getUserQuotaInfo();
+          setQuotaInfo(info);
+        } catch (err) {
+          console.error('加载配额信息失败:', err);
+        }
+      } else {
+        setQuotaInfo(null);
       }
-    } else {
-      setQuotaInfo(null);
+    } finally {
+      setIsLoading(false);
     }
   }, [user]);
 
@@ -101,17 +107,29 @@ export const History = () => {
             <p className="text-slate-600">Access and download your previously generated photos.</p>
           </div>
 
-          {sessions.length === 0 ? (
+          {isLoading ? (
+            // Skeleton Loading State
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[...Array(8)].map((_, index) => (
+                  <div key={index} className="animate-pulse">
+                    <div className="aspect-[3/4] bg-slate-200 rounded-xl mb-3"></div>
+                    <div className="h-4 bg-slate-200 rounded w-1/2"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : sessions.length === 0 ? (
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-16 text-center">
               <div className="mb-6 inline-flex p-4 bg-slate-100 rounded-full">
-                  <Calendar className="text-slate-400" size={48} />
+                <Calendar className="text-slate-400" size={48} />
               </div>
               <h2 className="text-xl font-bold text-slate-900 mb-2">No headshots yet</h2>
               <p className="text-slate-500 mb-8 max-w-md mx-auto">
                 You haven't generated any professional headshots yet. Upload your photos to get started!
               </p>
-              <Link 
-                to="/" 
+              <Link
+                to="/"
                 className="inline-flex items-center gap-2 bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-700 transition-colors"
               >
                 <ArrowLeft size={18} /> Go to Generator
@@ -131,9 +149,9 @@ export const History = () => {
                         className="relative aspect-[3/4] rounded-xl overflow-hidden bg-slate-100 shadow-sm cursor-pointer border border-slate-200 mb-3"
                         onClick={() => setSelectedImage(img)}
                       >
-                        <img 
+                        <img
                           src={`${img.jpgUrl || img.url}?width=400&quality=75`}
-                          alt="Generated Headshot" 
+                          alt="Generated Headshot"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           loading="lazy"
                         />
@@ -145,7 +163,7 @@ export const History = () => {
                           </div>
                         )}
                       </div>
-                      
+
                       {/* Date */}
                       <div className="text-sm text-slate-600">
                         {formatDate(session.date)}
@@ -161,75 +179,75 @@ export const History = () => {
 
       {/* Full Screen Image Modal */}
       {selectedImage && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8" style={{ maxHeight: '100dvh' }}>
-                <div 
-                    className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
-                    onClick={() => setSelectedImage(null)}
-                ></div>
-                
-                {/* Content wrapper */}
-                <div className="relative z-10 max-w-5xl flex flex-col items-center justify-center gap-6 animate-in zoom-in-95 duration-200 pointer-events-none" style={{ marginTop: '0px' }}>
-                    <div className="relative rounded-xl overflow-hidden shadow-2xl bg-black/50 ring-1 ring-white/10 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
-                        {/* Image */}
-                        <img 
-                            src={selectedImage.jpgUrl || selectedImage.url} 
-                            alt="Full size" 
-                            className="max-h-[75vh] w-auto max-w-full object-contain"
-                        />
-                        {showWatermark && (
-                          <div className="pointer-events-none absolute inset-0 flex items-end justify-end p-3">
-                            <div className="px-3 py-1.5 bg-black/60 text-xs font-bold uppercase tracking-wide text-white rounded">
-                              Free Version
-                            </div>
-                          </div>
-                        )}
-                    </div>
-                    
-                    {/* Buttons */}
-                    <div className="flex flex-col gap-2 w-full items-center pointer-events-auto" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center gap-3">
-                        <button 
-                            onClick={() => handleDownloadImage(selectedImage)}
-                            className="px-5 py-2.5 bg-primary-600 text-white rounded-full font-bold text-sm hover:bg-primary-700 transition-colors shadow-lg flex items-center gap-2"
-                            style={{ minWidth: '150px' }}
-                        >
-                            <Download size={16} /> Download
-                        </button>
-                        {showWatermark && (
-                          <div className="relative inline-block">
-                            <button
-                              onClick={handleUpgrade}
-                              className="px-6 py-2.5 bg-amber-500 text-white rounded-full font-bold text-sm hover:bg-amber-600 transition-colors shadow"
-                              style={{ minWidth: '200px' }}
-                            >
-                              Upgrade Plan
-                            </button>
-                            <span
-                              className="absolute -top-2 -right-[25px] inline-block text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg"
-                              style={{ background: 'linear-gradient(to right, #3b82f6, #2563eb)' }}
-                            >
-                              ⭐ Popular
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      {showWatermark && (
-                        <div className="text-xs text-slate-200 text-center mt-1 whitespace-nowrap">
-                          Download watermark-free professional headshots
-                        </div>
-                      )}
-                    </div>
-                </div>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8" style={{ maxHeight: '100dvh' }}>
+          <div
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+            onClick={() => setSelectedImage(null)}
+          ></div>
 
-                {/* Top right close button */}
-                <button 
-                    className="absolute top-4 right-4 text-white/50 hover:text-white p-2 transition-colors z-20"
-                    onClick={() => setSelectedImage(null)}
-                >
-                    <X size={32} />
-                </button>
+          {/* Content wrapper */}
+          <div className="relative z-10 max-w-5xl flex flex-col items-center justify-center gap-6 animate-in zoom-in-95 duration-200 pointer-events-none" style={{ marginTop: '0px' }}>
+            <div className="relative rounded-xl overflow-hidden shadow-2xl bg-black/50 ring-1 ring-white/10 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+              {/* Image */}
+              <img
+                src={selectedImage.jpgUrl || selectedImage.url}
+                alt="Full size"
+                className="max-h-[75vh] w-auto max-w-full object-contain"
+              />
+              {showWatermark && (
+                <div className="pointer-events-none absolute inset-0 flex items-end justify-end p-3">
+                  <div className="px-3 py-1.5 bg-black/60 text-xs font-bold uppercase tracking-wide text-white rounded">
+                    Free Version
+                  </div>
+                </div>
+              )}
             </div>
-        )}
+
+            {/* Buttons */}
+            <div className="flex flex-col gap-2 w-full items-center pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => handleDownloadImage(selectedImage)}
+                  className="px-5 py-2.5 bg-primary-600 text-white rounded-full font-bold text-sm hover:bg-primary-700 transition-colors shadow-lg flex items-center gap-2"
+                  style={{ minWidth: '150px' }}
+                >
+                  <Download size={16} /> Download
+                </button>
+                {showWatermark && (
+                  <div className="relative inline-block">
+                    <button
+                      onClick={handleUpgrade}
+                      className="px-6 py-2.5 bg-amber-500 text-white rounded-full font-bold text-sm hover:bg-amber-600 transition-colors shadow"
+                      style={{ minWidth: '200px' }}
+                    >
+                      Upgrade Plan
+                    </button>
+                    <span
+                      className="absolute -top-2 -right-[25px] inline-block text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-lg"
+                      style={{ background: 'linear-gradient(to right, #3b82f6, #2563eb)' }}
+                    >
+                      ⭐ Popular
+                    </span>
+                  </div>
+                )}
+              </div>
+              {showWatermark && (
+                <div className="text-xs text-slate-200 text-center mt-1 whitespace-nowrap">
+                  Download watermark-free professional headshots
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Top right close button */}
+          <button
+            className="absolute top-4 right-4 text-white/50 hover:text-white p-2 transition-colors z-20"
+            onClick={() => setSelectedImage(null)}
+          >
+            <X size={32} />
+          </button>
+        </div>
+      )}
     </Layout>
   );
 };
