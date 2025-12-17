@@ -49,7 +49,7 @@ export const getHistory = async (): Promise<GenerationSession[]> => {
     const sessionIds = sessions.map(s => s.session_id);
     const { data: images, error: imagesError } = await supabase
       .from('generated_images')
-      .select('session_id, image_id, url, webp_url, storage_path, file_size, mime_type, created_at_timestamp')
+      .select('session_id, image_id, url, jpg_url, storage_path, file_size, mime_type, created_at_timestamp')
       .in('session_id', sessionIds);
 
     if (imagesError) {
@@ -79,7 +79,7 @@ export const getHistory = async (): Promise<GenerationSession[]> => {
         storagePath: img.storage_path,
         fileSize: img.file_size,
         mimeType: img.mime_type,
-        webpUrl: img.webp_url,
+        jpgUrl: img.jpg_url,
       })),
     }));
 
