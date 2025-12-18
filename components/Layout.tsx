@@ -389,7 +389,30 @@ const Footer = () => {
           </ul>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-8 border-t border-slate-800 text-center text-xs text-slate-500">
+
+      {/* Featured On - Navigation Sites Badges */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 pt-5 border-t border-slate-800">
+        <div className="grid grid-cols-6 md:grid-cols-10 lg:grid-cols-12 gap-2">
+
+          {/* JustSimple Tools */}
+          <a
+            href="https://www.justsimple.tools"
+            target="_blank"
+            rel="nofollow noreferrer"
+            className="transition-all duration-300 hover:opacity-100 hover:scale-105 opacity-80"
+          >
+            <img
+              src="https://www.justsimple.tools/badge.svg"
+              alt="Listed on JustSimple Tools"
+              className="w-full h-8 object-contain"
+              loading="lazy"
+            />
+          </a>
+
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-5 pt-8 border-t border-slate-800 text-center text-xs text-slate-500">
         © {new Date().getFullYear()} Professional Headshot AI. All rights reserved.
       </div>
     </footer>
