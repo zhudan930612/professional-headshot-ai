@@ -392,19 +392,169 @@ const Footer = () => {
 
       {/* Featured On - Navigation Sites Badges */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 pt-5 border-t border-slate-800">
-        <div className="grid grid-cols-6 md:grid-cols-10 lg:grid-cols-12 gap-2">
+        <div className="grid grid-cols-6 md:grid-cols-10 lg:grid-cols-12 gap-4">
 
           {/* Appa List */}
           <a
             href="https://appalist.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="transition-all duration-300 hover:opacity-100 hover:scale-105 opacity-80"
+            className="flex items-center justify-center h-12 transition-all duration-300 hover:opacity-100 hover:scale-105 opacity-80"
           >
             <img
               src="https://appalist.com/assets/images/badge.png"
               alt="Appa List"
-              className="w-full h-10 object-contain"
+              className="h-full w-auto object-contain"
+              loading="lazy"
+            />
+          </a>
+
+          {/* Appsy Tools */}
+          <a
+            href="https://appsytools.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center h-12 transition-all duration-300 hover:opacity-100 hover:scale-105 opacity-80"
+          >
+            <img
+              src="https://appsytools.com/assets/images/badge.png"
+              alt="Appsy Tools"
+              className="h-full w-auto object-contain"
+              loading="lazy"
+            />
+          </a>
+
+          {/* Ash List */}
+          <a
+            href="https://ashlist.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center h-12 transition-all duration-300 hover:opacity-100 hover:scale-105 opacity-80"
+          >
+            <img
+              src="https://ashlist.com/assets/images/badge.png"
+              alt="Ash List"
+              className="h-full w-auto object-contain"
+              loading="lazy"
+            />
+          </a>
+
+          {/* Power Up Tools */}
+          <a
+            href="https://poweruptools.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center h-12 transition-all duration-300 hover:opacity-100 hover:scale-105 opacity-80"
+          >
+            <img
+              src="https://poweruptools.com/assets/images/badge.png"
+              alt="Power Up Tools"
+              className="h-full w-auto object-contain"
+              loading="lazy"
+            />
+          </a>
+
+          {/* Product List Dir */}
+          <a
+            href="https://productlistdir.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center h-12 transition-all duration-300 hover:opacity-100 hover:scale-105 opacity-80"
+          >
+            <img
+              src="https://productlistdir.com/assets/images/badge.png"
+              alt="Product List Dir"
+              className="h-full w-auto object-contain"
+              loading="lazy"
+            />
+          </a>
+
+          {/* Product Wing */}
+          <a
+            href="https://productwing.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center h-12 transition-all duration-300 hover:opacity-100 hover:scale-105 opacity-80"
+          >
+            <img
+              src="https://productwing.com/assets/images/badge.png"
+              alt="Product Wing"
+              className="h-full w-auto object-contain"
+              loading="lazy"
+            />
+          </a>
+
+          {/* SaaS Field */}
+          <a
+            href="https://saasfield.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center h-12 transition-all duration-300 hover:opacity-100 hover:scale-105 opacity-80"
+          >
+            <img
+              src="https://saasfield.com/assets/images/badge.png"
+              alt="SaaS Field"
+              className="h-full w-auto object-contain"
+              loading="lazy"
+            />
+          </a>
+
+          {/* SaaS Hub Directory */}
+          <a
+            href="https://saashubdirectory.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center h-12 transition-all duration-300 hover:opacity-100 hover:scale-105 opacity-80"
+          >
+            <img
+              src="https://saashubdirectory.com/assets/images/badge.png"
+              alt="SaaS Hub Directory"
+              className="h-full w-auto object-contain"
+              loading="lazy"
+            />
+          </a>
+
+          {/* My Start Tools */}
+          <a
+            href="https://mystarttools.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center h-12 transition-all duration-300 hover:opacity-100 hover:scale-105 opacity-80"
+          >
+            <img
+              src="https://mystarttools.com/assets/images/badge.png"
+              alt="My Start Tools"
+              className="h-full w-auto object-contain"
+              loading="lazy"
+            />
+          </a>
+
+          {/* Launch Scroll */}
+          <a
+            href="https://launchscroll.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center h-12 transition-all duration-300 hover:opacity-100 hover:scale-105 opacity-80"
+          >
+            <img
+              src="https://launchscroll.com/assets/images/badge.png"
+              alt="Launch Scroll"
+              className="h-full w-auto object-contain"
+              loading="lazy"
+            />
+          </a>
+
+          {/* Beam Tools */}
+          <a
+            href="https://beamtools.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center h-12 transition-all duration-300 hover:opacity-100 hover:scale-105 opacity-80"
+          >
+            <img
+              src="https://beamtools.com/assets/images/badge.png"
+              alt="Beam Tools"
+              className="h-full w-auto object-contain"
               loading="lazy"
             />
           </a>
