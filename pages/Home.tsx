@@ -1,30 +1,39 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { HeroTool } from '../components/HeroTool';
 import { Layout } from '../components/Layout';
 import { FAQ_ITEMS, USE_CASE_OPTIONS } from '../constants';
-import { CheckCircle, Upload, Sliders, Download, ArrowRight, Shield, Clock, DollarSign, X, MoveRight, Sparkles, LayoutTemplate } from 'lucide-react';
+import { CheckCircle, Upload, Download, ArrowRight, Shield, Clock, DollarSign, Sparkles, LayoutTemplate } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
-// Data structure for comparison (Simulated data)
-interface ComparisonPair {
-  original: string;
-  generated: string;
-}
+// Data structure for gallery images
+const ROW_1_DATA: string[] = [
+  '/best-headshot/best_01.jpeg',
+  '/best-headshot/best_02.jpeg',
+  '/best-headshot/best_03.jpeg',
+  '/best-headshot/best_04.jpeg',
+  '/best-headshot/best_05.jpeg',
+  '/best-headshot/best_06.jpeg',
+  '/best-headshot/best_07.jpeg',
+  '/best-headshot/best_08.jpeg',
+  '/best-headshot/best_09.jpeg',
+  '/best-headshot/best_10.jpeg',
+];
 
-// Generate static sets of comparison images
-const ROW_1_DATA: ComparisonPair[] = Array.from({ length: 10 }).map((_, i) => ({
-  original: `https://picsum.photos/seed/casual_${i}/500/500`,
-  generated: `https://picsum.photos/seed/professional_${i}/500/500`
-}));
-
-const ROW_2_DATA: ComparisonPair[] = Array.from({ length: 10 }).map((_, i) => ({
-  original: `https://picsum.photos/seed/selfie_b_${i}/500/500`,
-  generated: `https://picsum.photos/seed/headshot_b_${i}/500/500`
-}));
+const ROW_2_DATA: string[] = [
+  '/best-headshot/best_11.jpeg',
+  '/best-headshot/best_12.jpeg',
+  '/best-headshot/best_13.jpeg',
+  '/best-headshot/best_14.jpeg',
+  '/best-headshot/best_15.jpeg',
+  '/best-headshot/best_16.jpeg',
+  '/best-headshot/best_17.jpeg',
+  '/best-headshot/best_18.jpeg',
+  '/best-headshot/best_19.jpeg',
+  '/best-headshot/best_20.jpeg',
+];
 
 export const Home = () => {
-  const [selectedComparison, setSelectedComparison] = useState<ComparisonPair | null>(null);
   const { user, openAuthModal } = useAuth();
   const location = useLocation();
 
@@ -108,12 +117,12 @@ export const Home = () => {
       {/* Examples Scrolling Marquee */}
       <section id="examples" className="w-full overflow-hidden">
         <div className="text-center mb-12 px-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-xs font-semibold uppercase tracking-wide mb-4">
-              <Sparkles size={14} /> Before & After
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-xs font-semibold tracking-wide mb-4">
+              <Sparkles size={14} /> Best Examples
             </div>
-            <h2 className="text-3xl font-bold text-slate-900 mb-4">See Real AI Professional Headshots</h2>
+            <h2 className="text-3xl font-bold text-slate-900 mb-4">Get 3x More Interview Invitations</h2>
             <p className="text-slate-600 max-w-2xl mx-auto">
-                Click on any image below to see the transformation from a casual selfie to a professional headshot.
+                Professional headshots that help you stand out to recruiters and land your dream job.
             </p>
         </div>
 
@@ -125,17 +134,14 @@ export const Home = () => {
             {/* Row 1 - Left Scroll */}
             <div className="flex mb-6 overflow-hidden">
                 <div className="flex animate-marquee gap-4 md:gap-6 min-w-max hover:[animation-play-state:paused]">
-                    {[...ROW_1_DATA, ...ROW_1_DATA].map((pair, i) => (
+                    {[...ROW_1_DATA, ...ROW_1_DATA].map((imageUrl, i) => (
                         <div
                           key={`row1-${i}`}
-                          onClick={() => setSelectedComparison(pair)}
-                          className="w-48 md:w-64 aspect-[3/4] rounded-xl overflow-hidden shadow-md flex-shrink-0 cursor-pointer group relative"
+                          className="w-48 md:w-64 aspect-[3/4] rounded-xl overflow-hidden shadow-md flex-shrink-0 relative"
                         >
-                            <img src={pair.generated} alt="Professional headshot" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                               <div className="opacity-0 group-hover:opacity-100 bg-white/90 backdrop-blur px-3 py-1.5 rounded-full text-xs font-semibold text-slate-900 shadow-sm transform translate-y-2 group-hover:translate-y-0 transition-all">
-                                 View Comparison
-                               </div>
+                            <img src={imageUrl} alt="Professional headshot" className="w-full h-full object-cover" />
+                            <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white px-2 py-0.5 rounded-full text-[10px] font-medium z-10 flex items-center gap-1">
+                                <Sparkles size={8} className="fill-white" /> AI Generated
                             </div>
                         </div>
                     ))}
@@ -145,17 +151,14 @@ export const Home = () => {
             {/* Row 2 - Right Scroll */}
             <div className="flex overflow-hidden">
                 <div className="flex animate-marquee-reverse gap-4 md:gap-6 min-w-max hover:[animation-play-state:paused]">
-                    {[...ROW_2_DATA, ...ROW_2_DATA].map((pair, i) => (
+                    {[...ROW_2_DATA, ...ROW_2_DATA].map((imageUrl, i) => (
                         <div
                           key={`row2-${i}`}
-                          onClick={() => setSelectedComparison(pair)}
-                          className="w-48 md:w-64 aspect-[3/4] rounded-xl overflow-hidden shadow-md flex-shrink-0 cursor-pointer group relative"
+                          className="w-48 md:w-64 aspect-[3/4] rounded-xl overflow-hidden shadow-md flex-shrink-0 relative"
                         >
-                            <img src={pair.generated} alt="Professional headshot" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                               <div className="opacity-0 group-hover:opacity-100 bg-white/90 backdrop-blur px-3 py-1.5 rounded-full text-xs font-semibold text-slate-900 shadow-sm transform translate-y-2 group-hover:translate-y-0 transition-all">
-                                 View Comparison
-                               </div>
+                            <img src={imageUrl} alt="Professional headshot" className="w-full h-full object-cover" />
+                            <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white px-2 py-0.5 rounded-full text-[10px] font-medium z-10 flex items-center gap-1">
+                                <Sparkles size={8} className="fill-white" /> AI Generated
                             </div>
                         </div>
                     ))}
@@ -178,70 +181,6 @@ export const Home = () => {
             </button>
         </div>
       </section>
-
-      {/* Comparison Modal */}
-      {selectedComparison && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setSelectedComparison(null)}></div>
-          <div className="bg-white rounded-2xl w-full max-w-4xl p-2 md:p-6 shadow-2xl relative z-10 animate-in zoom-in-95 duration-200">
-            
-            <button 
-              onClick={() => setSelectedComparison(null)}
-              className="absolute top-4 right-4 z-20 bg-white/80 hover:bg-white p-2 rounded-full shadow-sm text-slate-500 hover:text-slate-900 transition-colors"
-            >
-              <X size={20} />
-            </button>
-
-            <div className="text-center mb-6 pt-4 md:pt-0">
-               <h3 className="text-2xl font-bold text-slate-900">Transformation Result</h3>
-               <p className="text-slate-500">From casual selfie to professional studio quality.</p>
-            </div>
-
-            <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 pb-4">
-               {/* Original */}
-               <div className="flex flex-col items-center gap-3 w-full md:w-auto">
-                  <div className="relative w-full aspect-[3/4] md:w-80 rounded-xl overflow-hidden shadow-lg ring-4 ring-slate-100">
-                     <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-semibold z-10">
-                        Original Selfie
-                     </div>
-                     <img src={selectedComparison.original} alt="Original selfie" className="w-full h-full object-cover" />
-                  </div>
-               </div>
-
-               {/* Arrow Icon */}
-               <div className="flex items-center justify-center text-primary-300 md:text-slate-300 rotate-90 md:rotate-0">
-                  <MoveRight size={48} strokeWidth={1.5} />
-               </div>
-
-               {/* Generated */}
-               <div className="flex flex-col items-center gap-3 w-full md:w-auto">
-                  <div className="relative w-full aspect-[3/4] md:w-80 rounded-xl overflow-hidden shadow-lg ring-4 ring-primary-100 shadow-primary-900/10">
-                     <div className="absolute top-3 left-3 bg-primary-600 text-white px-3 py-1 rounded-full text-xs font-semibold z-10 flex items-center gap-1 shadow-sm">
-                        <Sparkles size={10} className="fill-white" /> AI Professional
-                     </div>
-                     <img src={selectedComparison.generated} alt="Generated AI Headshot" className="w-full h-full object-cover" />
-                  </div>
-               </div>
-            </div>
-
-            <div className="mt-4 text-center">
-               <button
-                onClick={() => {
-                  setSelectedComparison(null);
-                  const element = document.getElementById('upload-tool');
-                  if (element) {
-                    const offsetTop = element.getBoundingClientRect().top + window.scrollY - 100;
-                    window.scrollTo({ top: offsetTop, behavior: 'smooth' });
-                  }
-                }}
-                className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-xl font-semibold transition-colors shadow-lg shadow-primary-500/20"
-               >
-                 Create Mine Now <ArrowRight size={18} />
-               </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* How It Works */}
       <section className="bg-slate-50 py-20">
