@@ -806,7 +806,7 @@ export const FAQ_ITEMS = [
   },
   {
     question: "How many headshots can I generate?",
-    answer: "Our free plan provides 5 headshots as a permanent quota. For more generations, you can upgrade to our Professional (30 images) or Executive (80 images) plans, which never expire."
+    answer: "Our free plan provides 5 headshots as a permanent quota. For more generations, you can upgrade to our Professional (30 images) or Executive (70 images) plans, which never expire."
   },
   {
     question: "Will the headshots still look like me?",

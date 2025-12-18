@@ -187,7 +187,8 @@ type SubscriptionPlan = 'free' | 'professional' | 'executive';
 
 // Executive 用户
 {
-  quota: 200,            // 一次性 200+ 次
+  quota: 60,             // 一次性 60 次
+  bonus_quota: 10,       // 赠送 10 次
   quality: '2K',         // 高质量
   has_watermark: false,  // 无水印
 }

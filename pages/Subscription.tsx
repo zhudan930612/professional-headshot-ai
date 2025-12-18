@@ -44,7 +44,7 @@ export const Subscription: React.FC = () => {
       'Priority support'
     ],
     executive: [
-      '70 lifetime images + 10 bonus',
+      '60 lifetime images + 10 bonus',
       'High quality (2K 1792x2400)',
       'No watermarks',
       'Never expires',

@@ -70,7 +70,7 @@ const UpgradeModalLayout: React.FC<UpgradeModalLayoutProps> = ({
             <div className="mt-0.5 text-blue-600"><Check size={18} /></div>
             <div>
               <div className="font-semibold text-slate-900 text-sm">Executive Plan</div>
-              <div className="text-xs text-slate-500">70 credits + 10 bonus + High quality</div>
+              <div className="text-xs text-slate-500">60 credits + 10 bonus + High quality</div>
             </div>
           </div>
           <div className="flex items-start gap-3">
