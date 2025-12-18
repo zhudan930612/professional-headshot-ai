@@ -1,19 +1,90 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { BLOG_POSTS } from '../constants';
 import { Layout } from '../components/Layout';
 import { ArrowLeft, Clock, Calendar } from 'lucide-react';
 import type { BlogPost as BlogPostType } from '../types';
+import { parseMarkdownFile } from '../utils/markdownParser';
+import hljs from 'highlight.js';
 
 export const BlogPost = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const post = BLOG_POSTS.find(p => p.slug === slug);
+  const [post, setPost] = useState<BlogPostType | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Scroll to top on mount
+  // Load post content (Markdown or HTML from constants)
   useEffect(() => {
+    const loadPost = async () => {
+      if (!slug) {
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+
+      // Load blogs from Markdown files
+      const markdownBlogs = [
+        'what-to-wear-for-a-professional-headshot',
+        'top-5-mistakes-in-resume-photos',
+        'lighting-101-studio-vs-natural',
+        'what-makes-professional-headshot-effective-2025',
+        'ai-professional-headshots-vs-studio-photography',
+        'how-to-upload-photos-best-ai-headshot-results',
+        'professional-headshots-by-industry-tech-finance-creative',
+        'linkedin-resume-website-headshot-optimization-guide'
+      ];
+
+      if (markdownBlogs.includes(slug)) {
+        try {
+          console.log('[BlogPost] Loading from Markdown...');
+          const { metadata, html } = await parseMarkdownFile(`/content/blog/${slug}.md`);
+          setPost({
+            ...metadata,
+            content: html,
+          });
+          console.log('[BlogPost] ✅ Markdown loaded successfully');
+        } catch (error) {
+          console.error('[BlogPost] ❌ Failed to load markdown, falling back to constants.ts:', error);
+          // Fallback: Use HTML from constants.ts
+          const fallbackPost = BLOG_POSTS.find(p => p.slug === slug);
+          setPost(fallbackPost || null);
+        }
+      } else {
+        // Other blogs: Use HTML from constants.ts
+        console.log('[BlogPost] Loading from constants.ts...');
+        const htmlPost = BLOG_POSTS.find(p => p.slug === slug);
+        setPost(htmlPost || null);
+      }
+
+      setLoading(false);
+    };
+
+    loadPost();
     window.scrollTo(0, 0);
-  }, [post?.slug]);
+  }, [slug]);
+
+  // Highlight code blocks after content is rendered
+  useEffect(() => {
+    if (post && post.content) {
+      // Wait for DOM to update
+      setTimeout(() => {
+        hljs.highlightAll();
+        console.log('[BlogPost] ✨ Code highlighting applied');
+      }, 100);
+    }
+  }, [post]);
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="min-h-[60vh] flex flex-col items-center justify-center p-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mb-4"></div>
+          <p className="text-slate-600">Loading article...</p>
+        </div>
+      </Layout>
+    );
+  }
 
   if (!post) {
     return (
@@ -33,6 +104,135 @@ export const BlogPost = () => {
 
   return (
     <Layout>
+      <style>{`
+        /* 博客内容自定义排版样式 */
+        .blog-content h2 {
+          font-size: 1.875rem;
+          font-weight: 700;
+          color: #0f172a;
+          margin-top: 2.5rem;
+          margin-bottom: 1.25rem;
+          line-height: 1.3;
+          letter-spacing: -0.025em;
+        }
+
+        .blog-content h3 {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: #1e293b;
+          margin-top: 2rem;
+          margin-bottom: 1rem;
+          line-height: 1.4;
+        }
+
+        .blog-content h4 {
+          font-size: 1.25rem;
+          font-weight: 600;
+          color: #334155;
+          margin-top: 1.5rem;
+          margin-bottom: 0.75rem;
+          line-height: 1.5;
+        }
+
+        .blog-content p {
+          font-size: 1rem;
+          line-height: 1.75;
+          color: #475569;
+          margin-bottom: 1.25rem;
+        }
+
+        .blog-content ul,
+        .blog-content ol {
+          margin-left: 1.5rem;
+          margin-bottom: 1.25rem;
+          margin-top: 0.5rem;
+        }
+
+        .blog-content ul li,
+        .blog-content ol li {
+          margin-bottom: 0.75rem;
+          line-height: 1.75;
+          color: #475569;
+        }
+
+        .blog-content ul li {
+          list-style-type: disc;
+        }
+
+        .blog-content ol li {
+          list-style-type: decimal;
+        }
+
+        .blog-content strong {
+          font-weight: 700;
+          color: #0f172a;
+        }
+
+        .blog-content em {
+          font-style: italic;
+          color: #64748b;
+        }
+
+        .blog-content blockquote {
+          border-left: 4px solid #3b82f6;
+          background-color: #f8fafc;
+          padding: 1rem 1.5rem;
+          margin: 1.5rem 0;
+          font-style: italic;
+          color: #475569;
+        }
+
+        .blog-content hr {
+          margin: 2.5rem 0;
+          border: none;
+          border-top: 2px solid #e2e8f0;
+        }
+
+        .blog-content code {
+          background-color: #f1f5f9;
+          color: #e11d48;
+          padding: 0.25rem 0.5rem;
+          border-radius: 0.375rem;
+          font-size: 0.875rem;
+          font-family: 'Monaco', 'Courier New', monospace;
+        }
+
+        .blog-content pre {
+          background-color: #1e293b;
+          color: #f1f5f9;
+          padding: 1.5rem;
+          border-radius: 0.5rem;
+          overflow-x: auto;
+          margin: 1.5rem 0;
+          font-size: 0.875rem;
+          line-height: 1.7;
+        }
+
+        .blog-content pre code {
+          background-color: transparent;
+          color: inherit;
+          padding: 0;
+          border-radius: 0;
+        }
+
+        .blog-content a {
+          color: #3b82f6;
+          text-decoration: underline;
+          text-underline-offset: 4px;
+        }
+
+        .blog-content a:hover {
+          color: #2563eb;
+        }
+
+        .blog-content ul ul,
+        .blog-content ol ol,
+        .blog-content ul ol,
+        .blog-content ol ul {
+          margin-top: 0.5rem;
+          margin-bottom: 0.5rem;
+        }
+      `}</style>
       <div className="bg-white min-h-screen pb-20">
       {/* Header Image */}
       <div className="h-64 md:h-96 w-full relative">
@@ -44,7 +244,7 @@ export const BlogPost = () => {
          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 -mt-24 relative z-10">
+      <div className="max-w-[920px] mx-auto px-4 sm:px-6 lg:px-8 -mt-24 relative z-10">
         <Link to="/blog" className="inline-flex items-center gap-2 text-white/90 hover:text-white mb-6 transition-colors font-medium text-sm">
           <ArrowLeft size={16} /> Back to Blog
         </Link>
@@ -67,21 +267,7 @@ export const BlogPost = () => {
             {/* HTML Content */}
             {post.content ? (
                 <div
-                    className="prose prose-slate max-w-none
-                        prose-h2:text-2xl prose-h2:font-bold prose-h2:text-slate-900 prose-h2:mt-8 prose-h2:mb-4
-                        prose-h3:text-xl prose-h3:font-semibold prose-h3:text-slate-900 prose-h3:mt-6 prose-h3:mb-3
-                        prose-h4:text-lg prose-h4:font-semibold prose-h4:text-slate-900 prose-h4:mt-4 prose-h4:mb-2
-                        prose-p:text-slate-700 prose-p:leading-relaxed prose-p:mb-4
-                        prose-ul:list-disc prose-ul:pl-6 prose-ul:mb-4 prose-ul:text-slate-700
-                        prose-ol:list-decimal prose-ol:pl-6 prose-ol:mb-4 prose-ol:text-slate-700
-                        prose-li:mb-2 prose-li:text-slate-700
-                        prose-strong:font-bold prose-strong:text-slate-900
-                        prose-em:italic prose-em:text-slate-700
-                        prose-blockquote:border-l-4 prose-blockquote:border-primary-500 prose-blockquote:bg-slate-50 prose-blockquote:p-4 prose-blockquote:my-6
-                        prose-code:bg-slate-100 prose-code:text-slate-900 prose-code:px-2 prose-code:py-1 prose-code:rounded prose-code:text-sm
-                        prose-pre:bg-slate-900 prose-pre:text-slate-100 prose-pre:p-4 prose-pre:rounded-lg prose-pre:overflow-x-auto prose-pre:mb-4
-                        prose-a:text-primary-600 prose-a:hover:underline
-                        prose-hr:border-slate-200 prose-hr:my-8"
+                    className="blog-content"
                     dangerouslySetInnerHTML={{ __html: post.content }}
                 />
             ) : (
