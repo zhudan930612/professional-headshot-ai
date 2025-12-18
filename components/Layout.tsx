@@ -394,17 +394,17 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 pt-5 border-t border-slate-800">
         <div className="grid grid-cols-6 md:grid-cols-10 lg:grid-cols-12 gap-2">
 
-          {/* JustSimple Tools */}
+          {/* Appa List */}
           <a
-            href="https://www.justsimple.tools"
+            href="https://appalist.com"
             target="_blank"
             rel="noopener noreferrer"
             className="transition-all duration-300 hover:opacity-100 hover:scale-105 opacity-80"
           >
             <img
-              src="https://www.justsimple.tools/badge.svg"
-              alt="Listed on JustSimple Tools"
-              className="w-full h-8 object-contain"
+              src="https://appalist.com/assets/images/badge.png"
+              alt="Appa List"
+              className="w-full h-10 object-contain"
               loading="lazy"
             />
           </a>
