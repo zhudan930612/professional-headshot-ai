@@ -398,7 +398,7 @@ const Footer = () => {
           <a
             href="https://www.justsimple.tools"
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             className="transition-all duration-300 hover:opacity-100 hover:scale-105 opacity-80"
           >
             <img
