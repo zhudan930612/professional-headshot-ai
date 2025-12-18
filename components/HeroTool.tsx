@@ -632,11 +632,11 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
               <p className="text-xs text-slate-500 font-medium mb-3 text-center">Example Photos:</p>
               <div className="flex gap-4 justify-center">
                 {[
-                  '/hero-img/hero_01.webp',
-                  '/hero-img/hero_02.webp',
-                  '/hero-img/hero_03.webp'
+                  '/hero-img/hero_01.jpeg',
+                  '/hero-img/hero_02.jpeg',
+                  '/hero-img/hero_03.jpeg'
                 ].map((url, idx) => (
-                  <div key={idx} className="w-24 aspect-[3/4] rounded-xl overflow-hidden border-2 border-slate-300 shadow-md hover:shadow-lg transition-shadow">
+                  <div key={idx} className="w-[120px] h-[160px] rounded-xl overflow-hidden border-2 border-slate-300 shadow-md hover:shadow-lg transition-shadow flex-shrink-0">
                     <img src={url} alt={`Example ${idx + 1}`} className="w-full h-full object-cover" />
                   </div>
                 ))}
