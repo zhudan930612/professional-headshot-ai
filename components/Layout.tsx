@@ -559,6 +559,21 @@ const Footer = () => {
             />
           </a>
 
+          {/* Tool Pilot AI */}
+          <a
+            href="https://www.toolpilot.ai/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center h-12 transition-all duration-300 hover:opacity-100 hover:scale-105 opacity-80"
+          >
+            <img
+              src="/wailian/crop_center.png"
+              alt="Tool Pilot AI"
+              className="h-full w-auto object-contain"
+              loading="lazy"
+            />
+          </a>
+
         </div>
       </div>
 
