@@ -424,6 +424,18 @@ const Footer = () => {
             />
           </a>
 
+          {/* AI Hustle Tools */}
+          <a
+            href="https://aihustle.tools/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center h-12 transition-all duration-300 hover:opacity-100 hover:scale-105 opacity-80"
+          >
+            <div className="flex items-center px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded shadow-sm h-[26px] ml-[30px]">
+              <span className="text-white font-medium text-xs whitespace-nowrap">AI Hustle Tools</span>
+            </div>
+          </a>
+
         </div>
       </div>
 
