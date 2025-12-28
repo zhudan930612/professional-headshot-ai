@@ -448,6 +448,21 @@ const Footer = () => {
             </div>
           </a>
 
+          {/* GoodFirms */}
+          <a
+            href="https://www.goodfirms.co/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center h-12 transition-all duration-300 hover:opacity-100 hover:scale-105 opacity-80"
+          >
+            <img
+              src="/wailian/gf-logo-horizontal.jpg"
+              alt="GoodFirms"
+              className="h-full w-auto object-contain ml-[130px] scale-[1.1]"
+              loading="lazy"
+            />
+          </a>
+
         </div>
       </div>
 
