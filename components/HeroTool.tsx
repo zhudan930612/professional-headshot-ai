@@ -439,18 +439,36 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
 
           // 2. 扣减配额（失败不影响已保存的会话）
           if (user) {
-            console.log('[HeroTool] 扣减配额...');
+            console.log('[HeroTool] 🎯 准备扣减配额...', {
+              用户ID: user.id,
+              图片数量: completedImages.length,
+              是否重试: false
+            });
             try {
-              const { success } = await decrementQuota(completedImages.length, false);
-              console.log('[HeroTool] 扣减配额结果:', success);
-              if (!success) {
-                console.warn('[HeroTool] 配额扣减返回 false，但会话已保存');
+              console.log('[HeroTool] 📞 调用 decrementQuota 函数...');
+              const result = await decrementQuota(completedImages.length, false);
+              console.log('[HeroTool] 📥 decrementQuota 返回结果:', result);
+              console.log('[HeroTool] ✅ 扣减配额结果:', {
+                成功: result.success,
+                剩余配额: result.remaining
+              });
+
+              if (!result.success) {
+                console.warn('[HeroTool] ⚠️ 配额扣减返回 false，但会话已保存');
               }
+
               // 通知全局刷新额度显示
+              console.log('[HeroTool] 🔄 刷新全局配额显示...');
               await refreshQuota();
+              console.log('[HeroTool] ✅ 全局配额刷新完成');
             } catch (quotaErr) {
-              console.error('[HeroTool] 配额扣减失败:', quotaErr);
+              console.error('[HeroTool] ❌❌❌ 配额扣减失败 ❌❌❌');
+              console.error('[HeroTool] 错误对象:', quotaErr);
+              console.error('[HeroTool] 错误消息:', quotaErr instanceof Error ? quotaErr.message : String(quotaErr));
+              console.error('[HeroTool] 错误堆栈:', quotaErr instanceof Error ? quotaErr.stack : '无堆栈信息');
             }
+          } else {
+            console.warn('[HeroTool] ⚠️ 用户未登录，跳过配额扣减');
           }
 
           // 3. Apply watermarks if Free user
