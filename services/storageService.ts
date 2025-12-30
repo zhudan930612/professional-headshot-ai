@@ -227,22 +227,31 @@ export const decrementQuota = async (
   isRetry: boolean = false
 ): Promise<{ success: boolean; remaining: number }> => {
   const userId = await getUserId();
+  console.log('[decrementQuota] 🎯 开始扣减配额', { userId, amount, isRetry });
+
   if (!userId) {
     throw new Error('用户未登录');
   }
 
   // 重试请求不扣减配额
   if (isRetry) {
+    console.log('[decrementQuota] ⏭️ 重试请求，不扣减配额');
     try {
       const remaining = await getRemainingQuota();
+      console.log('[decrementQuota] ✅ 重试返回剩余配额:', remaining);
       return { success: true, remaining };
     } catch (e) {
-      console.error('重试获取配额失败:', e);
+      console.error('[decrementQuota] ❌ 重试获取配额失败:', e);
       return { success: true, remaining: 0 };
     }
   }
 
   try {
+    console.log('[decrementQuota] 📡 调用 RPC 函数...', {
+      function: 'decrement_subscription_quota_safe',
+      params: { p_user_id: userId, p_amount: amount, p_is_retry: isRetry }
+    });
+
     const { data, error } = await supabase
       .rpc('decrement_subscription_quota_safe', {
         p_user_id: userId,
@@ -250,14 +259,37 @@ export const decrementQuota = async (
         p_is_retry: isRetry
       });
 
-    if (error) throw error;
+    console.log('[decrementQuota] 📥 RPC 原始返回:', { data, error });
 
-    return {
+    if (error) {
+      console.error('[decrementQuota] ❌ RPC 调用返回错误:', error);
+      throw error;
+    }
+
+    if (!data) {
+      console.error('[decrementQuota] ❌ RPC 返回 null/undefined');
+      throw new Error('RPC 函数未返回数据');
+    }
+
+    const result = {
       success: data.success,
       remaining: data.remaining
     };
+
+    console.log('[decrementQuota] ✅ 配额扣减结果:', result);
+    console.log('[decrementQuota] 📊 扣减前后对比:', {
+      扣减数量: amount,
+      扣减后剩余: data.remaining,
+      是否成功: data.success
+    });
+
+    return result;
   } catch (error) {
-    console.error('扣减配额失败:', error);
+    console.error('[decrementQuota] ❌ 扣减配额失败:', error);
+    console.error('[decrementQuota] ❌ 错误详情:', {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
     throw error;
   }
 };

@@ -16,7 +16,7 @@ interface AuthContextType {
   getReturnPath: () => string;
   clearReturnPath: () => void;
   quotaInfo: QuotaInfo | null;
-  refreshQuota: () => Promise<void>;
+  refreshQuota: () => Promise<QuotaInfo | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -34,16 +34,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
   const [quotaInfo, setQuotaInfo] = useState<QuotaInfo | null>(null);
 
-  const refreshQuota = async () => {
+  const refreshQuota = async (): Promise<QuotaInfo | null> => {
+    console.log('[AuthContext] 🔄 refreshQuota 被调用', { user: user?.id });
     if (!user) {
+      console.log('[AuthContext] ⚠️ 用户未登录，清空 quotaInfo');
       setQuotaInfo(null);
-      return;
+      return null;
     }
     try {
+      console.log('[AuthContext] 📡 调用 getUserQuotaInfo...');
       const info = await getUserQuotaInfo();
+      console.log('[AuthContext] 📥 获取到新的配额信息:', info);
+      console.log('[AuthContext] 💾 更新 quotaInfo 状态...');
       setQuotaInfo(info);
+      console.log('[AuthContext] ✅ quotaInfo 状态已更新');
+      return info; // ⭐ 返回新的配额信息
     } catch (error) {
-      console.error('Failed to refresh quota:', error);
+      console.error('[AuthContext] ❌ Failed to refresh quota:', error);
+      return null;
     }
   };
 

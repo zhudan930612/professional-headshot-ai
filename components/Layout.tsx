@@ -43,6 +43,15 @@ const Navbar = () => {
   const displayQuotaInfo = user ? authQuotaInfo : null;
   const displayQuota = user ? (authQuotaInfo?.remaining_quota ?? 0) : quota;
 
+  // Debug: log quota changes
+  useEffect(() => {
+    console.log('[Navbar] 📊 配额信息更新:', {
+      user: user?.id,
+      authQuotaInfo,
+      displayQuota
+    });
+  }, [user, authQuotaInfo, displayQuota]);
+
   const handleSignOut = async () => {
     setIsUserMenuOpen(false);
     // Clear all user-related data from localStorage

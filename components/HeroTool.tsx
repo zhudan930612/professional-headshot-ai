@@ -270,15 +270,10 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
     let currentQuotaInfo = quotaInfo;
     try {
       if (user) {
-        await refreshQuota();
-        currentQuotaInfo = authQuotaInfo; // Note: authQuotaInfo might not be updated within this closure yet due to React state batching, but since we await, maybe? Actually refreshQuota is async but state update is async. 
-        // Ideally we should trust the context to be fresh enough or use the return value if refreshQuota returned it.
-        // For now, let's assume refreshQuota invalidates cache.
-        // Actually, to be safe, we can re-fetch just for the check here, OR rely on the fact that we refresh on mount/interaction.
-        // Let's stick to using `quotaInfo` (from props/context) but since we want FRESH check:
-        // Better:
-        const info = await getUserQuotaInfo(); // Keep this manual check for safety before generation
-        currentQuotaInfo = info;
+        // ⭐ 使用 refreshQuota 的返回值，避免状态更新延迟
+        const freshQuota = await refreshQuota();
+        currentQuotaInfo = freshQuota || quotaInfo; // 使用最新值或回退到当前值
+        console.log('[HeroTool] 获取到最新配额:', currentQuotaInfo);
       }
     } catch (err) {
       console.error('Failed to refresh quota info:', err);
@@ -459,8 +454,13 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
 
               // 通知全局刷新额度显示
               console.log('[HeroTool] 🔄 刷新全局配额显示...');
-              await refreshQuota();
-              console.log('[HeroTool] ✅ 全局配额刷新完成');
+              const updatedQuota = await refreshQuota();
+              console.log('[HeroTool] ✅ 全局配额刷新完成，新配额:', updatedQuota);
+
+              // ⭐ 如果用户未登录，手动更新本地配额（虽然当前逻辑下用户必须已登录）
+              if (!user && updatedQuota) {
+                setLocalQuotaInfo(updatedQuota);
+              }
             } catch (quotaErr) {
               console.error('[HeroTool] ❌❌❌ 配额扣减失败 ❌❌❌');
               console.error('[HeroTool] 错误对象:', quotaErr);
