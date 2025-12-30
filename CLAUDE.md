@@ -846,3 +846,108 @@ A:已登录用户的历史保存在 Supabase 数据库(`generation_sessions` 和
 
 **Q:如何添加新的订阅套餐?**
 A:在 `subscription_plans` 表中添加新记录,并更新前端 Pricing 页面的展示逻辑。
+
+---
+
+## 数据库函数开发规范 ⭐ 重要
+
+基于实际问题的经验教训：
+
+### ❌ 避免使用的模式
+
+```sql
+-- 不推荐：使用 RECORD 类型和 SELECT *
+DECLARE
+  v_subscription RECORD;
+BEGIN
+  SELECT * INTO v_subscription
+  FROM user_subscriptions
+  WHERE user_id = v_user_uuid;
+
+  IF v_subscription IS NOT NULL THEN  -- 判断不可靠
+    RETURN ...
+  END IF;
+END;
+```
+
+**问题：**
+1. `SELECT *` 在表结构变更后可能失败
+2. `RECORD IS NOT NULL` 判断逻辑不可靠
+3. 缺少 `ORDER BY` 可能返回错误记录
+
+### ✅ 推荐的模式
+
+```sql
+-- 推荐：明确的列选择和类型声明
+DECLARE
+  v_plan_type TEXT;
+  v_purchased_quota INT;
+  v_used_quota INT;
+BEGIN
+  SELECT plan_type, purchased_quota, used_quota
+  INTO v_plan_type, v_purchased_quota, v_used_quota
+  FROM user_subscriptions
+  WHERE user_id = v_user_uuid
+    AND status = 'active'
+  ORDER BY created_at DESC  -- 明确排序规则
+  LIMIT 1;
+
+  IF v_plan_type IS NOT NULL THEN  -- 检查具体字段
+    RETURN ...
+  END IF;
+END;
+```
+
+### 数据库迁移最佳实践
+
+1. **所有迁移脚本按顺序编号**：`001_`, `002_`, `003_`
+2. **避免创建多个 fix-xxx.sql 脚本**，应合并为统一的迁移脚本
+3. **每次部署后立即测试 RPC 函数**：
+   ```sql
+   -- 验证函数存在
+   SELECT proname, pg_get_function_arguments(oid)
+   FROM pg_proc
+   WHERE proname = 'your_function_name';
+
+   -- 测试返回值
+   SELECT * FROM your_function_name('test-id');
+
+   -- 验证数据一致性
+   SELECT
+     (SELECT result FROM your_function_name(user_id::text))
+       = (expected_calculation) as is_consistent
+   FROM your_table
+   LIMIT 10;
+   ```
+
+4. **使用事务确保原子性**：
+   ```sql
+   BEGIN;
+   -- 迁移脚本内容
+   COMMIT;
+   ```
+
+### 调试技巧
+
+添加 `RAISE NOTICE` 日志（开发/调试时）：
+```sql
+CREATE OR REPLACE FUNCTION debug_function(p_user_id TEXT)
+RETURNS JSONB
+AS $$
+DECLARE
+  v_found BOOLEAN := false;
+BEGIN
+  RAISE NOTICE 'Function called with: %', p_user_id;
+
+  SELECT true INTO v_found
+  FROM table_name
+  WHERE user_id = p_user_id::uuid;
+
+  RAISE NOTICE 'Record found: %', v_found;
+
+  -- 其余逻辑
+END;
+$$;
+```
+
+在 Supabase Dashboard → Logs → Postgres Logs 中查看日志输出。
