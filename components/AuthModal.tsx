@@ -14,17 +14,28 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // 调试日志
+  console.log('🎭 AuthModal 渲染, isOpen:', isOpen);
+
   const handleGoogleSignIn = async () => {
     try {
+      console.log('🚀 开始 Google 登录流程...');
       setLoading(true);
       setError(null);
       // Get the return path directly from localStorage (more reliable than Context)
       const returnPath = localStorage.getItem(RETURN_PATH_KEY) || '/';
-      console.log('AuthModal: signInWithGoogle with returnPath:', returnPath);
+      console.log('📍 returnPath:', returnPath);
+      console.log('🔑 调用 signInWithGoogle...');
       await signInWithGoogle(returnPath);
+      console.log('✅ signInWithGoogle 调用成功，等待重定向...');
       // OAuth 会重定向，所以这里不需要关闭 modal
     } catch (err: any) {
-      console.error('登录失败:', err);
+      console.error('❌ 登录失败:', err);
+      console.error('错误详情:', {
+        message: err.message,
+        stack: err.stack,
+        code: err.code,
+      });
       setError(err.message || 'Login failed, please try again');
       setLoading(false);
     }

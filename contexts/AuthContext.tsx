@@ -95,9 +95,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signInWithGoogle = async (returnTo?: string) => {
+    console.log('🔐 signInWithGoogle 开始执行, returnTo:', returnTo);
+
     // Save return path to localStorage before OAuth redirect
     if (returnTo && typeof returnTo === 'string') {
       localStorage.setItem(RETURN_PATH_KEY, returnTo);
+      console.log('💾 已保存 returnPath 到 localStorage');
     }
 
     // Build redirect URL with return path as query parameter
@@ -105,18 +108,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (returnTo && typeof returnTo === 'string') {
       callbackUrl.searchParams.set('returnTo', returnTo);
     }
+    console.log('🔗 回调 URL:', callbackUrl.toString());
 
-    const { error } = await supabase.auth.signInWithOAuth({
+    console.log('📞 调用 Supabase signInWithOAuth...');
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: callbackUrl.toString(),
       },
     });
 
+    console.log('📦 完整响应:', { data, error });
+
     if (error) {
-      console.error('Google login error:', error);
-      throw error;
+      console.error('❌ Supabase OAuth 错误:', error);
+      console.error('错误详情:', {
+        message: error.message,
+        status: error.status,
+        name: error.name,
+      });
+      throw new Error(`Google OAuth 配置错误: ${error.message || '请检查 Supabase Dashboard 中的 Google Provider 设置'}`);
     }
+
+    if (!data?.url) {
+      console.error('❌ Supabase 没有返回重定向 URL');
+      console.error('返回的 data:', data);
+      throw new Error('OAuth 配置错误: Supabase 没有返回登录 URL。请检查 Supabase Dashboard > Authentication > Providers > Google 配置是否正确。');
+    }
+
+    console.log('✅ Supabase signInWithOAuth 调用成功');
+    console.log('🔗 重定向 URL:', data.url);
+    console.log('🚀 即将跳转到 Google 登录页面...');
+
+    // 手动触发重定向
+    window.location.href = data.url;
   };
 
   const signOut = async () => {
@@ -135,12 +160,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signOut,
     isAuthModalOpen,
     openAuthModal: (returnTo?: string) => {
+      console.log('🔓 openAuthModal 被调用, returnTo:', returnTo);
       if (returnTo) {
         // Save to localStorage immediately
         localStorage.setItem(RETURN_PATH_KEY, returnTo);
         setReturnPath(returnTo);
       }
       setIsAuthModalOpen(true);
+      console.log('✅ isAuthModalOpen 已设置为 true');
     },
     closeAuthModal: () => setIsAuthModalOpen(false),
     getReturnPath: () => returnPath,

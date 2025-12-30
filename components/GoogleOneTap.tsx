@@ -37,24 +37,44 @@ export const GoogleOneTap = () => {
         const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
         if (!clientId) {
-          console.error('Google Client ID not configured');
+          console.error('❌ Google Client ID 未配置');
+          console.error('请在 .env.local 中配置 VITE_GOOGLE_CLIENT_ID');
           return;
         }
 
-        // Initialize Google One Tap
-        window.google.accounts.id.initialize({
-          client_id: clientId,
-          callback: handleCredentialResponse,
-          auto_select: false,
-          cancel_on_tap_outside: true,
-        });
+        try {
+          // Initialize Google One Tap
+          window.google.accounts.id.initialize({
+            client_id: clientId,
+            callback: handleCredentialResponse,
+            auto_select: false,
+            cancel_on_tap_outside: true,
+          });
 
-        // Show One Tap prompt
-        window.google.accounts.id.prompt((notification: any) => {
-          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-            console.log('Google One Tap not displayed:', notification.getNotDisplayedReason());
-          }
-        });
+          // Show One Tap prompt
+          window.google.accounts.id.prompt((notification: any) => {
+            if (notification.isNotDisplayed()) {
+              const reason = notification.getNotDisplayedReason();
+              console.warn('⚠️ Google One Tap 未显示:', reason);
+
+              // 根据不同原因给出提示
+              if (reason === 'suppressed_by_user') {
+                console.info('💡 用户已关闭 One Tap，请使用标准登录按钮');
+              } else if (reason === 'opt_out_or_no_session') {
+                console.info('💡 浏览器禁用了 One Tap，请使用标准登录按钮');
+              } else if (reason === 'browser_not_supported') {
+                console.info('💡 浏览器不支持 One Tap，请使用标准登录按钮');
+              }
+            } else if (notification.isSkippedMoment()) {
+              console.info('ℹ️ Google One Tap 被跳过');
+            } else {
+              console.log('✅ Google One Tap 显示成功');
+            }
+          });
+        } catch (error) {
+          console.error('❌ Google One Tap 初始化失败:', error);
+          console.info('💡 将使用标准登录流程作为备选方案');
+        }
       }
     };
 

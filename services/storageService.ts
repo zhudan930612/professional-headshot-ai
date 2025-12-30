@@ -158,48 +158,7 @@ export const saveSession = async (session: GenerationSession): Promise<void> => 
   }
 };
 
-export const getQuota = async (): Promise<number> => {
-  // 用户必须已登录才能生成图片，所以直接从数据库读取
-  try {
-    const userId = await getUserId();
-    if (!userId) {
-      return 0;
-    }
-
-    const today = new Date().toISOString().split('T')[0];
-
-    const { data, error } = await supabase
-      .from('user_quotas')
-      .select('count, date')
-      .eq('user_id', userId)
-      .eq('date', today)
-      .single();
-
-    if (error && error.code !== 'PGRST116') {
-      throw error;
-    }
-
-    if (data) {
-      return data.count;
-    }
-
-    // 如果今天没有记录，初始化
-    const { error: insertError } = await supabase
-      .from('user_quotas')
-      .insert({
-        user_id: userId,
-        date: today,
-        count: 0,
-      });
-
-    if (insertError) throw insertError;
-
-    return 0;
-  } catch (e) {
-    console.error('Error fetching quota from Supabase:', e);
-    return 0;
-  }
-};
+// getQuota() 函数已删除 - user_quotas 表已废弃，使用 getUserQuotaInfo() 代替
 
 /**
  * @deprecated 已废弃：现在所有用户都使用永久配额系统，不再使用每日配额
@@ -212,6 +171,13 @@ export const incrementQuota = async (amount: number): Promise<boolean> => {
 
 export const getRemainingQuota = async (): Promise<number> => {
   try {
+    // 首先检查用户是否登录
+    const userId = await getUserId();
+    if (!userId) {
+      // 未登录用户返回 0（新系统不支持未登录用户）
+      return 0;
+    }
+
     const quotaInfo = await getUserQuotaInfo();
     return quotaInfo.remaining_quota;
   } catch (error) {
@@ -291,39 +257,8 @@ export const decrementQuota = async (
       remaining: data.remaining
     };
   } catch (error) {
-    console.error('扣减配额失败，尝试回退方案:', error);
-
-    // 回退：直接更新 user_quotas（主要针对免费用户或 RPC 缺失场景）
-    try {
-      const quotaInfo = await getUserQuotaInfo();
-      const today = new Date().toISOString().split('T')[0];
-
-      const { data: current, error: selectError } = await supabase
-        .from('user_quotas')
-        .select('count')
-        .eq('user_id', userId)
-        .eq('date', today)
-        .single();
-
-      if (selectError && selectError.code !== 'PGRST116') {
-        throw selectError;
-      }
-
-      const currentCount = current?.count ?? 0;
-      const newCount = currentCount + amount;
-
-      const { error: upsertError } = await supabase
-        .from('user_quotas')
-        .upsert({ user_id: userId, date: today, count: newCount });
-
-      if (upsertError) throw upsertError;
-
-      const remaining = Math.max((quotaInfo.total_quota || 0) - newCount, 0);
-      return { success: true, remaining };
-    } catch (fallbackError) {
-      console.error('扣减配额回退失败:', fallbackError);
-      throw fallbackError;
-    }
+    console.error('扣减配额失败:', error);
+    throw error;
   }
 };
 

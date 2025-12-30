@@ -44,8 +44,8 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 async function checkConnection() {
   try {
-    // 测试基本连接
-    const { data, error } = await supabase.from('user_quotas').select('count').limit(1);
+    // 测试基本连接（使用 generation_sessions 表代替已废弃的 user_quotas）
+    const { data, error } = await supabase.from('generation_sessions').select('count').limit(1);
 
     if (error) {
       if (error.code === 'PGRST116') {
@@ -98,7 +98,7 @@ async function checkTables() {
   console.log('\n📊 Step 4: 检查数据库表');
   console.log('─'.repeat(50));
 
-  const tables = ['user_quotas', 'generation_sessions', 'generated_images', 'uploaded_files'];
+  const tables = ['generation_sessions', 'generated_images', 'uploaded_files', 'user_subscriptions'];
 
   for (const table of tables) {
     try {
