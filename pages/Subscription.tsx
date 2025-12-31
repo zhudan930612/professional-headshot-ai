@@ -32,7 +32,7 @@ export const Subscription: React.FC = () => {
   const planFeatures = {
     free: [
       '5 lifetime images',
-      'Standard quality (1K)',
+      'Standard quality (1K 896x1200)',
       'With watermarks',
       'Permanent quota'
     ],
