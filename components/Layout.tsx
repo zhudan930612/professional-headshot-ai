@@ -472,6 +472,21 @@ const Footer = () => {
             />
           </a>
 
+          {/* Product Hunt */}
+          <a
+            href="https://www.producthunt.com/products/professional-headshot-ai-2?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-professional-headshot-ai-2"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center h-12 transition-all duration-300 hover:opacity-100 hover:scale-105 opacity-80"
+          >
+            <img
+              src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1056495&theme=neutral&t=1767167268142"
+              alt="Professional Headshot AI - Studio-quality AI headshots for LinkedIn and careers | Product Hunt"
+              className="h-full w-auto object-contain ml-[165px] scale-[1.3]"
+              loading="lazy"
+            />
+          </a>
+
         </div>
       </div>
 
