@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { BLOG_POSTS } from '../constants';
 import { Layout } from '../components/Layout';
+import { SEOHead } from '../components/SEOHead';
 import { ArrowLeft, Clock, Calendar } from 'lucide-react';
 import type { BlogPost as BlogPostType } from '../types';
 import { parseMarkdownFile } from '../utils/markdownParser';
@@ -104,6 +105,12 @@ export const BlogPost = () => {
 
   return (
     <Layout>
+      {/* Dynamic SEO for blog post */}
+      <SEOHead
+        title={`${post.title} – Professional Headshot AI Blog`}
+        description={post.excerpt || post.title}
+        canonicalPath={`/blog/${slug}`}
+      />
       <style>{`
         /* 博客内容自定义排版样式 */
         .blog-content h2 {
@@ -234,56 +241,56 @@ export const BlogPost = () => {
         }
       `}</style>
       <div className="bg-white min-h-screen pb-20">
-      {/* Header Image */}
-      <div className="h-64 md:h-96 w-full relative">
-         <img 
-            src={`https://picsum.photos/seed/${post.id}/1200/600`} 
+        {/* Header Image */}
+        <div className="h-64 md:h-96 w-full relative">
+          <img
+            src={`https://picsum.photos/seed/${post.id}/1200/600`}
             alt={post.title}
             className="w-full h-full object-cover"
-         />
-         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-      </div>
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+        </div>
 
-      <div className="max-w-[920px] mx-auto px-4 sm:px-6 lg:px-8 -mt-24 relative z-10">
-        <Link to="/blog" className="inline-flex items-center gap-2 text-white/90 hover:text-white mb-6 transition-colors font-medium text-sm">
-          <ArrowLeft size={16} /> Back to Blog
-        </Link>
-        
-        <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-8 md:p-12">
+        <div className="max-w-[920px] mx-auto px-4 sm:px-6 lg:px-8 -mt-24 relative z-10">
+          <Link to="/blog" className="inline-flex items-center gap-2 text-white/90 hover:text-white mb-6 transition-colors font-medium text-sm">
+            <ArrowLeft size={16} /> Back to Blog
+          </Link>
+
+          <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-8 md:p-12">
             {/* Meta */}
             <div className="flex items-center gap-6 text-sm text-slate-500 mb-6 border-b border-slate-100 pb-6">
-                <span className="flex items-center gap-2">
-                    <Calendar size={16} /> {post.date}
-                </span>
-                <span className="flex items-center gap-2">
-                    <Clock size={16} /> {post.readTime}
-                </span>
+              <span className="flex items-center gap-2">
+                <Calendar size={16} /> {post.date}
+              </span>
+              <span className="flex items-center gap-2">
+                <Clock size={16} /> {post.readTime}
+              </span>
             </div>
 
             <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-8 leading-tight">
-                {post.title}
+              {post.title}
             </h1>
 
             {/* HTML Content */}
             {post.content ? (
-                <div
-                    className="blog-content"
-                    dangerouslySetInnerHTML={{ __html: post.content }}
-                />
+              <div
+                className="blog-content"
+                dangerouslySetInnerHTML={{ __html: post.content }}
+              />
             ) : (
-                <div className="text-center py-12">
-                    <p className="text-slate-500">Article content is being prepared...</p>
-                </div>
+              <div className="text-center py-12">
+                <p className="text-slate-500">Article content is being prepared...</p>
+              </div>
             )}
 
             {/* CTA */}
             <div className="mt-12 pt-8 border-t border-slate-100 flex justify-end">
-                <Link to="/" className="px-6 py-3 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-colors">
-                    Create Your Headshot Now
-                </Link>
+              <Link to="/" className="px-6 py-3 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-colors">
+                Create Your Headshot Now
+              </Link>
             </div>
+          </div>
         </div>
-      </div>
       </div>
     </Layout>
   );

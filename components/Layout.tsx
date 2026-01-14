@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Camera, Menu, X, User, LogIn, LogOut, ChevronDown, Zap } from 'lucide-react';
 import { getRemainingQuota, getUserQuotaInfo } from '../services/storageService';
 import { useAuth } from '../contexts/AuthContext';
+import { SEOHead } from './SEOHead';
 import type { QuotaInfo } from '../types';
 
 const Navbar = () => {
@@ -127,8 +128,8 @@ const Navbar = () => {
                     <>
                       {/* Plan Badge */}
                       <span className={`px-3 py-1 rounded-full text-xs font-medium ${authQuotaInfo.plan_type === 'executive' ? 'bg-amber-100 text-amber-800' :
-                          authQuotaInfo.plan_type === 'professional' ? 'bg-blue-100 text-blue-800' :
-                            'bg-slate-100 text-slate-600'
+                        authQuotaInfo.plan_type === 'professional' ? 'bg-blue-100 text-blue-800' :
+                          'bg-slate-100 text-slate-600'
                         }`}>
                         {authQuotaInfo.plan_type.toUpperCase()}
                       </span>
@@ -483,8 +484,15 @@ const Footer = () => {
 };
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const location = useLocation();
+
+  // Determine if the current page should be noindex (private/user-specific pages)
+  const noIndexPaths = ['/history', '/subscription', '/auth/callback'];
+  const shouldNoIndex = noIndexPaths.some(path => location.pathname.startsWith(path));
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
+      <SEOHead noIndex={shouldNoIndex} />
       <Navbar />
       <main className="flex-grow">
         {children}
