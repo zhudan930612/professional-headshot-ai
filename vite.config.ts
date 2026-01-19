@@ -14,5 +14,17 @@ export default defineConfig(() => {
           '@': path.resolve(__dirname, '.'),
         }
       },
+      build: {
+        rollupOptions: {
+          output: {
+            manualChunks: {
+              'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+              'supabase': ['@supabase/supabase-js'],
+              'markdown': ['react-markdown', 'marked', 'gray-matter', 'highlight.js'],
+            }
+          }
+        },
+        chunkSizeWarningLimit: 1000,
+      },
     };
 });
