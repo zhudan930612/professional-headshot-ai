@@ -500,6 +500,21 @@ const Footer = () => {
             </div>
           </a>
 
+          {/* F6S */}
+          <a
+            href="https://www.f6s.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center h-12 transition-all duration-300 hover:opacity-100 hover:scale-105 opacity-80"
+          >
+            <img
+              src="/wailian/f6s-logo.45780d2.png"
+              alt="F6S"
+              className="h-8 w-auto object-contain ml-[140px]"
+              loading="lazy"
+            />
+          </a>
+
         </div>
       </div>
 
