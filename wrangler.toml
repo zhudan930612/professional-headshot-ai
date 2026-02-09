@@ -1,0 +1,20 @@
+# Cloudflare Pages 配置
+name = "professional-headshot-ai"
+compatibility_date = "2024-01-01"
+
+# Pages 项目配置
+pages_build_output_dir = "dist"
+
+# 环境变量（这些需要在 Cloudflare Dashboard 中配置）
+# 这里仅作为文档说明
+[vars]
+# VITE_SUPABASE_URL = "https://osxwjhvlntrornibhkfu.supabase.co"
+# VITE_SUPABASE_ANON_KEY = "your_key"
+# NANO_BANANA_API_KEY = "your_key"
+# CREEM_API_KEY = "your_key"
+# CREEM_SECRET_KEY = "your_key"
+# CREEM_WEBHOOK_SECRET = "your_key"
+# GEMINI_API_KEY = "your_key"
+# SUPABASE_SERVICE_ROLE_KEY = "your_key"
+# VITE_APP_URL = "https://your-domain.pages.dev"
+# VITE_PRODUCTION_URL = "https://your-domain.pages.dev"
