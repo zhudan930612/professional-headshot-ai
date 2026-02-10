@@ -4,6 +4,8 @@
 
 interface Env {
   NANO_BANANA_API_KEY: string;
+  SUPABASE_SERVICE_ROLE_KEY: string;
+  VITE_SUPABASE_URL: string;
 }
 
 interface NanoBananaTaskResponse {

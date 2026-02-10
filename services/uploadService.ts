@@ -206,6 +206,57 @@ export const uploadGeneratedImage = async (
 };
 
 /**
+ * 使用 Canvas 加载图片（绕过 CORS）
+ * 
+ * @param imageUrl 图片 URL
+ * @returns 图片 Blob
+ */
+const loadImageViaCanvas = async (imageUrl: string): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';  // 关键：允许跨域
+    
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          throw new Error('无法获取 Canvas 上下文');
+        }
+        
+        ctx.drawImage(img, 0, 0);
+        
+        canvas.toBlob((blob) => {
+          if (blob) {
+            console.log('Canvas 转换成功，大小:', blob.size, 'bytes');
+            resolve(blob);
+          } else {
+            reject(new Error('Canvas toBlob 失败'));
+          }
+        }, 'image/png', 0.95);
+      } catch (err) {
+        reject(err);
+      }
+    };
+    
+    img.onerror = (err) => {
+      console.error('图片加载失败:', err);
+      reject(new Error('图片加载失败'));
+    };
+    
+    // 添加时间戳避免缓存问题
+    const urlWithTimestamp = imageUrl.includes('?') 
+      ? `${imageUrl}&t=${Date.now()}`
+      : `${imageUrl}?t=${Date.now()}`;
+    
+    img.src = urlWithTimestamp;
+  });
+};
+
+/**
  * 从 URL 下载图片并上传到 Supabase Storage
  * （用于将 AI 生成的图片 URL 转换为 Supabase Storage）
  *
@@ -222,38 +273,53 @@ export const downloadAndUploadGeneratedImage = async (
   index: number
 ): Promise<GeneratedImage> => {
   try {
-    // 使用代理下载图片以避免 CORS 问题
-    const appUrl = import.meta.env.VITE_APP_URL || window.location.origin;
-    const proxyUrl = `${appUrl}/api/proxy-image?url=${encodeURIComponent(imageUrl)}`;
+    console.log('开始下载图片:', imageUrl);
     
-    console.log('通过代理下载图片:', proxyUrl);
+    // 方法1: 使用 Canvas 加载（推荐，避免 CORS）
+    try {
+      const imageBlob = await loadImageViaCanvas(imageUrl);
+      console.log('Canvas 方法成功，开始上传...');
+      return await uploadGeneratedImage(imageBlob, userId, sessionId, index);
+    } catch (canvasError) {
+      console.warn('Canvas 方法失败，尝试代理下载...', canvasError);
+    }
     
-    const response = await fetch(proxyUrl, {
-      method: 'GET',
-      cache: 'no-cache',
-    });
-    
-    if (!response.ok) {
-      // 如果代理失败，尝试直接下载（回退方案）
-      console.warn('代理下载失败，尝试直接下载...');
-      const directResponse = await fetch(imageUrl, {
-        mode: 'cors',
-        credentials: 'omit',
+    // 方法2: 使用代理（回退方案）
+    try {
+      const appUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+      const proxyUrl = `${appUrl}/api/proxy-image?url=${encodeURIComponent(imageUrl)}`;
+      
+      console.log('尝试代理下载:', proxyUrl);
+      
+      const proxyResponse = await fetch(proxyUrl, {
+        method: 'GET',
         cache: 'no-cache',
       });
       
-      if (!directResponse.ok) {
-        throw new Error(`下载图片失败: ${directResponse.status} ${directResponse.statusText}`);
+      if (proxyResponse.ok) {
+        const imageBlob = await proxyResponse.blob();
+        console.log('代理方法成功，开始上传...');
+        return await uploadGeneratedImage(imageBlob, userId, sessionId, index);
       }
-      
-      const imageBlob = await directResponse.blob();
-      return await uploadGeneratedImage(imageBlob, userId, sessionId, index);
+    } catch (proxyError) {
+      console.warn('代理方法失败，尝试直接下载...', proxyError);
     }
-
-    const imageBlob = await response.blob();
-
-    // 上传到 Supabase Storage
+    
+    // 方法3: 直接 fetch（最后回退）
+    const directResponse = await fetch(imageUrl, {
+      mode: 'cors',
+      credentials: 'omit',
+      cache: 'no-cache',
+    });
+    
+    if (!directResponse.ok) {
+      throw new Error(`下载图片失败: ${directResponse.status} ${directResponse.statusText}`);
+    }
+    
+    const imageBlob = await directResponse.blob();
+    console.log('直接下载成功，开始上传...');
     return await uploadGeneratedImage(imageBlob, userId, sessionId, index);
+    
   } catch (error) {
     console.error('下载并上传图片出错:', error);
     throw error;
