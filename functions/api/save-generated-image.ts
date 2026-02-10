@@ -4,8 +4,6 @@
  * 完全绕过浏览器 CORS 限制
  */
 
-import { createClient } from '@supabase/supabase-js';
-
 interface Env {
   VITE_SUPABASE_URL: string;
   SUPABASE_SERVICE_ROLE_KEY: string;
@@ -77,18 +75,21 @@ export async function onRequestPost(context: {
     const imageBlob = await imageResponse.blob();
     console.log('图片下载成功，大小:', imageBlob.size, 'bytes');
 
-    // 2. 初始化 Supabase 客户端（使用 service_role key）
+    // 2. 动态导入 Supabase 客户端（Cloudflare Functions 要求）
+    const { createClient } = await import('@supabase/supabase-js');
+    
+    // 3. 初始化 Supabase 客户端（使用 service_role key）
     const supabase = createClient(
       context.env.VITE_SUPABASE_URL,
       context.env.SUPABASE_SERVICE_ROLE_KEY
     );
 
-    // 3. 生成文件路径
+    // 4. 生成文件路径
     const timestamp = Date.now();
     const baseName = `${sessionId}_${index}`;
     const pngPath = `${userId}/${baseName}.png`;
 
-    // 4. 上传 PNG 到 Supabase Storage
+    // 5. 上传 PNG 到 Supabase Storage
     const { error: uploadError } = await supabase.storage
       .from(GENERATED_IMAGES_BUCKET)
       .upload(pngPath, imageBlob, {
@@ -105,14 +106,14 @@ export async function onRequestPost(context: {
       );
     }
 
-    // 5. 获取公开访问 URL
+    // 6. 获取公开访问 URL
     const { data: { publicUrl: pngUrl } } = supabase.storage
       .from(GENERATED_IMAGES_BUCKET)
       .getPublicUrl(pngPath);
 
     console.log('PNG 上传成功:', pngUrl);
 
-    // 6. 尝试生成并上传 JPG 版本（可选）
+    // 7. 尝试生成并上传 JPG 版本（可选）
     let jpgUrl: string | undefined;
     
     try {
@@ -124,7 +125,7 @@ export async function onRequestPost(context: {
       console.warn('JPG 转换失败，仅保留 PNG:', err);
     }
 
-    // 7. 返回结果
+    // 8. 返回结果
     const result = {
       id: `gen_${timestamp}_${index}`,
       url: pngUrl,
