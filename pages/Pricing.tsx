@@ -2,15 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Check } from 'lucide-react';
 import { Layout } from '../components/Layout';
 import { getSubscriptionPlans } from '../services/subscriptionService';
+import { createCreemPayment } from '../services/paymentService';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import type { SubscriptionPlanConfig } from '../types';
-
-// Creem 支付链接映射
-const CREEM_PAYMENT_LINKS: { [key: string]: string } = {
-  professional: 'https://www.creem.io/payment/prod_3VuEcSLV7nUFQIFYByNkaG',
-  executive: 'https://www.creem.io/payment/prod_3goNXcJoP80L3mmWoAdkZs'
-};
 
 export const Pricing: React.FC = () => {
   const { user, openAuthModal } = useAuth();
@@ -31,7 +26,9 @@ export const Pricing: React.FC = () => {
     loadPlans();
   }, []);
 
-  const handleSelectPlan = (planType: string) => {
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleSelectPlan = async (planType: string) => {
     // Free 计划直接跳转
     if (planType === 'free') {
       navigate('/');
@@ -44,19 +41,22 @@ export const Pricing: React.FC = () => {
       return;
     }
 
-    // 获取对应的 Creem 支付链接
-    const paymentUrl = CREEM_PAYMENT_LINKS[planType];
-    if (!paymentUrl) {
-      setError('该套餐暂无支付方式');
-      return;
+    // 防止重复点击
+    if (isProcessing) return;
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      // 调用后端创建支付订单
+      const { paymentUrl } = await createCreemPayment(planType);
+      
+      // 跳转到 Creem 支付页面
+      window.location.href = paymentUrl;
+    } catch (err) {
+      console.error('创建支付订单失败:', err);
+      setError(err instanceof Error ? err.message : '创建支付订单失败，请稍后重试');
+      setIsProcessing(false);
     }
-
-    // 构建带有 return_url 的完整支付链接
-    const returnUrl = `${window.location.origin}/#/subscription`;
-    const fullPaymentUrl = `${paymentUrl}?return_url=${encodeURIComponent(returnUrl)}`;
-
-    // 跳转到 Creem 支付页面
-    window.location.href = fullPaymentUrl;
   };
 
   return (
