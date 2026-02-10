@@ -8,18 +8,48 @@ interface Env {
   SUPABASE_SERVICE_ROLE_KEY: string;
 }
 
+// Creem 官方 Webhook 数据结构
 interface CreemWebhookPayload {
-  event: string;
-  order_id: string;
-  transaction_id?: string;
-  status: 'completed' | 'failed' | 'refunded';
-  amount: number;
-  currency: string;
-  metadata: {
-    user_id: string;
-    plan_type: string;
+  id: string;
+  eventType: 'checkout.completed' | 'subscription.active' | 'subscription.paid' | 'subscription.canceled' | 'refund.created';
+  created_at: number;
+  object: {
+    id: string;
+    object: string;
+    request_id?: string;
+    order?: {
+      id: string;
+      customer: string;
+      product: string;
+      amount: number;
+      currency: string;
+      status: string;
+      type: string;
+    };
+    product?: {
+      id: string;
+      name: string;
+      price: number;
+      currency: string;
+    };
+    customer?: {
+      id: string;
+      email: string;
+      name: string;
+    };
+    subscription?: {
+      id: string;
+      status: string;
+      metadata?: Record<string, any>;
+    };
+    status?: string;
+    metadata?: {
+      user_id?: string;
+      plan_type?: string;
+      referenceId?: string;
+      [key: string]: any;
+    };
   };
-  created_at: string;
 }
 
 /**
@@ -115,7 +145,7 @@ export async function onRequestPost(context: {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, x-creem-signature',
+    'Access-Control-Allow-Headers': 'Content-Type, creem-signature',
     'Content-Type': 'application/json',
   };
 
@@ -128,12 +158,12 @@ export async function onRequestPost(context: {
       context.env.SUPABASE_SERVICE_ROLE_KEY
     );
 
-    // 获取签名和请求体
-    const signature = context.request.headers.get('x-creem-signature');
+    // 获取签名和请求体 (Creem 使用 creem-signature header)
+    const signature = context.request.headers.get('creem-signature');
     const bodyText = await context.request.text();
 
     if (!signature) {
-      console.warn('缺少 x-creem-signature header');
+      console.warn('缺少 creem-signature header');
       return new Response(
         JSON.stringify({ error: '缺少签名' }),
         { status: 400, headers: corsHeaders }
@@ -163,25 +193,18 @@ export async function onRequestPost(context: {
 
     // 解析 Webhook 数据
     const webhookData: CreemWebhookPayload = JSON.parse(bodyText);
+    
+    console.log(`📥 收到 Creem Webhook: ${webhookData.eventType}`);
+    console.log(`📦 数据:`, JSON.stringify(webhookData, null, 2));
 
-    // 更新支付交易记录
-    const { error: updateError } = await supabase
-      .from('payment_transactions')
-      .update({
-        status: webhookData.status === 'completed' ? 'completed' : 'failed',
-        creem_transaction_id: webhookData.transaction_id,
-        completed_at: webhookData.status === 'completed' ? new Date().toISOString() : null,
-        metadata: webhookData
-      })
-      .eq('creem_order_id', webhookData.order_id);
-
-    if (updateError) {
-      console.error('更新支付记录失败:', updateError);
-    }
-
-    // 如果支付成功，创建订阅
-    if (webhookData.status === 'completed') {
-      const { user_id: userId, plan_type: planType } = webhookData.metadata;
+    // 处理 checkout.completed 事件（支付成功）
+    if (webhookData.eventType === 'checkout.completed') {
+      // 从 metadata 或 subscription.metadata 获取用户信息
+      const metadata = webhookData.object.metadata || webhookData.object.subscription?.metadata || {};
+      const userId = metadata.user_id || metadata.referenceId;
+      const planType = metadata.plan_type;
+      
+      console.log(`👤 用户信息: userId=${userId}, planType=${planType}`);
 
       // 获取套餐配置
       const { data: plan } = await supabase
@@ -228,9 +251,9 @@ export async function onRequestPost(context: {
             purchased_quota: totalPurchasedQuota,
             bonus_quota: totalBonusQuota,
             used_quota: currentUsedQuota,
-            payment_id: webhookData.order_id,
+            payment_id: webhookData.object.order?.id || webhookData.id,
             amount: plan.price,
-            currency: webhookData.currency,
+            currency: webhookData.object.order?.currency || 'USD',
             expires_at: null
           });
 
@@ -257,13 +280,13 @@ export async function onRequestPost(context: {
           .update({
             subscription_id: subscription.id
           })
-          .eq('creem_order_id', webhookData.order_id);
+          .eq('creem_order_id', webhookData.object.order?.id);
       }
-    } else if (webhookData.status === 'failed') {
-      console.warn(`⚠️ 支付失败: ${webhookData.order_id}`);
-    } else if (webhookData.status === 'refunded') {
-      console.log(`💰 支付已退款: ${webhookData.order_id}`);
-      await handleRefund(webhookData.order_id, supabase);
+    } else if (webhookData.eventType === 'refund.created') {
+      console.log(`💰 支付已退款: ${webhookData.object.order?.id}`);
+      await handleRefund(webhookData.object.order?.id || '', supabase);
+    } else {
+      console.log(`📌 其他事件类型: ${webhookData.eventType}`);
     }
 
     return new Response(
@@ -288,7 +311,7 @@ export async function onRequestOptions(): Promise<Response> {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, x-creem-signature',
+      'Access-Control-Allow-Headers': 'Content-Type, creem-signature',
     },
   });
 }
