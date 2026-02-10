@@ -13,11 +13,9 @@ interface CreatePaymentRequest {
   planType: string;
 }
 
-interface CreemPaymentResponse {
-  order_id: string;
-  payment_url: string;
-  amount: number;
-  currency: string;
+interface CreemCheckoutResponse {
+  checkout_url: string;
+  id: string;
 }
 
 export async function onRequestPost(context: {
@@ -97,37 +95,49 @@ export async function onRequestPost(context: {
       );
     }
 
-    const appUrl = context.env.VITE_APP_URL || 'https://example.com';
+    // Creem 产品 ID 映射
+    const CREEM_PRODUCT_IDS: { [key: string]: string } = {
+      professional: 'prod_3VuEcSLV7nUFQIFYByNkaG',
+      executive: 'prod_3goNXcJoP80L3mmWoAdkZs'
+    };
 
-    const creemResponse = await fetch('https://api.creem.io/v1/payments', {
+    const productId = CREEM_PRODUCT_IDS[planType];
+    if (!productId) {
+      return new Response(
+        JSON.stringify({ error: '套餐产品未配置' }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const appUrl = context.env.VITE_APP_URL || 'https://www.professionalheadshotai.ink';
+
+    // 使用 Creem Checkout API
+    const creemResponse = await fetch('https://api.creem.io/v1/checkouts', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${creemApiKey}`,
+        'x-api-key': creemApiKey,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        amount: Math.round(plan.price * 100),
-        currency: 'USD',
-        description: `Professional Headshot - ${plan.display_name} Plan`,
+        product_id: productId,
+        success_url: `${appUrl}/#/subscription?payment=success`,
         metadata: {
           user_id: userId,
           plan_type: planType
-        },
-        return_url: `${appUrl}/#/payment/success`,
-        cancel_url: `${appUrl}/#/payment/cancel`
+        }
       })
     });
 
     if (!creemResponse.ok) {
       const errorText = await creemResponse.text();
-      console.error('Creem API 请求失败:', errorText);
+      console.error('Creem API 请求失败:', creemResponse.status, errorText);
       return new Response(
-        JSON.stringify({ error: 'Creem API 错误' }),
+        JSON.stringify({ error: 'Creem API 错误', details: errorText }),
         { status: 500, headers: corsHeaders }
       );
     }
 
-    const creemData: CreemPaymentResponse = await creemResponse.json();
+    const creemData = await creemResponse.json();
 
     // 保存支付记录
     const { error: insertError } = await supabase
@@ -137,7 +147,7 @@ export async function onRequestPost(context: {
         plan_type: planType,
         amount: plan.price,
         currency: 'USD',
-        creem_order_id: creemData.order_id,
+        creem_order_id: creemData.id,
         status: 'pending',
         metadata: {
           plan_name: plan.display_name,
@@ -154,12 +164,12 @@ export async function onRequestPost(context: {
       );
     }
 
-    console.log(`✅ 为用户 ${userId} 创建了 ${planType} 支付订单`);
+    console.log(`✅ 为用户 ${userId} 创建了 ${planType} 支付订单, checkout_id: ${creemData.id}`);
 
     return new Response(
       JSON.stringify({
-        orderId: creemData.order_id,
-        paymentUrl: creemData.payment_url
+        orderId: creemData.id,
+        paymentUrl: creemData.checkout_url
       }),
       { status: 200, headers: corsHeaders }
     );
