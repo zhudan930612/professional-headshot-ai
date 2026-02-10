@@ -181,7 +181,7 @@ type SubscriptionPlan = 'free' | 'professional' | 'executive';
 // Professional 用户
 {
   quota: 50,             // 一次性 50 次
-  quality: '2K',         // 高质量
+  quality: '1K',         // 标准质量
   has_watermark: false,  // 无水印
 }
 
@@ -202,7 +202,7 @@ interface QuotaInfo {
   used_quota: number;        // 已使用
   remaining_quota: number;   // 剩余
   is_paid: boolean;          // 是否付费用户
-  quality: '1K' | '2K';      // 图片质量
+  quality: '1K' | '2K' | '4K'; // 图片质量
   has_watermark: boolean;    // 是否有水印
 }
 ```

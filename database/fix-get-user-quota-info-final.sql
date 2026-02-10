@@ -55,7 +55,7 @@ BEGIN
       'remaining_quota', v_purchased_quota + v_bonus_quota - v_used_quota,
       'is_paid', v_plan_type != 'free',
       'quality', CASE
-        WHEN v_plan_type IN ('executive', 'professional') THEN '2K'
+        WHEN v_plan_type = 'executive' THEN '2K'
         ELSE '1K'
       END,
       'has_watermark', v_plan_type = 'free'

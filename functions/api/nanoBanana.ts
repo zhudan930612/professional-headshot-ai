@@ -20,6 +20,11 @@ interface NanoBananaTaskResponse {
     estimated_time?: number;
   };
   type: string;
+  usage?: {
+    billing_rule: 'per_call' | 'per_token' | 'per_second';
+    credits_reserved: number;
+    user_group: 'default' | 'vip';
+  };
 }
 
 const NANO_BANANA_API_BASE = 'https://api.evolink.ai/v1';
@@ -30,7 +35,7 @@ const NANO_BANANA_API_BASE = 'https://api.evolink.ai/v1';
 async function submitGenerationTask(
   referenceImageUrl: string,
   templateImageUrl: string,
-  quality: '1K' | '2K',
+  quality: '1K' | '2K' | '4K',
   apiKey: string
 ): Promise<{ taskId: string; estimatedTime: number }> {
   const defaultPrompt =
@@ -43,7 +48,7 @@ async function submitGenerationTask(
     "The result should look like the same person professionally photographed by a high-end portrait photographer, suitable for LinkedIn, resumes, and corporate profiles.";
 
   const requestBody = {
-    model: 'gemini-3-pro-image-preview',
+    model: 'nano-banana-2-lite',
     prompt: defaultPrompt,
     size: '3:4',
     quality: quality,
@@ -167,7 +172,7 @@ export async function onRequestPost(context: {
       action: string;
       referenceImageUrl?: string;
       templateImageUrl?: string;
-      quality?: '1K' | '2K';
+      quality?: '1K' | '2K' | '4K';
       taskId?: string;
       maxWaitTime?: number;
     };
@@ -181,9 +186,9 @@ export async function onRequestPost(context: {
       );
     }
 
-    if (!['1K', '2K'].includes(quality)) {
+    if (!['1K', '2K', '4K'].includes(quality)) {
       return new Response(
-        JSON.stringify({ error: 'Invalid quality parameter' }),
+        JSON.stringify({ error: 'Invalid quality parameter, must be 1K, 2K or 4K' }),
         { status: 400, headers: corsHeaders }
       );
     }
@@ -197,7 +202,7 @@ export async function onRequestPost(context: {
         );
       }
 
-      const result = await submitGenerationTask(referenceImageUrl, templateImageUrl, quality as '1K' | '2K', apiKey);
+      const result = await submitGenerationTask(referenceImageUrl, templateImageUrl, quality as '1K' | '2K' | '4K', apiKey);
       return new Response(JSON.stringify(result), { status: 200, headers: corsHeaders });
     }
 
@@ -239,7 +244,7 @@ export async function onRequestPost(context: {
       const { taskId: newTaskId, estimatedTime } = await submitGenerationTask(
         referenceImageUrl,
         templateImageUrl,
-        quality as '1K' | '2K',
+        quality as '1K' | '2K' | '4K',
         apiKey
       );
 

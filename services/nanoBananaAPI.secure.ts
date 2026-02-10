@@ -67,7 +67,7 @@ export interface NanoBananaGenerationRequest {
   referenceImageUrl: string;  // 用户参考图 URL (Image 1)
   templateImageUrl: string;   // 模板图 URL (Image 2)
   prompt?: string;            // 可选的自定义 prompt
-  quality?: '1K' | '2K';      // 图片质量（新增）
+  quality?: '1K' | '2K' | '4K'; // 图片质量（新增，支持1K/2K/4K）
 }
 
 /**

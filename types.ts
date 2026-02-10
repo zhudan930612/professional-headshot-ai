@@ -87,7 +87,7 @@ export type SubscriptionPlan = 'free' | 'professional' | 'executive';
 export type SubscriptionStatus = 'active' | 'expired' | 'cancelled';
 
 // 图片质量
-export type ImageQuality = '1K' | '2K';
+export type ImageQuality = '1K' | '2K' | '4K';
 
 // 用户订阅信息
 export interface UserSubscription {
