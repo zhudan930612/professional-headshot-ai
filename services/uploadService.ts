@@ -222,10 +222,32 @@ export const downloadAndUploadGeneratedImage = async (
   index: number
 ): Promise<GeneratedImage> => {
   try {
-    // 下载图片
-    const response = await fetch(imageUrl);
+    // 使用代理下载图片以避免 CORS 问题
+    const appUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+    const proxyUrl = `${appUrl}/api/proxy-image?url=${encodeURIComponent(imageUrl)}`;
+    
+    console.log('通过代理下载图片:', proxyUrl);
+    
+    const response = await fetch(proxyUrl, {
+      method: 'GET',
+      cache: 'no-cache',
+    });
+    
     if (!response.ok) {
-      throw new Error(`下载图片失败: ${response.statusText}`);
+      // 如果代理失败，尝试直接下载（回退方案）
+      console.warn('代理下载失败，尝试直接下载...');
+      const directResponse = await fetch(imageUrl, {
+        mode: 'cors',
+        credentials: 'omit',
+        cache: 'no-cache',
+      });
+      
+      if (!directResponse.ok) {
+        throw new Error(`下载图片失败: ${directResponse.status} ${directResponse.statusText}`);
+      }
+      
+      const imageBlob = await directResponse.blob();
+      return await uploadGeneratedImage(imageBlob, userId, sessionId, index);
     }
 
     const imageBlob = await response.blob();

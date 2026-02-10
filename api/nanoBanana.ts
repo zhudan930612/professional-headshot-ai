@@ -43,7 +43,7 @@ async function submitGenerationTask(
     "The result should look like the same person professionally photographed by a high-end portrait photographer, suitable for LinkedIn, resumes, and corporate profiles.";
 
   const requestBody = {
-    model: 'gemini-3-pro-image-preview',
+    model: 'nano-banana-2-lite',
     prompt: defaultPrompt,
     size: '3:4',
     quality: quality,  // 动态质量参数
