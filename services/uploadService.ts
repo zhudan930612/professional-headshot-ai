@@ -273,55 +273,38 @@ export const downloadAndUploadGeneratedImage = async (
   index: number
 ): Promise<GeneratedImage> => {
   try {
-    console.log('开始下载图片:', imageUrl);
+    console.log('通过服务器端保存图片:', imageUrl);
     
-    // 方法1: 使用 Canvas 加载（推荐，避免 CORS）
-    try {
-      const imageBlob = await loadImageViaCanvas(imageUrl);
-      console.log('Canvas 方法成功，开始上传...');
-      return await uploadGeneratedImage(imageBlob, userId, sessionId, index);
-    } catch (canvasError) {
-      console.warn('Canvas 方法失败，尝试代理下载...', canvasError);
-    }
+    // 调用 Cloudflare Function 在服务器端下载并上传
+    // 完全避开浏览器 CORS 限制
+    const appUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+    const saveImageUrl = `${appUrl}/api/save-generated-image`;
     
-    // 方法2: 使用代理（回退方案）
-    try {
-      const appUrl = import.meta.env.VITE_APP_URL || window.location.origin;
-      const proxyUrl = `${appUrl}/api/proxy-image?url=${encodeURIComponent(imageUrl)}`;
-      
-      console.log('尝试代理下载:', proxyUrl);
-      
-      const proxyResponse = await fetch(proxyUrl, {
-        method: 'GET',
-        cache: 'no-cache',
-      });
-      
-      if (proxyResponse.ok) {
-        const imageBlob = await proxyResponse.blob();
-        console.log('代理方法成功，开始上传...');
-        return await uploadGeneratedImage(imageBlob, userId, sessionId, index);
-      }
-    } catch (proxyError) {
-      console.warn('代理方法失败，尝试直接下载...', proxyError);
-    }
-    
-    // 方法3: 直接 fetch（最后回退）
-    const directResponse = await fetch(imageUrl, {
-      mode: 'cors',
-      credentials: 'omit',
-      cache: 'no-cache',
+    const response = await fetch(saveImageUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        imageUrl,
+        userId,
+        sessionId,
+        index,
+      }),
     });
     
-    if (!directResponse.ok) {
-      throw new Error(`下载图片失败: ${directResponse.status} ${directResponse.statusText}`);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: response.statusText }));
+      throw new Error(`服务器保存失败: ${errorData.error || response.statusText}`);
     }
     
-    const imageBlob = await directResponse.blob();
-    console.log('直接下载成功，开始上传...');
-    return await uploadGeneratedImage(imageBlob, userId, sessionId, index);
+    const result = await response.json();
+    console.log('✅ 图片保存成功:', result);
+    
+    return result as GeneratedImage;
     
   } catch (error) {
-    console.error('下载并上传图片出错:', error);
+    console.error('保存图片出错:', error);
     throw error;
   }
 };
