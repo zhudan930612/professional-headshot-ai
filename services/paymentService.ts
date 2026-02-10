@@ -27,10 +27,17 @@ export async function createCreemPayment(
   planType: string
 ): Promise<CreemPaymentResponse> {
   try {
+    // 获取当前用户的 session token
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      throw new Error('用户未登录，请先登录');
+    }
+
     const response = await fetch('/api/creem/create-payment', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`
       },
       body: JSON.stringify({ planType })
     });
