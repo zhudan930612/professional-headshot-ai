@@ -198,7 +198,9 @@ export const getUserQuotaInfo = async (): Promise<QuotaInfo> => {
   }
 
   try {
+    // RPC functions are defined in `public`; table reads/writes stay in `headshot_ai`.
     const { data, error } = await supabase
+      .schema('public')
       .rpc('get_user_quota_info', { p_user_id: userId });
 
     if (error) throw error;
@@ -253,6 +255,7 @@ export const decrementQuota = async (
     });
 
     const { data, error } = await supabase
+      .schema('public')
       .rpc('decrement_subscription_quota_safe', {
         p_user_id: userId,
         p_amount: amount,
