@@ -23,7 +23,9 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
   process.exit(1);
 }
 
-const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+  db: { schema: 'headshot_ai' },
+});
 
 async function backupDatabase() {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);

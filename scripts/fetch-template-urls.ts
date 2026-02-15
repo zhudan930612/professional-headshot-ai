@@ -14,7 +14,8 @@ const CATEGORIES = ['corporate', 'creative', 'general', 'medical', 'realestate',
 
 // 初始化客户端(使用Service Role Key以获得完整权限)
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-  auth: { autoRefreshToken: false, persistSession: false }
+  auth: { autoRefreshToken: false, persistSession: false },
+  db: { schema: 'headshot_ai' },
 });
 
 async function fetchTemplateUrls() {

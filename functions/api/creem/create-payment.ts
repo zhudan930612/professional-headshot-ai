@@ -35,7 +35,10 @@ export async function onRequestPost(context: {
     
     const supabase = createClient(
       context.env.VITE_SUPABASE_URL,
-      context.env.SUPABASE_SERVICE_ROLE_KEY
+      context.env.SUPABASE_SERVICE_ROLE_KEY,
+      {
+        db: { schema: 'headshot_ai' },
+      }
     );
 
     const body = await context.request.json() as CreatePaymentRequest;

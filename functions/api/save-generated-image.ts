@@ -81,7 +81,10 @@ export async function onRequestPost(context: {
     // 3. 初始化 Supabase 客户端（使用 service_role key）
     const supabase = createClient(
       context.env.VITE_SUPABASE_URL,
-      context.env.SUPABASE_SERVICE_ROLE_KEY
+      context.env.SUPABASE_SERVICE_ROLE_KEY,
+      {
+        db: { schema: 'headshot_ai' },
+      }
     );
 
     // 4. 生成文件路径

@@ -26,7 +26,10 @@ export async function getUserIdFromRequest(req: VercelRequest): Promise<string |
     // 创建Supabase客户端
     const supabase = createClient(
       process.env.VITE_SUPABASE_URL!,
-      process.env.VITE_SUPABASE_ANON_KEY!
+      process.env.VITE_SUPABASE_ANON_KEY!,
+      {
+        db: { schema: 'headshot_ai' },
+      }
     );
 
     // 验证token并获取用户信息

@@ -32,7 +32,9 @@ if (!SUPABASE_ANON_KEY) {
 // 2. 检查 Supabase 连接
 console.log('\n2️⃣ Supabase 连接测试:');
 try {
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    db: { schema: 'headshot_ai' },
+  });
   
   // 测试基础连接（不需要认证）
   const { data, error } = await supabase.from('generation_sessions').select('count').limit(0);

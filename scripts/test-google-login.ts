@@ -46,7 +46,9 @@ console.log('\n2️⃣ Supabase 连接测试:');
 console.log('─'.repeat(50));
 
 try {
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    db: { schema: 'headshot_ai' },
+  });
 
   // 测试连接
   const { data, error } = await supabase.from('generation_sessions').select('count').limit(1);

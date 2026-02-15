@@ -155,7 +155,10 @@ export async function onRequestPost(context: {
     
     const supabase = createClient(
       context.env.VITE_SUPABASE_URL,
-      context.env.SUPABASE_SERVICE_ROLE_KEY
+      context.env.SUPABASE_SERVICE_ROLE_KEY,
+      {
+        db: { schema: 'headshot_ai' },
+      }
     );
 
     // 获取签名和请求体 (Creem 使用 creem-signature header)

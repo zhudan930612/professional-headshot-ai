@@ -27,7 +27,9 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
 }
 
 // 使用 service_role key 创建管理员客户端（可以绕过 RLS）
-const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+  db: { schema: 'headshot_ai' },
+});
 
 // 创建命令行交互
 const rl = readline.createInterface({

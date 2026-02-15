@@ -40,7 +40,9 @@ console.log();
 console.log('📡 Step 2: 测试 Supabase 连接');
 console.log('─'.repeat(50));
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  db: { schema: 'headshot_ai' },
+});
 
 async function checkConnection() {
   try {
