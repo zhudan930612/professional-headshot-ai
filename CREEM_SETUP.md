@@ -26,6 +26,6 @@ D1 唯一索引和触发器将记录事件、发放额度及退款收回额度�
 
 这不等于真实 Creem 付款、商户回调投递和退款闭环已实测。Test Mode 必须使用测试 key、产品和签名密钥；不能将正式 key 配到测试 API。预览没有付费凭据，不能用于真实收费。
 
-当前支持标价及含税付款。折扣、零元订单、争议/拒付尚未形成完整业务流程，启用前需要单独验证。
+金额校验已实现商户认可的优惠及零元优惠订单，分别处理含税价/价外税，同时核对原价、优惠、税额、实付、产品及订单归属；零元优惠不记成现金收入。相关回归通过，真实支付/退款仍需测试环境验收；争议/拒付仍需人工处理。
 
 参考：[Creem Webhooks](https://docs.creem.io/code/webhooks)、[Create checkout](https://docs.creem.io/api-reference/endpoint/create-checkout)。

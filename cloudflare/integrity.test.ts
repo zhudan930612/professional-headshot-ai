@@ -4,7 +4,7 @@ import { getPlatformProxy } from 'wrangler';
 import { createLocalJWKSet, exportJWK, generateKeyPair, SignJWT } from 'jose';
 import type { CloudflareEnv } from './env';
 import { reserveGeneration, submitGeneration, queryGeneration, saveGenerated } from './generation';
-import { applyEvent, webhook } from './payments';
+import { applyEvent, createPayment, webhook } from './payments';
 import { googleLogin, loginChallenge, getUser, logout } from './auth';
 import { readMedia, signedMediaUrl, mediaPath } from './media';
 import { getQuota } from './account';
@@ -43,6 +43,8 @@ beforeAll(async () => {
   await env.DB.exec((await readFile('database/d1/0001_core.sql', 'utf8')).replaceAll('\n', ' '));
   const entitlementMigration = (await readFile('database/d1/0003_payment_entitlements.sql', 'utf8')).replace(/^--.*$/gm, '');
   await env.DB.exec(entitlementMigration.replaceAll('\n', ' '));
+  const amountMigration = (await readFile('database/d1/0004_checkout_amounts.sql','utf8')).replace(/^\s*--.*$/gm,'');
+  await env.DB.exec(amountMigration.replaceAll('\n',' '));
   const keys = await generateKeyPair('RS256'); privateKey = keys.privateKey;
   keyResolver.mockImplementation(createLocalJWKSet({ keys: [{ ...await exportJWK(keys.publicKey), kid: 'test', alg: 'RS256' }] }));
 }, 30_000);
@@ -142,6 +144,13 @@ describe('Cloudflare generation and persistence', () => {
 });
 
 describe('Cloudflare payment transactions', () => {
+  it('rejects a checkout in the wrong environment before exposing its payment URL', async () => {
+    const fetchMock=vi.fn().mockResolvedValue(Response.json({id:'ch_wrong',mode:'prod',units:1,checkout_url:'https://checkout.creem.io/ch_wrong'}));
+    vi.stubGlobal('fetch',fetchMock);
+    await expect(createPayment(firstUser,'professional',{...env,CREEM_API_KEY:'test-key',CREEM_TEST_MODE:'true',CREEM_PROFESSIONAL_PRODUCT_ID:'prod_test'})).rejects.toMatchObject({status:502});
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).units).toBe(1);
+    expect((await getQuota(firstUser,env)).remaining_quota).toBe(2);
+  });
   const checkout = (paymentId: string, eventId = 'evt_checkout') => ({ id: eventId, eventType: 'checkout.completed', object: { id: 'ch_test', request_id: paymentId, status: 'completed', mode: 'prod', order: { id: 'ord_test', product: 'prod_test', amount: 2500, amount_paid: 3000, currency: 'usd', status: 'paid' } } });
   const create = async (userId = firstUser) => {
     const id = crypto.randomUUID();
@@ -188,6 +197,48 @@ describe('Cloudflare payment transactions', () => {
     expect((await getQuota(firstUser,env)).plan_type).toBe('executive');
     await applyEvent({id:'evt_full',eventType:'refund.created',object:{id:'ref_full',order:'ord_test',status:'succeeded',refund_amount:4500,refund_currency:'USD'}},env);
     expect(await getQuota(firstUser,env)).toMatchObject({remaining_quota:2,plan_type:'professional',is_paid:true,quality:'1K'});
+  });
+  it('settles a legitimate discounted, taxed checkout and refunds against actual money paid', async () => {
+    const id=await create(secondUser);
+    const baseEvent=checkout(id);
+    const event={...baseEvent,object:{...baseEvent.object,order:{...baseEvent.object.order,amount_paid:1500,discount_amount:1250,tax_amount:250,amount_due:1500,discount:'dis_test'}}};
+    await applyEvent(event,env);
+    expect((await getQuota(secondUser,env)).remaining_quota).toBe(35);
+    expect(await env.DB.prepare('SELECT paid_amount_minor,discount_amount_minor,tax_amount_minor FROM payment_transactions WHERE id=?').bind(id).first())
+      .toMatchObject({paid_amount_minor:1500,discount_amount_minor:1250,tax_amount_minor:250});
+    await applyEvent({id:'evt_partial',eventType:'refund.created',object:{id:'ref_partial',order:'ord_test',status:'succeeded',refund_amount:750,refund_currency:'USD'}},env);
+    expect((await getQuota(secondUser,env)).remaining_quota).toBe(20);
+    await applyEvent({id:'evt_full',eventType:'refund.created',object:{id:'ref_full',order:'ord_test',status:'succeeded',refund_amount:750,refund_currency:'USD'}},env);
+    expect(await getQuota(secondUser,env)).toMatchObject({remaining_quota:5,plan_type:'free'});
+  });
+  it('fulfills a provider-approved full discount once without inventing a cash payment', async () => {
+    const id=await create(secondUser);const baseEvent=checkout(id);
+    const event={...baseEvent,object:{...baseEvent.object,order:{...baseEvent.object.order,amount_paid:0,discount_amount:2500,tax_amount:0,amount_due:0,discount:'dis_test'}}};
+    await applyEvent(event,env);await applyEvent(event,env);
+    expect((await getQuota(secondUser,env)).remaining_quota).toBe(35);
+    expect(await env.DB.prepare('SELECT status,paid_amount_minor FROM payment_transactions WHERE id=?').bind(id).first()).toMatchObject({status:'completed',paid_amount_minor:0});
+  });
+  it('accepts tax-inclusive pricing and rejects a missing tax payment for an explicitly exclusive product', async () => {
+    const id=await create(secondUser);const baseEvent=checkout(id);
+    const order={...baseEvent.object.order,amount_paid:2250,discount_amount:250,tax_amount:200,amount_due:2250,discount:'dis_test'};
+    await expect(applyEvent({...baseEvent,object:{...baseEvent.object,product:{id:'prod_test',tax_mode:'exclusive'},order}},env)).rejects.toMatchObject({status:400});
+    await applyEvent({...baseEvent,object:{...baseEvent.object,product:{id:'prod_test',tax_mode:'inclusive'},order}},env);
+    expect((await getQuota(secondUser,env)).remaining_quota).toBe(35);
+    expect(await env.DB.prepare('SELECT paid_amount_minor,tax_amount_minor,tax_inclusive FROM payment_transactions WHERE id=?').bind(id).first()).toMatchObject({paid_amount_minor:2250,tax_amount_minor:200,tax_inclusive:1});
+  });
+  it('rejects underpayment, missing discount references, and inconsistent totals', async () => {
+    const id=await create();const baseEvent=checkout(id);
+    for(const totals of [
+      {amount_paid:undefined,amount_due:undefined},
+      {amount_paid:1500},
+      {amount_paid:0,discount_amount:2500,amount_due:0},
+      {amount_paid:1500,discount_amount:1000,tax_amount:0,amount_due:2000,discount:'dis_test'},
+      {amount_paid:0,discount_amount:3000,tax_amount:500,amount_due:0,discount:'dis_test'},
+    ]) {
+      const event={...baseEvent,object:{...baseEvent.object,order:{...baseEvent.object.order,...totals}}};
+      await expect(applyEvent(event,env)).rejects.toMatchObject({status:400});
+    }
+    expect((await getQuota(firstUser,env)).remaining_quota).toBe(2);
   });
   it('rejects unsigned callbacks and cross-origin authenticated mutations', async () => {
     expect(await webhook(request('/api/creem/webhook', {}), env).catch(error => error.status)).toBe(401);

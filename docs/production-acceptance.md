@@ -41,3 +41,13 @@
 迁移先在本地与隔离 QA 库通过，再应用生产；生产原 8 条套餐记录（含独立验收账号）的套餐、总额度和已用额度均未改变。原用户基础套餐通过 base_plan_type 保留，不能把旧付费用户误降级。迁移前的 D1 Time Travel 恢复点保存在忽略目录。
 
 该迁移包含门禁：若库内已经有带结算金额的完成/退款订单，则拒绝自动推断基础套餐，需要先对账，不能盲目执行。当前 83 项测试通过，包含新增的两项反例回归；供应商实际支付完成/退款仍待测试凭据。
+
+## 优惠与结算金额
+
+只读核对了原 3 条 pending 订单：Creem 侧为 1 条过期、2 条已完成的 100% 优惠订单（实付 0）。没有据此修改旧余额、重放回调或把它们算作现金支付。
+
+这也复现了原校验拒绝有效优惠订单的问题。0004_checkout_amounts.sql 和支付解析增加优惠额、税额、含税模式与实付记录，保留原价快照校验；合法优惠和零元优惠可以按商户签名确认权益，金额不一致或无优惠依据的少付款仍被拒绝。现金退款按实际结算金额计算，不能对 0 元订单虚构退款金额。
+
+同时校验创建 checkout 返回的环境与数量，测试配置不能返回正式付款链接。新增优惠含税、全额优惠、含税价/价外税、金额不一致及环境混用回归；当前 88 项测试和全部本地发布检查通过。此处是实现及回归验证，仍不能代替真实的支付完成/退款验收。
+
+字段依据：[Creem 官方 SDK OrderEntity](https://github.com/armitage-labs/creem/blob/main/packages/sdk/docs/models/components/orderentity.md)、[ProductEntity 税模式](https://github.com/armitage-labs/creem/blob/main/packages/sdk/docs/models/components/productentity.md)。

@@ -2,7 +2,7 @@ import type { CloudflareEnv } from './env';
 import { ApiError, json, object, readBytes, string } from './http';
 
 const base = (env: CloudflareEnv) => env.CREEM_TEST_MODE === 'true' ? 'https://test-api.creem.io' : 'https://api.creem.io';
-type Payment = { id: string; user_id: string; status: string; creem_checkout_id: string | null; creem_order_id: string | null; creem_product_id: string | null; amount: number; currency: string };
+type Payment = { id: string; user_id: string; status: string; creem_checkout_id: string | null; creem_order_id: string | null; creem_product_id: string | null; amount: number; currency: string; paid_amount_minor: number | null };
 const entityId = (v: unknown) => typeof v === 'string' ? v : typeof object(v).id === 'string' ? object(v).id as string : null;
 export async function createPayment(userId: string, planType: unknown, env: CloudflareEnv) {
   if (planType !== 'professional' && planType !== 'executive') throw new ApiError(400, 'Invalid plan.');
@@ -19,9 +19,10 @@ export async function createPayment(userId: string, planType: unknown, env: Clou
   const success = new URL('/subscription', app);
   success.searchParams.set('payment', 'success'); success.searchParams.set('payment_id', id);
   const response = await fetch(`${base(env)}/v1/checkouts`, { method: 'POST', headers: { 'x-api-key': env.CREEM_API_KEY, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ product_id: product, request_id: id, success_url: success.href, metadata: { user_id: userId, plan_type: planType } }), signal: AbortSignal.timeout(20_000) });
+    body: JSON.stringify({ product_id: product, units: 1, request_id: id, success_url: success.href, metadata: { user_id: userId, plan_type: planType } }), signal: AbortSignal.timeout(20_000) });
   if (!response.ok) throw new ApiError(502, 'Unable to start checkout. Please try again.');
   const checkout = object(await response.json());
+  if (!(env.CREEM_TEST_MODE === 'true' ? ['test','sandbox'] : ['prod']).includes(String(checkout.mode)) || (checkout.units !== undefined && checkout.units !== 1)) throw new ApiError(502, 'Checkout configuration does not match this environment.');
   if (typeof checkout.id !== 'string' || !/^ch_[\w-]+$/.test(checkout.id) || typeof checkout.checkout_url !== 'string') throw new ApiError(502, 'Unable to start checkout.');
   const url = new URL(checkout.checkout_url);
   if (url.protocol !== 'https:' || url.username || url.password || !(url.hostname === 'creem.io' || url.hostname.endsWith('.creem.io'))) throw new ApiError(502, 'Unable to start checkout.');
@@ -54,6 +55,10 @@ export async function applyEvent(payload: Record<string, unknown>, env: Cloudfla
   let transactionId: string | null = null;
   let amount: number;
   let paid: number | null = null;
+  let discount = 0;
+  let tax: number | null = null;
+  let discountId: string | null = null;
+  let taxInclusive = 0;
   let currency: string;
   let payment: Payment | null;
   if (eventType === 'checkout.completed') {
@@ -61,13 +66,30 @@ export async function applyEvent(payload: Record<string, unknown>, env: Cloudfla
     orderId = string(order.id, 255); checkoutId = string(resource.id, 255);
     productId = string(entityId(order.product) ?? entityId(resource.product), 255);
     transactionId = entityId(order.transaction);
-    amount = Number(order.amount); paid = order.amount_paid === undefined ? amount : Number(order.amount_paid);
+    amount = Number(order.amount);
+    discount = order.discount_amount === undefined ? 0 : Number(order.discount_amount);
+    const statedTax = order.tax_amount === undefined ? null : Number(order.tax_amount);
+    const statedDue = order.amount_due === undefined ? null : Number(order.amount_due);
+    // A paid event must carry a settled amount or an explicit full amount due;
+    // never fabricate a cash receipt from the catalog price alone.
+    paid = Number(order.amount_paid ?? order.amount_due);
+    tax = statedTax ?? paid - (amount - discount);
+    discountId = entityId(order.discount) ?? entityId(resource.discount);
+    const product = object(resource.product);
+    const taxMode = product.tax_mode ?? product.taxMode ?? object(order.product).tax_mode;
+    taxInclusive = taxMode === 'inclusive' || (taxMode !== 'exclusive' && paid === amount - discount && tax > 0) ? 1 : 0;
     currency = string(order.currency, 8).toUpperCase();
-    if (resource.status !== 'completed' || order.status !== 'paid' || !Number.isSafeInteger(amount) || amount <= 0 || !Number.isSafeInteger(paid) || paid < amount) throw new ApiError(400, 'Invalid completed checkout.');
+    if (resource.status !== 'completed' || order.status !== 'paid' || !Number.isSafeInteger(amount) || amount <= 0
+      || !Number.isSafeInteger(paid) || paid < 0 || !Number.isSafeInteger(discount) || discount < 0 || discount > amount
+      || !Number.isSafeInteger(tax) || tax < 0 || paid !== amount - discount + (taxInclusive ? 0 : tax)
+      || (taxInclusive === 1 && tax > paid)
+      || (statedDue !== null && (!Number.isSafeInteger(statedDue) || statedDue !== paid))
+      || (discount > 0 && (!discountId || discountId.length > 255))) throw new ApiError(400, 'Invalid completed checkout.');
     payment = await env.DB.prepare('SELECT * FROM payment_transactions WHERE id=? OR creem_checkout_id=? ORDER BY (id=?) DESC LIMIT 1')
       .bind(typeof resource.request_id === 'string' ? resource.request_id : '', checkoutId, typeof resource.request_id === 'string' ? resource.request_id : '').first<Payment>();
     if (payment && ['completed', 'refunded'].includes(payment.status)) {
       if (payment.creem_order_id !== orderId || payment.creem_checkout_id !== checkoutId || (payment.creem_product_id && payment.creem_product_id !== productId) || Math.round(payment.amount * 100) !== amount || payment.currency.toUpperCase() !== currency) throw new ApiError(409, 'Payment references do not match.');
+      if (payment.paid_amount_minor !== null && payment.paid_amount_minor !== paid) throw new ApiError(409, 'Payment totals do not match.');
       return { received: true, duplicate: true };
     }
   } else {
@@ -92,8 +114,8 @@ export async function applyEvent(payload: Record<string, unknown>, env: Cloudfla
   if (duplicate(prior)) return { received: true, duplicate: true };
   if (prior.results.length) throw new ApiError(409, 'Webhook references do not match.');
   try {
-    await env.DB.prepare('INSERT INTO payment_events(event_id,event_type,resource_id,payment_id,checkout_id,order_id,product_id,amount_minor,paid_minor,currency,transaction_id,new_subscription_id,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)')
-      .bind(eventId, eventType, resourceId, payment.id, checkoutId, orderId, productId, amount, paid, currency, transactionId, crypto.randomUUID(), new Date().toISOString()).run();
+    await env.DB.prepare('INSERT INTO payment_events(event_id,event_type,resource_id,payment_id,checkout_id,order_id,product_id,amount_minor,paid_minor,currency,transaction_id,new_subscription_id,created_at,discount_minor,tax_minor,discount_id,tax_inclusive) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)')
+      .bind(eventId, eventType, resourceId, payment.id, checkoutId, orderId, productId, amount, paid, currency, transactionId, crypto.randomUUID(), new Date().toISOString(), discount, tax, discountId, taxInclusive).run();
   } catch {
     if (duplicate(await existing())) return { received: true, duplicate: true };
     throw new ApiError(503, 'Payment processing requires reconciliation.');
