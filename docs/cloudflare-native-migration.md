@@ -52,10 +52,10 @@ D1：professional-headshot-ai，ID a3c45b09-7544-4a08-8ec8-7d7b998ba8da；R2：p
 
 ## 仍需区分的边界
 
-真实 Creem 付款、商户完成事件投递、退款及实际付费生图未在本轮执行。其配置、签名通路和本地事务测试已验证，不能写成真实交易和出图闭环已通过。
+迁移交付时尚未执行真实 Creem 付款、商户完成事件投递、退款或付费生图。后续验收已实际完成 1K/2K 生成、保存、下载、历史和扣额度；支付完成/退款仍待完成，详见 [生产验收记录](production-acceptance.md)。
 
 旧 Supabase 管理密钥仍在 Git 历史中且尚未轮换；当前网站已经不使用它，但保留源备份期间仍应在源平台轮换或停用。没有删除旧库或改写 Git 历史。
 
-工作区原有 4 个 unmerged 路径保留，未修改暂存区、未提交推送。旧 Git 自动发布已暂停，避免旧版本覆盖当前生产；完成代码审阅、提交及远程构建验证后恢复。Cloudflare Access 预览保护保持原状。
+迁移交付时遗留的 4 个 unmerged 路径，已在后续验收中解决并提交推送；Git 自动发布已恢复且实际远端构建通过。Cloudflare Access 预览保护保持原状。后续进展以生产验收记录和 HANDOFF.MD 为准。
 
 敏感备份、逐字段和逐文件证据在忽略目录 .migration；主要文件为 baseline-20261105/final-verification.json、after-cutover-20261105/source-comparison.json、production-verification.json、source-retirement.json 与 build-manifest.json。不要提交这些文件。

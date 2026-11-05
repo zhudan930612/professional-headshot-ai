@@ -8,11 +8,13 @@
 
 已通过 GitHub API 确认仓库 public，旧 Supabase service_role 仍有效。用户选择先连接 Supabase 管理权限，等待连接；管理页自动打开超时，不能当作密钥撤销成功。官方要求停用 legacy API keys，并撤销对应旧 JWT secret 的信任，仅新增新 key 不够。
 
-原 index 备份在 .migration/pre-acceptance-git-index。4 个遗留 unmerged 路径已解决；f4549f1（密钥清理）和 642b01b（整体迁移）已 fast-forward 合并并推送 main，工作区干净。Cloudflare 自动发布已启用，构建命令 pnpm verify；正在用真实 Git 推送验证远端构建，不能只凭配置已启用写成构建成功。
+原 index 备份在 .migration/pre-acceptance-git-index。4 个遗留 unmerged 路径已解决；f4549f1（密钥清理）和 642b01b（整体迁移）已 fast-forward 合并并推送 main。Cloudflare 自动发布已通过真实 Git 推送验证：50f59ae → 3c52c87d-32b4-4464-87a5-e915d91ac604，远端执行 pnpm verify，81 项测试及全部检查通过；原域名复查通过。后续当前提交以 Git/Cloudflare 实时状态为准。
 
 隔离支付 QA 项目 professional-headshot-ai-qa 已部署，独立 D1 ec703699-4599-4107-bffc-168067ff2753 与同名 R2；无原客户数据、无正式付费 key。测试回调地址 https://professional-headshot-ai-qa.pages.dev/api/auth/creem/webhook。测试文件只需提供 Creem 测试 API key，其余产品/回调可经 API 建立；现有测试 key 仍未提供。
 
 Windows Python 3.14 的 stdin 管道在本机曾错误进入交互模式并循环报错；改为保存 .py 文件再执行。出错进程已终止，不要重试 python - 管道。
+
+Tailwind 不能扫描全仓库的 **/*：会扫入忽略的 .recovery 浏览器 profile 与 .migration 构建产物，导致本地/CI CSS 不一致。内容扫描已限定实际前端目录。
 
 ## 2026-11-05 Cloudflare 全量迁移（已切换生产）
 
