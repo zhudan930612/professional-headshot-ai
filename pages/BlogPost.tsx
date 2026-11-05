@@ -6,7 +6,7 @@ import { SEOHead } from '../components/SEOHead';
 import { ArrowLeft, Clock, Calendar } from 'lucide-react';
 import type { BlogPost as BlogPostType } from '../types';
 import { parseMarkdownFile } from '../utils/markdownParser';
-import hljs from 'highlight.js';
+import hljs from 'highlight.js/lib/core';
 
 export const BlogPost = () => {
   const { slug } = useParams();

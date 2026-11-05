@@ -1,20 +1,51 @@
 # Cloudflare Pages 配置
 name = "professional-headshot-ai"
-compatibility_date = "2024-01-01"
+compatibility_date = "2026-11-05"
+compatibility_flags = ["nodejs_compat"]
 
 # Pages 项目配置
 pages_build_output_dir = "dist"
 
-# 环境变量（这些需要在 Cloudflare Dashboard 中配置）
-# 这里仅作为文档说明
 [vars]
-# VITE_SUPABASE_URL = "https://osxwjhvlntrornibhkfu.supabase.co"
-# VITE_SUPABASE_ANON_KEY = "your_key"
-# NANO_BANANA_API_KEY = "your_key"
-# CREEM_API_KEY = "your_key"
-# CREEM_SECRET_KEY = "your_key"
-# CREEM_WEBHOOK_SECRET = "your_key"
-# GEMINI_API_KEY = "your_key"
-# SUPABASE_SERVICE_ROLE_KEY = "your_key"
-# VITE_APP_URL = "https://your-domain.pages.dev"
-# VITE_PRODUCTION_URL = "https://your-domain.pages.dev"
+NODE_VERSION = "22"
+PNPM_VERSION = "10.26.1"
+GOOGLE_CLIENT_ID = "755491832026-8i70ngrnddnfh6dnsupuokoltcckg650.apps.googleusercontent.com"
+ALLOW_NEW_ACCOUNTS = "true"
+APP_URL = "https://www.professionalheadshotai.ink"
+CREEM_TEST_MODE = "false"
+CREEM_PROFESSIONAL_PRODUCT_ID = "prod_3VuEcSLV7nUFQIFYByNkaG"
+CREEM_EXECUTIVE_PRODUCT_ID = "prod_3goNXcJoP80L3mmWoAdkZs"
+NANO_BANANA_MODEL_1K = "nano-banana-2-lite"
+NANO_BANANA_MODEL_2K = "gemini-3.1-flash-image-preview"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "professional-headshot-ai"
+database_id = "a3c45b09-7544-4a08-8ec8-7d7b998ba8da"
+migrations_dir = "database/d1"
+
+[[r2_buckets]]
+binding = "PHOTOS"
+bucket_name = "professional-headshot-ai"
+
+[env.preview.vars]
+NODE_VERSION = "22"
+PNPM_VERSION = "10.26.1"
+GOOGLE_CLIENT_ID = "755491832026-8i70ngrnddnfh6dnsupuokoltcckg650.apps.googleusercontent.com"
+APP_URL = "https://cf-migration.professional-headshot-ai.pages.dev"
+CREEM_TEST_MODE = "true"
+ALLOW_NEW_ACCOUNTS = "false"
+CREEM_PROFESSIONAL_PRODUCT_ID = ""
+CREEM_EXECUTIVE_PRODUCT_ID = ""
+NANO_BANANA_MODEL_1K = "nano-banana-2-lite"
+NANO_BANANA_MODEL_2K = "gemini-3.1-flash-image-preview"
+
+[[env.preview.d1_databases]]
+binding = "DB"
+database_name = "professional-headshot-ai"
+database_id = "a3c45b09-7544-4a08-8ec8-7d7b998ba8da"
+migrations_dir = "database/d1"
+
+[[env.preview.r2_buckets]]
+binding = "PHOTOS"
+bucket_name = "professional-headshot-ai"

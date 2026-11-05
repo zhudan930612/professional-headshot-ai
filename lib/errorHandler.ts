@@ -1,4 +1,7 @@
-import type { VercelResponse } from '@vercel/node';
+interface JsonResponse {
+  status(code: number): JsonResponse;
+  json(body: unknown): void;
+}
 
 /**
  * 自定义API错误类
@@ -19,8 +22,8 @@ export class APIError extends Error {
  * @param error 错误对象
  * @param res Vercel响应对象
  */
-export function handleAPIError(error: any, res: VercelResponse): void {
-  console.error('[Error Handler]', error);
+export function handleAPIError(error: unknown, res: JsonResponse): void {
+  console.error('[Error Handler]', error instanceof Error ? error.name : 'UnknownError');
 
   // 处理自定义API错误
   if (error instanceof APIError) {
@@ -34,22 +37,11 @@ export function handleAPIError(error: any, res: VercelResponse): void {
   }
 
   // 处理认证错误
-  if (error.message === 'UNAUTHORIZED') {
+  if (error instanceof Error && error.message === 'UNAUTHORIZED') {
     res.status(401).json({
       error: {
         code: 'UNAUTHORIZED',
         message: 'Authentication required'
-      }
-    });
-    return;
-  }
-
-  // 处理Supabase错误
-  if (error.code && error.message) {
-    res.status(500).json({
-      error: {
-        code: error.code,
-        message: error.message
       }
     });
     return;

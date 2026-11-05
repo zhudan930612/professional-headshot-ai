@@ -1,8 +1,18 @@
 import { marked } from 'marked';
 import matter from 'gray-matter';
-import hljs from 'highlight.js';
+import hljs from 'highlight.js/lib/core';
+import javascript from 'highlight.js/lib/languages/javascript';
+import typescript from 'highlight.js/lib/languages/typescript';
+import json from 'highlight.js/lib/languages/json';
+import bash from 'highlight.js/lib/languages/bash';
+import css from 'highlight.js/lib/languages/css';
+import xml from 'highlight.js/lib/languages/xml';
 import 'highlight.js/styles/atom-one-dark.css';
 import { Buffer } from 'buffer';
+
+for (const [name, language] of Object.entries({ javascript, typescript, json, bash, css, xml })) {
+  hljs.registerLanguage(name, language);
+}
 
 // Polyfill Buffer for browser environment
 if (typeof window !== 'undefined') {
@@ -10,21 +20,14 @@ if (typeof window !== 'undefined') {
 }
 
 // 配置 marked 使用 highlight.js 进行代码高亮
-marked.setOptions({
-  highlight: (code, lang) => {
-    if (lang && hljs.getLanguage(lang)) {
-      try {
-        return hljs.highlight(code, { language: lang }).value;
-      } catch (e) {
-        console.error('Highlight error:', e);
-      }
-    }
-    try {
-      return hljs.highlightAuto(code).value;
-    } catch (e) {
-      console.error('Auto-highlight error:', e);
-      return code;
-    }
+marked.use({
+  renderer: {
+    code({ text, lang }) {
+      const language = lang?.split(/\s+/)[0];
+      if (!language || !hljs.getLanguage(language)) return false;
+      const highlighted = hljs.highlight(text, { language }).value;
+      return `<pre><code class="hljs">${highlighted}</code></pre>\n`;
+    },
   },
   breaks: true,
   gfm: true,

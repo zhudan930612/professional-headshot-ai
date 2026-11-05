@@ -19,8 +19,7 @@ export default defineConfig(() => {
           output: {
             manualChunks: {
               'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-              'supabase': ['@supabase/supabase-js'],
-              'markdown': ['react-markdown', 'marked', 'gray-matter', 'highlight.js'],
+              'markdown': ['marked', 'gray-matter', 'highlight.js/lib/core'],
             }
           }
         },

@@ -8,21 +8,27 @@ import { useAuth } from '../contexts/AuthContext';
 import { downloadImageWithWatermark } from '../services/watermarkService';
 
 export const History = () => {
-  const { user, quotaInfo } = useAuth();
+  const { user, quotaInfo, loading: authLoading, openAuthModal } = useAuth();
   const navigate = useNavigate();
   const [sessions, setSessions] = useState<GenerationSession[]>([]);
   const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   const loadData = useCallback(async (silenceLoading = false) => {
+    if (authLoading) return;
+    if (!user) { setSessions([]); setIsLoading(false); return; }
     if (!silenceLoading) setIsLoading(true);
+    setLoadError('');
     try {
       const history = await getHistory();
       setSessions(history);
+    } catch {
+      setLoadError('Your history could not be loaded. Please try again.');
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   useEffect(() => {
     loadData();
@@ -96,7 +102,11 @@ export const History = () => {
             <p className="text-slate-600">Access and download your previously generated photos.</p>
           </div>
 
-          {isLoading ? (
+          {loadError ? (
+            <div role="alert" className="p-8 bg-white rounded-2xl text-center">{loadError}<button className="block mx-auto mt-3 text-primary-600" onClick={() => void loadData()}>Try again</button></div>
+          ) : !authLoading && !user ? (
+            <div className="p-12 bg-white rounded-2xl text-center"><button className="text-primary-600 font-semibold" onClick={() => openAuthModal('/history')}>Sign in to view your headshots</button></div>
+          ) : isLoading ? (
             // Skeleton Loading State
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -136,15 +146,15 @@ export const History = () => {
                       {/* Image Container */}
                       <div
                         className="relative aspect-[3/4] rounded-xl overflow-hidden bg-slate-100 shadow-sm cursor-pointer border border-slate-200 mb-3"
-                        onClick={() => setSelectedImage(img)}
+                        onClick={() => { if (!img.isPlaceholder) setSelectedImage(img); }}
                       >
-                        <img
+                        {img.isPlaceholder ? <div className="h-full flex items-center justify-center text-sm text-slate-500">Legacy placeholder</div> : <img
                           src={`${img.jpgUrl || img.url}?width=400&quality=75`}
                           alt="Generated Headshot"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           loading="lazy"
-                        />
-                        {showWatermark && (
+                        />}
+                        {!img.isPlaceholder && showWatermark && (
                           <div className="pointer-events-none absolute inset-0 flex items-end justify-end">
                             <div className="m-2 px-2 py-1 bg-black/60 text-[10px] font-bold uppercase tracking-wide text-white rounded">
                               Free Version

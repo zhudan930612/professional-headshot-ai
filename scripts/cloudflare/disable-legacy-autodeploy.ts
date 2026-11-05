@@ -1,0 +1,10 @@
+import { cf } from './api';
+const response = await cf('/pages/projects/professional-headshot-ai');
+const project = await response.json() as { result: { source: { type: string; config: Record<string, unknown> } } };
+if (!response.ok || project.result.source.type !== 'github') throw new Error('Unexpected project source.');
+const config = { ...project.result.source.config, deployments_enabled: false, production_deployments_enabled: false };
+const updated = await cf('/pages/projects/professional-headshot-ai', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ source: { type: 'github', config } }) });
+if (!updated.ok) throw new Error(`Unable to pause old Git deployments: ${updated.status}`);
+const verify = await (await cf('/pages/projects/professional-headshot-ai')).json() as typeof project;
+if (verify.result.source.config.deployments_enabled !== false) throw new Error('Git deployment state was not verified.');
+console.log('Paused automatic deployment of the old Git revision; direct reviewed deployments remain available.');

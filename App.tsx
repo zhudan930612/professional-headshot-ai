@@ -15,6 +15,7 @@ const Privacy = lazy(() => import('./pages/Terms').then(m => ({ default: m.Priva
 const AuthCallback = lazy(() => import('./pages/AuthCallback').then(m => ({ default: m.AuthCallback })));
 const Pricing = lazy(() => import('./pages/Pricing').then(m => ({ default: m.Pricing })));
 const Subscription = lazy(() => import('./pages/Subscription').then(m => ({ default: m.Subscription })));
+const NotFound = lazy(() => import('./pages/NotFound').then(m => ({ default: m.NotFound })));
 
 // 加载中组件
 const PageLoader = () => (
@@ -22,6 +23,7 @@ const PageLoader = () => (
     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
   </div>
 );
+
 
 // Custom component to handle scroll restoration on route change
 const ScrollToTop = () => {
@@ -62,8 +64,10 @@ const App: React.FC = () => {
             <Route path="/subscription" element={<Subscription />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
+
       </AuthProvider>
     </BrowserRouter>
   );

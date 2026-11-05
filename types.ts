@@ -1,3 +1,9 @@
+export interface AccountUser {
+  id: string;
+  email: string | null;
+  user_metadata: { name?: string; avatar_url?: string };
+}
+
 export enum HeadshotStyle {
   General = 'General Professional',
   Medical = 'Medical & Healthcare',
@@ -31,6 +37,8 @@ export interface HeadshotTemplate {
 }
 
 export interface GeneratedImage {
+  isPlaceholder?: boolean;
+  taskId?: string;
   id: string;
   url: string;             // PNG 主资源 URL（用于下载）
   createdAt: number;

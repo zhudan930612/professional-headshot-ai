@@ -3,36 +3,64 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "packageManager": "pnpm@10.26.1",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && pnpm build:worker",
     "preview": "vite preview",
-    "check:auth": "tsx scripts/check-auth-config.ts",
-    "check:supabase": "tsx scripts/check-supabase.ts"
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "build:functions": "pnpm build:worker",
+    "dev:full": "pnpm build && wrangler pages dev dist --port 3000 --env-file .dev.vars",
+    "check:payments": "tsx scripts/check-payments.ts",
+    "check:recovery": "pnpm check:cloudflare",
+    "check:secrets": "tsx scripts/check-secrets.ts",
+    "check:auth": "pnpm check:cloudflare",
+    "check:supabase": "tsx scripts/check-supabase.ts",
+    "build:worker": "esbuild cloudflare/worker.ts --bundle --format=esm --platform=browser --target=es2022 --conditions=workerd --outfile=dist/_worker.js",
+    "check:cloudflare": "tsx scripts/cloudflare/check-runtime.ts",
+    "check:source": "tsx scripts/check-supabase.ts",
+    "export:source": "tsx scripts/cloudflare/export-source.ts",
+    "verify": "pnpm typecheck && pnpm test && pnpm build && pnpm exec tsx scripts/cloudflare/verify-artifact.ts && pnpm check:secrets && pnpm audit"
   },
   "dependencies": {
-    "@google/genai": "^1.32.0",
-    "@supabase/supabase-js": "^2.39.0",
+    "@google/genai": "^1.52.0",
+    "@supabase/supabase-js": "^2.117.3",
     "buffer": "^6.0.3",
     "gray-matter": "^4.0.3",
-    "highlight.js": "^11.10.0",
+    "highlight.js": "^11.12.0",
+    "jose": "^6.2.15",
     "lucide-react": "^0.556.0",
-    "marked": "^15.0.7",
-    "react": "^19.2.1",
-    "react-dom": "^19.2.1",
-    "react-markdown": "^9.0.1",
-    "react-router-dom": "^7.10.1"
+    "marked": "^15.0.12",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-markdown": "^9.1.0",
+    "react-router-dom": "^7.18.4"
   },
   "devDependencies": {
-    "@types/node": "^22.14.0",
-    "@vercel/node": "^5.5.15",
-    "@vitejs/plugin-react": "^5.0.0",
-    "autoprefixer": "^10.4.20",
-    "dotenv": "^17.2.3",
-    "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.17",
-    "tsx": "^4.21.0",
-    "typescript": "~5.8.2",
-    "vite": "^6.2.0"
+    "@cloudflare/workers-types": "^5.20261104.1",
+    "@electric-sql/pglite": "^0.5.8",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "autoprefixer": "^10.6.1",
+    "dotenv": "^17.4.2",
+    "esbuild": "^0.28.2",
+    "postcss": "^8.5.29",
+    "tailwindcss": "^3.4.19",
+    "tsx": "^4.23.15",
+    "typescript": "~5.8.3",
+    "vite": "^6.4.5",
+    "vitest": "^5.0.3",
+    "wrangler": "4.156.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "postcss-selector-parser@6.1.4": "6.1.5"
+    }
   }
 }

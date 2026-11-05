@@ -1,12 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
-import type { VercelRequest } from '@vercel/node';
+import type { IncomingMessage } from 'node:http';
 
 /**
  * 从请求头中提取并验证用户身份
  * @param req Vercel请求对象
  * @returns 用户ID（UUID格式），如果验证失败返回null
  */
-export async function getUserIdFromRequest(req: VercelRequest): Promise<string | null> {
+export async function getUserIdFromRequest(req: IncomingMessage): Promise<string | null> {
   try {
     const authHeader = req.headers.authorization;
 
@@ -59,7 +59,7 @@ export async function getUserIdFromRequest(req: VercelRequest): Promise<string |
  * @param req Vercel请求对象
  * @returns 用户ID，如果未认证抛出错误
  */
-export async function requireAuth(req: VercelRequest): Promise<string> {
+export async function requireAuth(req: IncomingMessage): Promise<string> {
   const userId = await getUserIdFromRequest(req);
 
   if (!userId) {

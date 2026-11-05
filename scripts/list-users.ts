@@ -6,7 +6,7 @@
  */
 
 import { config } from 'dotenv';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type User } from '@supabase/supabase-js';
 
 // 加载环境变量
 config({ path: '.env.local' });
@@ -105,7 +105,7 @@ async function listUsers() {
       none: 0
     };
 
-    authUsers.users.forEach(user => {
+    authUsers.users.forEach((user: User) => {
       const sub = subMap.get(user.id);
       if (sub) {
         planCounts[sub.plan_type as keyof typeof planCounts]++;

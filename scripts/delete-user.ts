@@ -11,7 +11,7 @@
  */
 
 import { config } from 'dotenv';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type User } from '@supabase/supabase-js';
 import * as readline from 'readline';
 
 // 加载环境变量
@@ -52,7 +52,7 @@ async function getUserInfo(email: string) {
 
     if (authError) throw authError;
 
-    const user = authData.users.find(u => u.email === email);
+    const user = authData.users.find((u: User) => u.email === email);
 
     if (!user) {
       console.log(`❌ 未找到用户: ${email}`);

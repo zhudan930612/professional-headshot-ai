@@ -1,6 +1,5 @@
 # Cloudflare Pages 路由配置
 # API 路径由 Functions 处理
-/api/* 200
 
 # 所有其他路径回退到 index.html (SPA 路由)
 /* /index.html 200

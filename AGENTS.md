@@ -4,7 +4,7 @@ This document provides comprehensive guidelines for agents operating in this rep
 
 ## Project Overview
 
-A professional headshot AI application built with React 19, TypeScript, and Vite. Uses Supabase for backend services and Gemini API for AI-powered image processing.
+A professional headshot AI application built with React 19, TypeScript, and Vite. Since 2026-11-05 production uses Cloudflare Pages advanced mode (cloudflare/worker.ts → dist/_worker.js), D1, private R2, Google Identity Services, EvoLink image generation and Creem payments. Read HANDOFF.MD first. Old Supabase code and PostgreSQL tests are historical and are not part of the current production bundle.
 
 ## Build, Test, and Development Commands
 
@@ -114,7 +114,7 @@ root/
 - Validate all user inputs on both client and server
 - Sanitize data before rendering to prevent XSS
 - Use parameterized queries for database operations
-- Run `npm run check:auth` and `npm run check:supabase` before deployment
+- Run `pnpm check:cloudflare` after deployment, including the actual Google login challenge endpoint. `check:supabase` is for the archived migration source, not the current deployment.
 
 ## Git Workflow
 
@@ -145,10 +145,8 @@ Use conventional commits with scope:
 ## Getting Started
 
 1. Run `npm install` to install dependencies
-2. Copy `.env.local.example` to `.env.local` and fill in:
-   - `GEMINI_API_KEY` - For AI image processing
-   - `SUPABASE_URL` and `SUPABASE_ANON_KEY` - For backend services
-3. Run `npm run dev` to start development server
+2. Copy `.dev.vars.example` to `.dev.vars`, configure Google Client ID and a random media signing secret; keep billable test credentials empty until needed.
+3. Apply local D1 migrations with `pnpm exec wrangler d1 migrations apply professional-headshot-ai --local`, then run `pnpm dev:full`. `pnpm dev` only serves the Vite frontend.
 4. Open http://localhost:3000 in browser
 
 ## Additional Resources

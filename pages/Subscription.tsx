@@ -1,34 +1,83 @@
 import React, { useState, useEffect } from 'react';
 import { Layout } from '../components/Layout';
 import { getUserActiveSubscription } from '../services/subscriptionService';
-import { getUserQuotaInfo } from '../services/storageService';
+import { getPaymentStatus } from '@/services/paymentService';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowRight, Check, Zap } from 'lucide-react';
 import type { UserSubscription, QuotaInfo } from '../types';
 
 export const Subscription: React.FC = () => {
   const navigate = useNavigate();
-  const { quotaInfo, refreshQuota } = useAuth();
+  const { user, loading: authLoading, quotaInfo, refreshQuota, openAuthModal } = useAuth();
+  const [searchParams] = useSearchParams();
+  const paymentId = searchParams.get('payment_id') || searchParams.get('checkout_id');
+  const paymentReturn = searchParams.get('payment') === 'success';
+  const [paymentState, setPaymentState] = useState<'checking' | 'completed' | 'pending' | 'failed' | 'refunded' | null>(null);
+  const [checkAttempt, setCheckAttempt] = useState(0);
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading) return;
+    let cancelled = false;
     const loadData = async () => {
       try {
         setLoading(true);
-        const sub = await getUserActiveSubscription();
-        await refreshQuota();
-        setSubscription(sub);
+        const sub = user ? await getUserActiveSubscription() : null;
+        if (user) await refreshQuota();
+        if (!cancelled) setSubscription(sub);
       } catch (error) {
-        console.error('加载订阅信息失败:', error);
+        console.error('Unable to load subscription information:', error);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
-    loadData();
-  }, []);
+    void loadData();
+    return () => { cancelled = true; };
+  }, [user, authLoading, refreshQuota]);
 
+  useEffect(() => {
+    if (!user || !paymentReturn) return;
+    if (!paymentId) {
+      setPaymentState('pending');
+      return;
+    }
+    const controller = new AbortController();
+    let timeout: ReturnType<typeof setTimeout>;
+    let attempts = 0;
+    setPaymentState('checking');
+    const check = async () => {
+      try {
+        const payment = await getPaymentStatus(paymentId, controller.signal);
+        if (controller.signal.aborted) return;
+        if (payment.status === 'completed') {
+          const freshQuota = await refreshQuota();
+          const freshSubscription = await getUserActiveSubscription();
+          if (!controller.signal.aborted && freshQuota) {
+            setSubscription(freshSubscription);
+            setPaymentState('completed');
+            return;
+          }
+        } else if (payment.status === 'failed' || payment.status === 'refunded') {
+          setPaymentState(payment.status);
+          return;
+        }
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        console.error('Unable to confirm payment:', error);
+      }
+      if (controller.signal.aborted) return;
+      attempts += 1;
+      if (attempts >= 20) {
+        setPaymentState('pending');
+      } else {
+        timeout = setTimeout(() => { void check(); }, 3000);
+      }
+    };
+    void check();
+    return () => { controller.abort(); clearTimeout(timeout); };
+  }, [user, paymentReturn, paymentId, refreshQuota, checkAttempt]);
   const planFeatures = {
     free: [
       '5 lifetime images',
@@ -59,10 +108,29 @@ export const Subscription: React.FC = () => {
     executive: 'amber'
   }[quotaInfo.plan_type] : 'slate';
 
-  const usagePercent = quotaInfo ? (quotaInfo.used_quota / quotaInfo.total_quota) * 100 : 0;
+  const usagePercent = quotaInfo && quotaInfo.total_quota > 0
+    ? Math.min(100, (quotaInfo.used_quota / quotaInfo.total_quota) * 100) : 0;
 
   return (
     <Layout>
+      {paymentReturn && (
+        <div role="status" className="max-w-4xl mx-auto px-6 pt-8 text-slate-700">
+          {!user ? (
+            <button className="text-blue-600 font-semibold" onClick={() => openAuthModal(window.location.pathname + window.location.search)}>Sign in to confirm your payment</button>
+          ) : paymentState === 'completed' ? (
+            <p className="text-green-700">Payment confirmed. Your credits are ready to use.</p>
+          ) : paymentState === 'checking' ? (
+            <p>Confirming your payment and updating your credits...</p>
+          ) : paymentState === 'refunded' ? (
+            <p>This payment has been refunded.</p>
+          ) : (
+            <>
+              <p>{paymentState === 'failed' ? 'This payment was not completed.' : 'Your payment is still being confirmed. Please check again shortly.'}</p>
+              <button className="mt-2 text-blue-600 font-semibold" onClick={() => setCheckAttempt(value => value + 1)}>Check payment again</button>
+            </>
+          )}
+        </div>
+      )}
       {loading ? (
         // Loading State
         <div className="flex items-center justify-center min-h-screen">
@@ -174,7 +242,7 @@ export const Subscription: React.FC = () => {
             {quotaInfo.plan_type === 'free' && (
               <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl border-2 border-blue-200 p-8 text-center">
                 <h3 className="text-2xl font-bold text-slate-900 mb-3">
-                  Ready to unlock unlimited generations?
+                  Ready for more professional headshots?
                 </h3>
                 <p className="text-slate-600 mb-6">
                   Upgrade to Professional or Executive for lifetime credits and higher quality images.

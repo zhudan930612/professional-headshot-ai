@@ -2,13 +2,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Upload, Sparkles, Image as ImageIcon, CheckCircle, AlertCircle, Loader2, Check, Download, RefreshCw, ArrowRight, ArrowLeft, X as XIconLucide, Maximize2, XCircle } from 'lucide-react';
 import { HEADSHOT_TEMPLATES } from '../constants';
 import { HeadshotStyle, UseCase, GeneratedImage, ReferenceImage, QuotaInfo } from '../types';
-import { getRemainingQuota, saveSession, mockGenerateImages, getUserQuotaInfo, decrementQuota } from '../services/storageService';
+import { getRemainingQuota, saveSession } from '../services/storageService';
 import { selectReferenceImage, validateImageFiles } from '../services/imageService';
-import { generateHeadshots } from '../services/generationService';
+import { generateHeadshots, recoverGeneration } from '../services/generationService';
+import { GenerationRecoveryError } from '@/services/nanoBananaAPI.secure';
 import { addWatermark, downloadImageWithWatermark } from '../services/watermarkService';
 import { EmptyQuotaModal, InsufficientQuotaModal } from './UpgradeModal';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { getCurrentUser } from '@/services/authService';
 import { useAuth } from '../contexts/AuthContext';
 
 interface HeroToolProps {
@@ -22,6 +23,7 @@ interface GenerationResult {
   progress: number;
   error?: string;  // 新增：存储错误消息
   retryCount: number;  // 新增：跟踪重试次数
+  recoveryTaskId?: string;
 }
 
 const CATEGORIES = [
@@ -109,7 +111,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
+      const newFiles = Array.from<File>(e.target.files);
       if (newFiles.length + files.length > 5) {
         setError("Maximum 5 photos allowed.");
         return;
@@ -214,7 +216,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
     e.preventDefault();
     e.stopPropagation();
 
-    const droppedFiles = Array.from(e.dataTransfer.files);
+    const droppedFiles = Array.from<File>(e.dataTransfer.files);
     if (droppedFiles.length + files.length > 5) {
       setError("Maximum 5 photos allowed.");
       return;
@@ -315,15 +317,16 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
 
     try {
       // ⭐ 获取用户 ID（用于生成服务）
-      const { data: { session } } = await supabase.auth.getSession();
-      const userId = session?.user?.id || `anon_${Date.now()}`;
+      const currentUser = await getCurrentUser();
+      const userId = currentUser?.id;
+      if (!userId) throw new Error('Please sign in to continue.');
 
       const referenceFile = files[selectedReferenceIndex];
       if (!referenceFile) {
         throw new Error('参考图未选择');
       }
 
-      // ⭐ 调用新的生成服务（使用参考图 + 模板图，参考图会上传到 Supabase Storage）
+      // ⭐ 调用新的生成服务（使用参考图 + 模板图，参考图会上传到 private storage）
       const selectedTemplates = HEADSHOT_TEMPLATES.filter(t =>
         selectedTemplateIds.includes(t.id)
       );
@@ -343,14 +346,14 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
             throw new Error(`Template ${id} not found`);
           }
 
-          // 调用生成服务（参考图 + 模板），不传递 referenceImageUrl（让服务内部上传到 Supabase Storage）
+          // 调用生成服务（参考图 + 模板），不传递 referenceImageUrl（让服务内部上传到 private storage）
           const generatedImages = await generateHeadshots(
             referenceFile,
             [template],
             primaryStyle,
             userId,
             `${sessionId}_${index}`,
-            undefined, // 不传递 referenceImageUrl，让服务内部上传到 Supabase Storage
+            undefined, // 不传递 referenceImageUrl，让服务内部上传到 private storage
             (progress) => {
               // ⭐ 更新当前图片的生成进度，但最多到95%，避免100%时的白屏
               const cappedProgress = Math.min(progress, 95);
@@ -363,12 +366,24 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
           );
 
           const img = generatedImages[0];
+          try {
+            await saveSession({
+              id: `${sessionId}_${index}`,
+              date: Date.now(),
+              style: template.category,
+              useCase: UseCase.LinkedIn,
+              images: [img],
+            });
+          } catch (saveError) {
+            console.error('Failed to save generation history:', saveError);
+            setError('Your image is ready, but history could not be saved. Download it before leaving this page.');
+          }
 
           // ⭐ 预加载图片，确保浏览器完成加载后再显示
           await new Promise<void>((resolve, reject) => {
             const preloadImg = new Image();
             preloadImg.onload = () => resolve();
-            preloadImg.onerror = () => reject(new Error('Failed to load image'));
+            preloadImg.onerror = () => resolve();
             preloadImg.src = img.jpgUrl || img.url;
           });
 
@@ -387,7 +402,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
 
           setGenerationResults(prev => prev.map(item =>
             item.templateId === id
-              ? { ...item, loading: false, progress: 0, error: errorMessage }
+              ? { ...item, loading: false, progress: 0, error: errorMessage, recoveryTaskId: error instanceof GenerationRecoveryError ? error.taskId : undefined }
               : item
           ));
 
@@ -413,63 +428,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
         try {
           console.log('[HeroTool] 处理完成的图片, 数量:', completedImages.length, 'user:', !!user);
 
-          // 1. 先保存会话（只有登录用户才保存到数据库）
-          // 保存优先，确保用户不会丢失生成的图片
-          if (user) {
-            console.log('[HeroTool] 调用 saveSession...');
-            try {
-              await saveSession({
-                id: sessionId,
-                date: Date.now(),
-                style: primaryStyle,
-                useCase: UseCase.LinkedIn,
-                images: completedImages,
-              });
-              console.log('[HeroTool] saveSession 完成');
-            } catch (saveErr) {
-              console.error('[HeroTool] saveSession 失败:', saveErr);
-              // 保存失败不阻止后续流程
-            }
-          }
-
-          // 2. 扣减配额（失败不影响已保存的会话）
-          if (user) {
-            console.log('[HeroTool] 🎯 准备扣减配额...', {
-              用户ID: user.id,
-              图片数量: completedImages.length,
-              是否重试: false
-            });
-            try {
-              console.log('[HeroTool] 📞 调用 decrementQuota 函数...');
-              const result = await decrementQuota(completedImages.length, false);
-              console.log('[HeroTool] 📥 decrementQuota 返回结果:', result);
-              console.log('[HeroTool] ✅ 扣减配额结果:', {
-                成功: result.success,
-                剩余配额: result.remaining
-              });
-
-              if (!result.success) {
-                console.warn('[HeroTool] ⚠️ 配额扣减返回 false，但会话已保存');
-              }
-
-              // 通知全局刷新额度显示
-              console.log('[HeroTool] 🔄 刷新全局配额显示...');
-              const updatedQuota = await refreshQuota();
-              console.log('[HeroTool] ✅ 全局配额刷新完成，新配额:', updatedQuota);
-
-              // ⭐ 如果用户未登录，手动更新本地配额（虽然当前逻辑下用户必须已登录）
-              if (!user && updatedQuota) {
-                setLocalQuotaInfo(updatedQuota);
-              }
-            } catch (quotaErr) {
-              console.error('[HeroTool] ❌❌❌ 配额扣减失败 ❌❌❌');
-              console.error('[HeroTool] 错误对象:', quotaErr);
-              console.error('[HeroTool] 错误消息:', quotaErr instanceof Error ? quotaErr.message : String(quotaErr));
-              console.error('[HeroTool] 错误堆栈:', quotaErr instanceof Error ? quotaErr.stack : '无堆栈信息');
-            }
-          } else {
-            console.warn('[HeroTool] ⚠️ 用户未登录，跳过配额扣减');
-          }
+          await refreshQuota();
 
           // 3. Apply watermarks if Free user
           if (quotaInfo?.has_watermark) {
@@ -519,26 +478,41 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
       return;
     }
 
-    // 重置该模板的状态，并递增重试计数
+    const originalResult = generationResults.find(item => item.templateId === templateId);
+    if (originalResult?.loading) return;
+    if (!originalResult?.image?.taskId && !originalResult?.recoveryTaskId) {
+      const quota = await refreshQuota();
+      if (!quota || quota.remaining_quota < 1) {
+        setRequiredQuotaCount(1);
+        setUpgradeModalSource('step2');
+        setShowUpgradeModal(true);
+        return;
+      }
+    }
+
+    // The server verifies the original task before granting a free retry.
     setGenerationResults(prev => prev.map(item =>
       item.templateId === templateId
-        ? { ...item, loading: true, progress: 0, error: undefined, retryCount: item.retryCount + 1 }
+        ? { ...item, loading: true, progress: 0, error: undefined, retryCount: item.retryCount + (item.recoveryTaskId ? 0 : 1) }
         : item
     ));
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const userId = session?.user?.id || `anon_${Date.now()}`;
+      const currentUser = await getCurrentUser();
+      const userId = currentUser?.id;
+      if (!userId) throw new Error('Please sign in to continue.');
 
       const referenceFile = files[selectedReferenceIndex];
-      // Pass isRetry=true so quota is not deducted
-      const generatedImages = await generateHeadshots(
+      const retrySessionId = `${Date.now()}_retry_${templateId}`;
+      const generatedImages = originalResult?.recoveryTaskId
+        ? await recoverGeneration(originalResult.recoveryTaskId, retrySessionId)
+        : await generateHeadshots(
         referenceFile,
         [template],
         template.category,
         userId,
-        `${Date.now()}_retry_${templateId}`,
-        undefined, // 不传递 referenceImageUrl，让服务内部上传到 Supabase Storage
+        retrySessionId,
+        undefined, // 不传递 referenceImageUrl，让服务内部上传到 private storage
         (progress) => {
           // 限制进度最多到95%，避免100%时的白屏
           const cappedProgress = Math.min(progress, 95);
@@ -548,7 +522,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
               : item
           ));
         },
-        true // isRetry = true, 不消耗配额
+        originalResult?.image?.taskId
       );
 
       const img = generatedImages[0];
@@ -557,18 +531,35 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
       await new Promise<void>((resolve, reject) => {
         const preloadImg = new Image();
         preloadImg.onload = () => resolve();
-        preloadImg.onerror = () => reject(new Error('Failed to load image'));
+        preloadImg.onerror = () => resolve();
         preloadImg.src = img.jpgUrl || img.url;
       });
 
       // 成功：图片真正加载完成后才更新状态
       setGenerationResults(prev => prev.map(item =>
         item.templateId === templateId
-          ? { ...item, loading: false, image: img, progress: 100, error: undefined }
+          ? { ...item, loading: false, image: img, progress: 100, error: undefined, recoveryTaskId: undefined }
           : item
       ));
 
-      // 重试不消耗配额，所以不调用 incrementQuota 或 decrementQuota
+      try {
+        await saveSession({
+          id: retrySessionId,
+          date: Date.now(),
+          style: template.category,
+          useCase: UseCase.LinkedIn,
+          images: [img],
+        });
+      } catch (saveError) {
+        console.error('Failed to save retry history:', saveError);
+        setError('Your image is ready, but history could not be saved. Download it before leaving this page.');
+      }
+      if (quotaInfo?.has_watermark) {
+        const watermarkedUrl = await addWatermark(img.url);
+        setDisplayImages(previous => new Map(previous).set(img.id, watermarkedUrl));
+      }
+      await refreshQuota();
+      onSuccess?.([img]);
 
     } catch (error) {
       // 失败
@@ -576,7 +567,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
 
       setGenerationResults(prev => prev.map(item =>
         item.templateId === templateId
-          ? { ...item, loading: false, progress: 0, error: errorMessage }
+          ? { ...item, loading: false, progress: 0, error: errorMessage, recoveryTaskId: error instanceof GenerationRecoveryError ? error.taskId : undefined }
           : item
       ));
 
@@ -917,13 +908,13 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                         result.error
                       )}
                     </div>
-                    {result.retryCount < 1 ? (
+                    {result.recoveryTaskId || result.retryCount < 1 ? (
                       <button
                         onClick={() => retryTemplate(result.templateId)}
                         className="px-5 py-2.5 bg-red-500 text-white text-sm font-semibold rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
                       >
                         <RefreshCw size={18} />
-                        Retry
+                        {result.recoveryTaskId ? 'Check generation' : 'Retry'}
                       </button>
                     ) : (
                       <span className="text-sm text-red-600 italic">Please try again later</span>
@@ -951,6 +942,14 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="eager"
                     />
+                    {result.image.taskId && result.retryCount < 1 && (
+                      <button
+                        onClick={event => { event.stopPropagation(); void retryTemplate(result.templateId); }}
+                        className="absolute bottom-2 left-2 right-2 bg-white/95 rounded-lg px-2 py-2 text-xs font-semibold text-slate-800 shadow-sm"
+                      >
+                        Regenerate once for free
+                      </button>
+                    )}
                   </div>
                 )}
               </div>

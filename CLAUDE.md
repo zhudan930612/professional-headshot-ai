@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+> 2026-11-05 已全量迁移到 Cloudflare Pages advanced mode / D1 / R2 / Google 原生会话。先读 HANDOFF.MD、README.md 与 docs/cloudflare-native-migration.md。本文中的 Supabase、PostgreSQL 与旧部署示例仅作历史参考，不用于当前生产部署。
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 # CLAUDE 项目工作规范

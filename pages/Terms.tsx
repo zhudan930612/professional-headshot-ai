@@ -6,7 +6,7 @@ export const Terms = () => (
     <div className="max-w-3xl mx-auto px-4 py-16">
     <h1 className="text-3xl font-bold mb-6">Terms of Service</h1>
     <div className="space-y-4 text-slate-700">
-        <p className="mb-4">Last updated: December 2024</p>
+        <p className="mb-4">Last updated: November 5, 2026</p>
         <p className="mb-4">By using Professional Headshot AI, you agree to these terms. If you do not agree to any part of these terms, you may not use our service.</p>
 
         <h2 className="text-xl font-bold mt-8 mb-3">1. Account and Registration</h2>
@@ -45,12 +45,12 @@ export const Terms = () => (
         </ul>
         <p className="mb-4">By uploading content to Professional Headshot AI, you grant us the right to:</p>
         <ul className="list-disc list-inside mb-4 space-y-1">
-          <li>Process your uploaded reference images to generate headshots (temporary processing only)</li>
-          <li>Delete your reference images from our servers within 24 hours after generation</li>
+          <li>Process your uploaded reference images to generate headshots and support recovery</li>
+          <li>Store your photos privately and process requests for removal</li>
           <li>Store generated headshots in your account history for your access</li>
           <li>Use anonymized, aggregated data to improve our service</li>
         </ul>
-        <p className="mb-4"><strong>Important Privacy Notice:</strong> Your uploaded reference images are temporary and will NOT be permanently retained. We automatically delete them within 24 hours of headshot generation to protect your privacy. Only the AI-generated headshots remain accessible in your account.</p>
+        <p className="mb-4">Uploaded photos and generated headshots are kept in private storage. Please refer to our Privacy Policy for retention and removal requests.</p>
 
         <h2 className="text-xl font-bold mt-8 mb-3">5. Disclaimer of Warranties</h2>
         <p className="mb-4">Professional Headshot AI is provided "AS IS" without warranties. We do not guarantee:</p>
@@ -82,14 +82,14 @@ export const Privacy = () => (
     <div className="max-w-3xl mx-auto px-4 py-16">
     <h1 className="text-3xl font-bold mb-6">Privacy Policy</h1>
     <div className="space-y-4 text-slate-700">
-        <p className="mb-4">Last updated: December 2024</p>
+        <p className="mb-4">Last updated: November 5, 2026</p>
         <p className="mb-4">Professional Headshot AI ("we", "us", or "our") respects your privacy. This Privacy Policy explains how we collect, use, and protect your information.</p>
 
         <h2 className="text-xl font-bold mt-8 mb-3">1. Information We Collect</h2>
         <p className="mb-4">We collect the following types of information:</p>
         <ul className="list-disc list-inside mb-4 space-y-1">
           <li><strong>Account Information:</strong> Email address and name (from Google authentication)</li>
-          <li><strong>Reference Images (Your Uploaded Photos):</strong> Reference images you temporarily upload to generate headshots. These are NOT permanently retained (see data retention section).</li>
+          <li><strong>Reference Images (Your Uploaded Photos):</strong> Photos you upload to generate headshots, stored privately for processing and recovery.</li>
           <li><strong>Generated Content:</strong> AI-generated headshots and associated metadata stored in your account history</li>
           <li><strong>Usage Data:</strong> Generation history, timestamps, and style preferences</li>
           <li><strong>Device Information:</strong> Browser type, IP address, and usage patterns (via analytics)</li>
@@ -99,7 +99,7 @@ export const Privacy = () => (
         <p className="mb-4">We use the collected information to:</p>
         <ul className="list-disc list-inside mb-4 space-y-1">
           <li>Temporarily process your uploaded reference images to generate headshots</li>
-          <li>Automatically delete your reference images within 24 hours to protect your privacy</li>
+          <li>Manage requests to remove your uploaded photos and generated images</li>
           <li>Store and manage your account and generation history (generated headshots only)</li>
           <li>Enforce usage limits and prevent abuse</li>
           <li>Provide customer support</li>
@@ -110,26 +110,27 @@ export const Privacy = () => (
         <h2 className="text-xl font-bold mt-8 mb-3">3. Data Storage and Security</h2>
         <p className="mb-4">We store your data using:</p>
         <ul className="list-disc list-inside mb-4 space-y-1">
-          <li><strong>Supabase:</strong> For account authentication, generation history, and image metadata</li>
-          <li><strong>Supabase Storage:</strong> For your reference images and generated headshots</li>
+          <li><strong>Cloudflare D1:</strong> For accounts, login sessions, orders, credits, generation history, and image metadata</li>
+          <li><strong>Cloudflare R2:</strong> For privately stored reference images and generated headshots</li>
         </ul>
         <p className="mb-4">Your data is encrypted in transit and at rest. We implement industry-standard security measures to protect against unauthorized access.</p>
 
         <h2 className="text-xl font-bold mt-8 mb-3">4. Data Retention and Deletion</h2>
         <p className="mb-4">Your information is retained as follows:</p>
         <ul className="list-disc list-inside mb-4 space-y-1">
-          <li><strong>Reference Images (Your Uploaded Photos):</strong> We do NOT permanently store your uploaded reference images. Your photos are deleted from our servers within 24 hours after the headshot generation is complete. This ensures your personal photos are not retained and protects your privacy.</li>
-          <li><strong>Generated Headshots:</strong> The AI-generated headshots are stored in your account history and accessible from your "My Headshots" page. You own these generated images and can download or delete them at any time.</li>
-          <li><strong>Account Data:</strong> Email and account information are retained while your account is active. Upon account deletion, all associated data (account info and generated headshots) is permanently removed within 30 days.</li>
+          <li><strong>Reference Images:</strong> Uploaded photos remain in private storage to support generation and recovery until removal is requested and processed. Please contact us through our website to request removal.</li>
+          <li><strong>Generated Headshots:</strong> Generated images remain available in your account history. You can download them or request their removal.</li>
+          <li><strong>Account and Order Data:</strong> Account, order, and credit records are retained to operate your account and reconcile payments. Contact us to request account deletion; we will explain any records that need to be retained.</li>
         </ul>
 
         <h2 className="text-xl font-bold mt-8 mb-3">5. Third-Party Services</h2>
         <p className="mb-4">We use the following third-party services:</p>
         <ul className="list-disc list-inside mb-4 space-y-1">
-          <li><strong>Google:</strong> For authentication (OAuth 2.0)</li>
-          <li><strong>Supabase:</strong> For backend infrastructure and storage</li>
-          <li><strong>Nano Banana Pro API:</strong> For AI headshot generation</li>
-          <li><strong>Google Analytics:</strong> For website usage analytics</li>
+          <li><strong>Google:</strong> For identity verification</li>
+          <li><strong>Cloudflare:</strong> For website hosting, backend infrastructure, database, and image storage</li>
+          <li><strong>EvoLink:</strong> For AI headshot generation</li>
+          <li><strong>Creem:</strong> For payment processing</li>
+          <li><strong>Google Analytics and Umami:</strong> For website usage analytics</li>
         </ul>
         <p className="mb-4">These services have their own privacy policies. We recommend reviewing them.</p>
 

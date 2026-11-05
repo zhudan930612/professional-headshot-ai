@@ -64,7 +64,7 @@ const Navbar = () => {
     sessionStorage.clear();
 
     try {
-      // Sign out from Supabase
+      // End the server-side session.
       await signOut();
     } catch (error) {
       console.error('登出失败:', error);
@@ -483,7 +483,7 @@ const Footer = () => {
             <img
               src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1056495&theme=neutral&t=1767167268142"
               alt="Professional Headshot AI - Studio-quality AI headshots for LinkedIn and careers | Product Hunt"
-              className="h-full w-auto object-contain ml-[165px] scale-[1.3]"
+              className="h-full w-auto max-w-full object-contain"
               loading="lazy"
             />
           </a>

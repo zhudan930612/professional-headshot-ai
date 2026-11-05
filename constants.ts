@@ -10,7 +10,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Corporate Professional 01',
     name: 'Corporate Professional 01',
     category: HeadshotStyle.Corporate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/corporate/corporate_01.jpg',
+    imageUrl: '/api/media/template-images/corporate/corporate_01.jpg',
     description: 'modern office background'
   },
   {
@@ -18,7 +18,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Corporate Professional 02',
     name: 'Corporate Professional 02',
     category: HeadshotStyle.Corporate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/corporate/corporate_02.jpg',
+    imageUrl: '/api/media/template-images/corporate/corporate_02.jpg',
     description: 'natural window light'
   },
   {
@@ -26,7 +26,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Corporate Professional 03',
     name: 'Corporate Professional 03',
     category: HeadshotStyle.Corporate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/corporate/corporate_03.jpg',
+    imageUrl: '/api/media/template-images/corporate/corporate_03.jpg',
     description: 'neutral studio background'
   },
   {
@@ -34,7 +34,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Corporate Professional 04',
     name: 'Corporate Professional 04',
     category: HeadshotStyle.Corporate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/corporate/corporate_04.jpg',
+    imageUrl: '/api/media/template-images/corporate/corporate_04.jpg',
     description: 'professional gray backdrop'
   },
   {
@@ -42,7 +42,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Corporate Professional 05',
     name: 'Corporate Professional 05',
     category: HeadshotStyle.Corporate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/corporate/corporate_05.jpg',
+    imageUrl: '/api/media/template-images/corporate/corporate_05.jpg',
     description: 'bright corporate setting'
   },
   {
@@ -50,7 +50,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Corporate Professional 06',
     name: 'Corporate Professional 06',
     category: HeadshotStyle.Corporate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/corporate/corporate_06.jpg',
+    imageUrl: '/api/media/template-images/corporate/corporate_06.jpg',
     description: 'classic business environment'
   },
   {
@@ -58,7 +58,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Corporate Professional 07',
     name: 'Corporate Professional 07',
     category: HeadshotStyle.Corporate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/corporate/corporate_07.jpg',
+    imageUrl: '/api/media/template-images/corporate/corporate_07.jpg',
     description: 'minimalist office space'
   },
   {
@@ -66,7 +66,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Corporate Professional 08',
     name: 'Corporate Professional 08',
     category: HeadshotStyle.Corporate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/corporate/corporate_08.jpg',
+    imageUrl: '/api/media/template-images/corporate/corporate_08.jpg',
     description: 'warm indoor lighting'
   },
   {
@@ -74,7 +74,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Corporate Professional 09',
     name: 'Corporate Professional 09',
     category: HeadshotStyle.Corporate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/corporate/corporate_09.jpg',
+    imageUrl: '/api/media/template-images/corporate/corporate_09.jpg',
     description: 'contemporary workspace'
   },
   {
@@ -82,7 +82,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Corporate Professional 10',
     name: 'Corporate Professional 10',
     category: HeadshotStyle.Corporate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/corporate/corporate_10.jpg',
+    imageUrl: '/api/media/template-images/corporate/corporate_10.jpg',
     description: 'formal studio style'
   },
   {
@@ -90,7 +90,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Corporate Professional 11',
     name: 'Corporate Professional 11',
     category: HeadshotStyle.Corporate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/corporate/corporate_11.jpg',
+    imageUrl: '/api/media/template-images/corporate/corporate_11.jpg',
     description: 'executive boardroom setting'
   },
   {
@@ -98,7 +98,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Corporate Professional 12',
     name: 'Corporate Professional 12',
     category: HeadshotStyle.Corporate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/corporate/corporate_12.jpg',
+    imageUrl: '/api/media/template-images/corporate/corporate_12.jpg',
     description: 'sleek modern office'
   },
   {
@@ -106,7 +106,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Corporate Professional 13',
     name: 'Corporate Professional 13',
     category: HeadshotStyle.Corporate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/corporate/corporate_13.jpg',
+    imageUrl: '/api/media/template-images/corporate/corporate_13.jpg',
     description: 'professional workspace'
   },
   {
@@ -114,7 +114,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Corporate Professional 14',
     name: 'Corporate Professional 14',
     category: HeadshotStyle.Corporate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/corporate/corporate_14.jpg',
+    imageUrl: '/api/media/template-images/corporate/corporate_14.jpg',
     description: 'clean business backdrop'
   },
   {
@@ -122,7 +122,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Corporate Professional 15',
     name: 'Corporate Professional 15',
     category: HeadshotStyle.Corporate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/corporate/corporate_15.jpg',
+    imageUrl: '/api/media/template-images/corporate/corporate_15.jpg',
     description: 'polished corporate look'
   },
   {
@@ -130,7 +130,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Corporate Professional 16',
     name: 'Corporate Professional 16',
     category: HeadshotStyle.Corporate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/corporate/corporate_16.jpg',
+    imageUrl: '/api/media/template-images/corporate/corporate_16.jpg',
     description: 'sophisticated office environment'
   },
   {
@@ -138,7 +138,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Creative Professional 01',
     name: 'Creative Professional 01',
     category: HeadshotStyle.Creative,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/creative/creative_01.jpg',
+    imageUrl: '/api/media/template-images/creative/creative_01.jpg',
     description: 'artistic lighting setup'
   },
   {
@@ -146,7 +146,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Creative Professional 02',
     name: 'Creative Professional 02',
     category: HeadshotStyle.Creative,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/creative/creative_02.jpg',
+    imageUrl: '/api/media/template-images/creative/creative_02.jpg',
     description: 'colorful background'
   },
   {
@@ -154,7 +154,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Creative Professional 03',
     name: 'Creative Professional 03',
     category: HeadshotStyle.Creative,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/creative/creative_03.jpg',
+    imageUrl: '/api/media/template-images/creative/creative_03.jpg',
     description: 'creative studio setting'
   },
   {
@@ -162,7 +162,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Creative Professional 04',
     name: 'Creative Professional 04',
     category: HeadshotStyle.Creative,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/creative/creative_04.jpg',
+    imageUrl: '/api/media/template-images/creative/creative_04.jpg',
     description: 'dynamic composition'
   },
   {
@@ -170,7 +170,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Creative Professional 05',
     name: 'Creative Professional 05',
     category: HeadshotStyle.Creative,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/creative/creative_05.jpg',
+    imageUrl: '/api/media/template-images/creative/creative_05.jpg',
     description: 'natural outdoor light'
   },
   {
@@ -178,7 +178,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Creative Professional 06',
     name: 'Creative Professional 06',
     category: HeadshotStyle.Creative,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/creative/creative_06.jpg',
+    imageUrl: '/api/media/template-images/creative/creative_06.jpg',
     description: 'urban artistic background'
   },
   {
@@ -186,7 +186,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Creative Professional 07',
     name: 'Creative Professional 07',
     category: HeadshotStyle.Creative,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/creative/creative_07.jpg',
+    imageUrl: '/api/media/template-images/creative/creative_07.jpg',
     description: 'bold color backdrop'
   },
   {
@@ -194,7 +194,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Creative Professional 08',
     name: 'Creative Professional 08',
     category: HeadshotStyle.Creative,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/creative/creative_08.jpg',
+    imageUrl: '/api/media/template-images/creative/creative_08.jpg',
     description: 'expressive lighting'
   },
   {
@@ -202,7 +202,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Creative Professional 09',
     name: 'Creative Professional 09',
     category: HeadshotStyle.Creative,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/creative/creative_09.jpg',
+    imageUrl: '/api/media/template-images/creative/creative_09.jpg',
     description: 'modern creative space'
   },
   {
@@ -210,7 +210,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Creative Professional 10',
     name: 'Creative Professional 10',
     category: HeadshotStyle.Creative,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/creative/creative_10.jpg',
+    imageUrl: '/api/media/template-images/creative/creative_10.jpg',
     description: 'artistic environment'
   },
   {
@@ -218,7 +218,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Creative Professional 11',
     name: 'Creative Professional 11',
     category: HeadshotStyle.Creative,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/creative/creative_11.jpg',
+    imageUrl: '/api/media/template-images/creative/creative_11.jpg',
     description: 'vibrant background'
   },
   {
@@ -226,7 +226,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Creative Professional 12',
     name: 'Creative Professional 12',
     category: HeadshotStyle.Creative,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/creative/creative_12.jpg',
+    imageUrl: '/api/media/template-images/creative/creative_12.jpg',
     description: 'contemporary art style'
   },
   {
@@ -234,7 +234,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Creative Professional 13',
     name: 'Creative Professional 13',
     category: HeadshotStyle.Creative,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/creative/creative_13.jpg',
+    imageUrl: '/api/media/template-images/creative/creative_13.jpg',
     description: 'creative workspace'
   },
   {
@@ -242,7 +242,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Creative Professional 14',
     name: 'Creative Professional 14',
     category: HeadshotStyle.Creative,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/creative/creative_14.jpg',
+    imageUrl: '/api/media/template-images/creative/creative_14.jpg',
     description: 'dramatic lighting'
   },
   {
@@ -250,7 +250,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Creative Professional 15',
     name: 'Creative Professional 15',
     category: HeadshotStyle.Creative,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/creative/creative_15.jpg',
+    imageUrl: '/api/media/template-images/creative/creative_15.jpg',
     description: 'artistic studio setting'
   },
   {
@@ -258,7 +258,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Creative Professional 16',
     name: 'Creative Professional 16',
     category: HeadshotStyle.Creative,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/creative/creative_16.jpg',
+    imageUrl: '/api/media/template-images/creative/creative_16.jpg',
     description: 'unique background style'
   },
   {
@@ -266,7 +266,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'General Professional 01',
     name: 'General Professional 01',
     category: HeadshotStyle.General,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/general/general_01.jpg',
+    imageUrl: '/api/media/template-images/general/general_01.jpg',
     description: 'professional neutral background'
   },
   {
@@ -274,7 +274,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'General Professional 02',
     name: 'General Professional 02',
     category: HeadshotStyle.General,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/general/general_02.jpg',
+    imageUrl: '/api/media/template-images/general/general_02.jpg',
     description: 'soft natural lighting'
   },
   {
@@ -282,7 +282,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'General Professional 03',
     name: 'General Professional 03',
     category: HeadshotStyle.General,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/general/general_03.jpg',
+    imageUrl: '/api/media/template-images/general/general_03.jpg',
     description: 'clean professional style'
   },
   {
@@ -290,7 +290,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'General Professional 04',
     name: 'General Professional 04',
     category: HeadshotStyle.General,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/general/general_04.jpg',
+    imageUrl: '/api/media/template-images/general/general_04.jpg',
     description: 'simple office setting'
   },
   {
@@ -298,7 +298,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'General Professional 05',
     name: 'General Professional 05',
     category: HeadshotStyle.General,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/general/general_05.jpg',
+    imageUrl: '/api/media/template-images/general/general_05.jpg',
     description: 'modern professional look'
   },
   {
@@ -306,7 +306,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'General Professional 06',
     name: 'General Professional 06',
     category: HeadshotStyle.General,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/general/general_06.jpg',
+    imageUrl: '/api/media/template-images/general/general_06.jpg',
     description: 'versatile background'
   },
   {
@@ -314,7 +314,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'General Professional 07',
     name: 'General Professional 07',
     category: HeadshotStyle.General,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/general/general_07.jpg',
+    imageUrl: '/api/media/template-images/general/general_07.jpg',
     description: 'classic professional style'
   },
   {
@@ -322,7 +322,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'General Professional 08',
     name: 'General Professional 08',
     category: HeadshotStyle.General,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/general/general_08.jpg',
+    imageUrl: '/api/media/template-images/general/general_08.jpg',
     description: 'bright professional setting'
   },
   {
@@ -330,7 +330,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'General Professional 09',
     name: 'General Professional 09',
     category: HeadshotStyle.General,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/general/general_09.jpg',
+    imageUrl: '/api/media/template-images/general/general_09.jpg',
     description: 'polished appearance'
   },
   {
@@ -338,7 +338,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'General Professional 10',
     name: 'General Professional 10',
     category: HeadshotStyle.General,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/general/general_10.jpg',
+    imageUrl: '/api/media/template-images/general/general_10.jpg',
     description: 'timeless professional look'
   },
   {
@@ -346,7 +346,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'General Professional 11',
     name: 'General Professional 11',
     category: HeadshotStyle.General,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/general/general_11.jpg',
+    imageUrl: '/api/media/template-images/general/general_11.jpg',
     description: 'clean business style'
   },
   {
@@ -354,7 +354,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'General Professional 12',
     name: 'General Professional 12',
     category: HeadshotStyle.General,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/general/general_12.jpg',
+    imageUrl: '/api/media/template-images/general/general_12.jpg',
     description: 'professional environment'
   },
   {
@@ -362,7 +362,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'General Professional 13',
     name: 'General Professional 13',
     category: HeadshotStyle.General,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/general/general_13.jpg',
+    imageUrl: '/api/media/template-images/general/general_13.jpg',
     description: 'standard professional backdrop'
   },
   {
@@ -370,7 +370,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'General Professional 14',
     name: 'General Professional 14',
     category: HeadshotStyle.General,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/general/general_14.jpg',
+    imageUrl: '/api/media/template-images/general/general_14.jpg',
     description: 'refined professional setting'
   },
   {
@@ -378,7 +378,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'General Professional 15',
     name: 'General Professional 15',
     category: HeadshotStyle.General,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/general/general_15.jpg',
+    imageUrl: '/api/media/template-images/general/general_15.jpg',
     description: 'professional studio style'
   },
   {
@@ -386,7 +386,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'General Professional 16',
     name: 'General Professional 16',
     category: HeadshotStyle.General,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/general/general_16.jpg',
+    imageUrl: '/api/media/template-images/general/general_16.jpg',
     description: 'balanced lighting'
   },
   {
@@ -394,7 +394,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Medical Professional 01',
     name: 'Medical Professional 01',
     category: HeadshotStyle.Medical,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_01.jpg',
+    imageUrl: '/api/media/template-images/medical/medical_01.jpg',
     description: 'clean clinical style'
   },
   {
@@ -402,7 +402,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Medical Professional 02',
     name: 'Medical Professional 02',
     category: HeadshotStyle.Medical,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_02.jpg',
+    imageUrl: '/api/media/template-images/medical/medical_02.jpg',
     description: 'soft natural lighting'
   },
   {
@@ -410,7 +410,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Medical Professional 03',
     name: 'Medical Professional 03',
     category: HeadshotStyle.Medical,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_03.jpg',
+    imageUrl: '/api/media/template-images/medical/medical_03.jpg',
     description: 'healthcare setting'
   },
   {
@@ -418,7 +418,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Medical Professional 04',
     name: 'Medical Professional 04',
     category: HeadshotStyle.Medical,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_04.jpg',
+    imageUrl: '/api/media/template-images/medical/medical_04.jpg',
     description: 'medical office background'
   },
   {
@@ -426,7 +426,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Medical Professional 05',
     name: 'Medical Professional 05',
     category: HeadshotStyle.Medical,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_05.jpg',
+    imageUrl: '/api/media/template-images/medical/medical_05.jpg',
     description: 'professional clinic environment'
   },
   {
@@ -434,7 +434,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Medical Professional 06',
     name: 'Medical Professional 06',
     category: HeadshotStyle.Medical,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_06.jpg',
+    imageUrl: '/api/media/template-images/medical/medical_06.jpg',
     description: 'bright clinical setting'
   },
   {
@@ -442,7 +442,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Medical Professional 07',
     name: 'Medical Professional 07',
     category: HeadshotStyle.Medical,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_07.jpg',
+    imageUrl: '/api/media/template-images/medical/medical_07.jpg',
     description: 'clinical white background'
   },
   {
@@ -450,7 +450,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Medical Professional 08',
     name: 'Medical Professional 08',
     category: HeadshotStyle.Medical,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_08.jpg',
+    imageUrl: '/api/media/template-images/medical/medical_08.jpg',
     description: 'hospital professional style'
   },
   {
@@ -458,7 +458,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Medical Professional 09',
     name: 'Medical Professional 09',
     category: HeadshotStyle.Medical,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_09.jpg',
+    imageUrl: '/api/media/template-images/medical/medical_09.jpg',
     description: 'medical workspace'
   },
   {
@@ -466,7 +466,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Medical Professional 10',
     name: 'Medical Professional 10',
     category: HeadshotStyle.Medical,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_10.jpg',
+    imageUrl: '/api/media/template-images/medical/medical_10.jpg',
     description: 'healthcare professional look'
   },
   {
@@ -474,7 +474,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Medical Professional 11',
     name: 'Medical Professional 11',
     category: HeadshotStyle.Medical,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_11.jpg',
+    imageUrl: '/api/media/template-images/medical/medical_11.jpg',
     description: 'clean medical setting'
   },
   {
@@ -482,7 +482,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Medical Professional 12',
     name: 'Medical Professional 12',
     category: HeadshotStyle.Medical,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_12.jpg',
+    imageUrl: '/api/media/template-images/medical/medical_12.jpg',
     description: 'clinical environment'
   },
   {
@@ -490,7 +490,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Medical Professional 13',
     name: 'Medical Professional 13',
     category: HeadshotStyle.Medical,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_13.jpg',
+    imageUrl: '/api/media/template-images/medical/medical_13.jpg',
     description: 'medical professional backdrop'
   },
   {
@@ -498,7 +498,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Medical Professional 14',
     name: 'Medical Professional 14',
     category: HeadshotStyle.Medical,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_14.jpg',
+    imageUrl: '/api/media/template-images/medical/medical_14.jpg',
     description: 'bright healthcare setting'
   },
   {
@@ -506,7 +506,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Medical Professional 15',
     name: 'Medical Professional 15',
     category: HeadshotStyle.Medical,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_15.jpg',
+    imageUrl: '/api/media/template-images/medical/medical_15.jpg',
     description: 'professional medical style'
   },
   {
@@ -514,7 +514,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'Medical Professional 16',
     name: 'Medical Professional 16',
     category: HeadshotStyle.Medical,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/medical/medical_16.jpg',
+    imageUrl: '/api/media/template-images/medical/medical_16.jpg',
     description: 'clinical professional look'
   },
   {
@@ -522,7 +522,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'RealEstate Professional 01',
     name: 'RealEstate Professional 01',
     category: HeadshotStyle.RealEstate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_01.jpg',
+    imageUrl: '/api/media/template-images/realestate/realestate_01.jpg',
     description: 'urban background'
   },
   {
@@ -530,7 +530,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'RealEstate Professional 02',
     name: 'RealEstate Professional 02',
     category: HeadshotStyle.RealEstate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_02.jpg',
+    imageUrl: '/api/media/template-images/realestate/realestate_02.jpg',
     description: 'bright indoor setting'
   },
   {
@@ -538,7 +538,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'RealEstate Professional 03',
     name: 'RealEstate Professional 03',
     category: HeadshotStyle.RealEstate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_03.jpg',
+    imageUrl: '/api/media/template-images/realestate/realestate_03.jpg',
     description: 'outdoor professional setting'
   },
   {
@@ -546,7 +546,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'RealEstate Professional 04',
     name: 'RealEstate Professional 04',
     category: HeadshotStyle.RealEstate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_04.jpg',
+    imageUrl: '/api/media/template-images/realestate/realestate_04.jpg',
     description: 'modern property backdrop'
   },
   {
@@ -554,7 +554,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'RealEstate Professional 05',
     name: 'RealEstate Professional 05',
     category: HeadshotStyle.RealEstate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_05.jpg',
+    imageUrl: '/api/media/template-images/realestate/realestate_05.jpg',
     description: 'professional outdoor style'
   },
   {
@@ -562,7 +562,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'RealEstate Professional 06',
     name: 'RealEstate Professional 06',
     category: HeadshotStyle.RealEstate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_06.jpg',
+    imageUrl: '/api/media/template-images/realestate/realestate_06.jpg',
     description: 'contemporary urban setting'
   },
   {
@@ -570,7 +570,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'RealEstate Professional 07',
     name: 'RealEstate Professional 07',
     category: HeadshotStyle.RealEstate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_07.jpg',
+    imageUrl: '/api/media/template-images/realestate/realestate_07.jpg',
     description: 'bright professional environment'
   },
   {
@@ -578,7 +578,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'RealEstate Professional 08',
     name: 'RealEstate Professional 08',
     category: HeadshotStyle.RealEstate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_08.jpg',
+    imageUrl: '/api/media/template-images/realestate/realestate_08.jpg',
     description: 'stylish background'
   },
   {
@@ -586,7 +586,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'RealEstate Professional 09',
     name: 'RealEstate Professional 09',
     category: HeadshotStyle.RealEstate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_09.jpg',
+    imageUrl: '/api/media/template-images/realestate/realestate_09.jpg',
     description: 'professional location setting'
   },
   {
@@ -594,7 +594,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'RealEstate Professional 10',
     name: 'RealEstate Professional 10',
     category: HeadshotStyle.RealEstate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_10.jpg',
+    imageUrl: '/api/media/template-images/realestate/realestate_10.jpg',
     description: 'urban professional look'
   },
   {
@@ -602,7 +602,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'RealEstate Professional 11',
     name: 'RealEstate Professional 11',
     category: HeadshotStyle.RealEstate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_11.jpg',
+    imageUrl: '/api/media/template-images/realestate/realestate_11.jpg',
     description: 'modern real estate style'
   },
   {
@@ -610,7 +610,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'RealEstate Professional 12',
     name: 'RealEstate Professional 12',
     category: HeadshotStyle.RealEstate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_12.jpg',
+    imageUrl: '/api/media/template-images/realestate/realestate_12.jpg',
     description: 'professional outdoor backdrop'
   },
   {
@@ -618,7 +618,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'RealEstate Professional 13',
     name: 'RealEstate Professional 13',
     category: HeadshotStyle.RealEstate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_13.jpg',
+    imageUrl: '/api/media/template-images/realestate/realestate_13.jpg',
     description: 'contemporary setting'
   },
   {
@@ -626,7 +626,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'RealEstate Professional 14',
     name: 'RealEstate Professional 14',
     category: HeadshotStyle.RealEstate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_14.jpg',
+    imageUrl: '/api/media/template-images/realestate/realestate_14.jpg',
     description: 'property professional look'
   },
   {
@@ -634,7 +634,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'RealEstate Professional 15',
     name: 'RealEstate Professional 15',
     category: HeadshotStyle.RealEstate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_15.jpg',
+    imageUrl: '/api/media/template-images/realestate/realestate_15.jpg',
     description: 'bright modern background'
   },
   {
@@ -642,7 +642,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'RealEstate Professional 16',
     name: 'RealEstate Professional 16',
     category: HeadshotStyle.RealEstate,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/realestate/realestate_16.jpg',
+    imageUrl: '/api/media/template-images/realestate/realestate_16.jpg',
     description: 'professional urban environment'
   },
   {
@@ -650,7 +650,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'SolidColor Professional 01',
     name: 'SolidColor Professional 01',
     category: HeadshotStyle.SolidColor,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_01.jpg',
+    imageUrl: '/api/media/template-images/solidcolor/solidcolor_01.jpg',
     description: 'blue gradient background'
   },
   {
@@ -658,7 +658,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'SolidColor Professional 02',
     name: 'SolidColor Professional 02',
     category: HeadshotStyle.SolidColor,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_02.jpg',
+    imageUrl: '/api/media/template-images/solidcolor/solidcolor_02.jpg',
     description: 'neutral gray backdrop'
   },
   {
@@ -666,7 +666,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'SolidColor Professional 03',
     name: 'SolidColor Professional 03',
     category: HeadshotStyle.SolidColor,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_03.jpg',
+    imageUrl: '/api/media/template-images/solidcolor/solidcolor_03.jpg',
     description: 'warm beige background'
   },
   {
@@ -674,7 +674,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'SolidColor Professional 04',
     name: 'SolidColor Professional 04',
     category: HeadshotStyle.SolidColor,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_04.jpg',
+    imageUrl: '/api/media/template-images/solidcolor/solidcolor_04.jpg',
     description: 'professional blue background'
   },
   {
@@ -682,7 +682,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'SolidColor Professional 05',
     name: 'SolidColor Professional 05',
     category: HeadshotStyle.SolidColor,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_05.jpg',
+    imageUrl: '/api/media/template-images/solidcolor/solidcolor_05.jpg',
     description: 'soft gray setting'
   },
   {
@@ -690,7 +690,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'SolidColor Professional 06',
     name: 'SolidColor Professional 06',
     category: HeadshotStyle.SolidColor,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_06.jpg',
+    imageUrl: '/api/media/template-images/solidcolor/solidcolor_06.jpg',
     description: 'clean white background'
   },
   {
@@ -698,7 +698,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'SolidColor Professional 07',
     name: 'SolidColor Professional 07',
     category: HeadshotStyle.SolidColor,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_07.jpg',
+    imageUrl: '/api/media/template-images/solidcolor/solidcolor_07.jpg',
     description: 'elegant black backdrop'
   },
   {
@@ -706,7 +706,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'SolidColor Professional 08',
     name: 'SolidColor Professional 08',
     category: HeadshotStyle.SolidColor,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_08.jpg',
+    imageUrl: '/api/media/template-images/solidcolor/solidcolor_08.jpg',
     description: 'professional navy background'
   },
   {
@@ -714,7 +714,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'SolidColor Professional 09',
     name: 'SolidColor Professional 09',
     category: HeadshotStyle.SolidColor,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_09.jpg',
+    imageUrl: '/api/media/template-images/solidcolor/solidcolor_09.jpg',
     description: 'subtle gray gradient'
   },
   {
@@ -722,7 +722,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'SolidColor Professional 10',
     name: 'SolidColor Professional 10',
     category: HeadshotStyle.SolidColor,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_10.jpg',
+    imageUrl: '/api/media/template-images/solidcolor/solidcolor_10.jpg',
     description: 'classic solid background'
   },
   {
@@ -730,7 +730,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'SolidColor Professional 11',
     name: 'SolidColor Professional 11',
     category: HeadshotStyle.SolidColor,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_11.jpg',
+    imageUrl: '/api/media/template-images/solidcolor/solidcolor_11.jpg',
     description: 'professional green backdrop'
   },
   {
@@ -738,7 +738,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'SolidColor Professional 12',
     name: 'SolidColor Professional 12',
     category: HeadshotStyle.SolidColor,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_12.jpg',
+    imageUrl: '/api/media/template-images/solidcolor/solidcolor_12.jpg',
     description: 'warm neutral background'
   },
   {
@@ -746,7 +746,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'SolidColor Professional 13',
     name: 'SolidColor Professional 13',
     category: HeadshotStyle.SolidColor,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_13.jpg',
+    imageUrl: '/api/media/template-images/solidcolor/solidcolor_13.jpg',
     description: 'cool blue setting'
   },
   {
@@ -754,7 +754,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'SolidColor Professional 14',
     name: 'SolidColor Professional 14',
     category: HeadshotStyle.SolidColor,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_14.jpg',
+    imageUrl: '/api/media/template-images/solidcolor/solidcolor_14.jpg',
     description: 'professional gray backdrop'
   },
   {
@@ -762,7 +762,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'SolidColor Professional 15',
     name: 'SolidColor Professional 15',
     category: HeadshotStyle.SolidColor,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_15.jpg',
+    imageUrl: '/api/media/template-images/solidcolor/solidcolor_15.jpg',
     description: 'clean solid color style'
   },
   {
@@ -770,7 +770,7 @@ const BASE_TEMPLATES: Omit<HeadshotTemplate, 'id'>[] = [
     label: 'SolidColor Professional 16',
     name: 'SolidColor Professional 16',
     category: HeadshotStyle.SolidColor,
-    imageUrl: 'https://osxwjhvlntrornibhkfu.supabase.co/storage/v1/object/public/template-images/solidcolor/solidcolor_16.jpg',
+    imageUrl: '/api/media/template-images/solidcolor/solidcolor_16.jpg',
     description: 'professional color background'
   }
 ];
@@ -814,7 +814,7 @@ export const FAQ_ITEMS = [
   },
   {
     question: "Is my data private?",
-    answer: "Absolutely. Your uploaded photos are processed solely for the purpose of generating your headshots and are deleted from our processing servers shortly after generation."
+    answer: "Your photos are stored privately and used to generate your headshots. You can request removal of uploaded photos and generated images. See our Privacy Policy for details."
   }
 ];
 
