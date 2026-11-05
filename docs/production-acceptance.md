@@ -26,6 +26,8 @@
 - 正式 Creem 创建 checkout 的实际接口已返回 200：USD 25、30 次额度，订单快照与 Creem checkout ID 一致。验收账号有 1 条新增 pending 测试订单，未付款；不能把它当作到账成功。
 - 支付完成、商户回调投递、到账与退款仍需 Creem Test Mode 凭据或经确认的正式测试交易。已准备忽略文件 `.dev.vars.creem-test`，禁止将密钥发到聊天或提交。
 - 已确认 GitHub 仓库为 public，旧 Supabase service_role 仍被源服务接受。用户选择连接源平台管理权限，等待连接完成以撤销旧凭据；只新增新 key 不会撤销旧 key。
-- Git 的 4 个遗留 unmerged 路径已按已测试的文件内容解决，并在修改前备份原 index 到忽略目录。当前在 codex/cloudflare-production-ready 整理提交；尚未恢复自动发布。
+- Git 的 4 个遗留 unmerged 路径已按已测试的文件内容解决，并在修改前备份原 index 到忽略目录。f4549f1（密钥清理）和 642b01b（Cloudflare 迁移）已通过 fast-forward 同步到远端 main；工作区干净。
+- Cloudflare Git 自动发布已启用，构建命令 pnpm verify；本次文档推送用于触发并验证实际自动构建。只有远端构建和原域名检查通过后才记为流水线验收成功。
+- 隔离支付测试项目 professional-headshot-ai-qa 已部署，使用独立 D1/R2；没有原客户数据，没有正式生图或支付 key，禁止新注册，搜索引擎索引已禁用。测试回调为 https://professional-headshot-ai-qa.pages.dev/api/auth/creem/webhook。
 
 普通浏览器签入、交易和密钥撤销需要各自的实际证据。当前目标保持进行中。

@@ -22,7 +22,7 @@
 
 预览分支 cf-migration 受原有 Cloudflare Access 保护，不能把 Access 登录 HTML 当作 API 返回值，也不要关闭保护来跑测试。预览不配置付费 API key，禁止创建新账号。
 
-生产切换时已暂停旧 Git 版本的自动部署。审阅现有 4 个 unmerged 路径及本轮改动并提交推送后，确认远程构建产物一致，再恢复 Git 自动部署。
+4 个遗留 unmerged 路径已解决，代码已通过检查并同步到 main。Git 自动发布已重新启用，构建命令为 pnpm verify；Node 22 和 pnpm 10.26.1 固定在版本配置中。推送后仍需核对远端构建和原域名检查结果，不能只凭 push 成功宣布发布通过。
 
 ## 性能与恢复
 
