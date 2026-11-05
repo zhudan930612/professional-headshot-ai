@@ -5,10 +5,14 @@
 
 import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
+import { config } from 'dotenv';
+
+config({ path: '.env.local', quiet: true });
 
 // 配置
-const SUPABASE_URL = 'https://osxwjhvlntrornibhkfu.supabase.co';
-const SUPABASE_SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9zeHdqaHZsbnRyb3JuaWJoa2Z1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NTQzODQxMSwiZXhwIjoyMDgxMDE0NDExfQ.G51z-1iZmBmLeRNLce596f_UN-H9Gih2dOIDBTtegdY';
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error('Supabase configuration is missing.');
 const BUCKET_NAME = 'template-images';
 const CATEGORIES = ['corporate', 'creative', 'general', 'medical', 'realestate', 'solidcolor'];
 
