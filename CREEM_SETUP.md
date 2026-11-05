@@ -24,8 +24,12 @@ D1 唯一索引和触发器将记录事件、发放额度及退款收回额度�
 
 本地实际 D1 运行时已覆盖重复/并发回调、金额不符、部分/全额退款和超额退款拒绝。正式域名两个回调地址均已验证：有效签名的非财务探测事件返回 received/ignored，错误签名返回 401，没有创建订单或改变余额。
 
-这不等于真实 Creem 付款、商户回调投递和退款闭环已实测。Test Mode 必须使用测试 key、产品和签名密钥；不能将正式 key 配到测试 API。预览没有付费凭据，不能用于真实收费。
+两个套餐已在隔离项目 professional-headshot-ai-qa 完成 Creem Test Mode 真实付款/商户回调/全额退款：Professional 额度 5→35→5；Executive 5→75→5。供应商 transaction 和本地账本均为 refunded，最终恢复 Free/1K/水印；未进行正式现金扣款。详见 [生产验收记录](docs/production-acceptance.md)。
 
-金额校验已实现商户认可的优惠及零元优惠订单，分别处理含税价/价外税，同时核对原价、优惠、税额、实付、产品及订单归属；零元优惠不记成现金收入。相关回归通过，真实支付/退款仍需测试环境验收；争议/拒付仍需人工处理。
+Test Mode 必须使用独立测试 key、产品和签名密钥；不能将正式 key 配到测试 API。测试配置保存在忽略文件 .dev.vars.creem-test；bootstrap-creem-test.ts 配置产品/回调，test-payment-flow.ts 核验订单与退款。已有订单或退款尝试先 inspect，不能重复创建。普通 cf-migration 预览没有付费凭据；独立 QA 项目仅有测试支付 key，独立 D1/R2，没有原客户数据和正式生图 key。
+
+pnpm check:payments 只读检查当前网站 /api/plans、正式产品 active/onetime/prod、价格和币种、回调事件及签名密钥匹配；失败非零退出，不创建交易。它不代替上述实际回调验收。
+
+金额校验已实现商户认可的优惠及零元优惠订单，分别处理含税价/价外税，同时核对原价、优惠、税额、实付、产品及订单归属；零元优惠不记成现金收入。原价沙箱付款/退款已实测；优惠与税额场景仍仅为本地回归，争议/拒付仍需人工处理。
 
 参考：[Creem Webhooks](https://docs.creem.io/code/webhooks)、[Create checkout](https://docs.creem.io/api-reference/endpoint/create-checkout)。

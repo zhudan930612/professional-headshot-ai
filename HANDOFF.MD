@@ -1,16 +1,18 @@
 # 项目交接
 
-## 2026-11-05 后续业务验收（进行中）
+## 2026-11-05 后续业务验收（业务闭环已通过）
 
 用户开启持续目标：完成迁移、线上功能、支付及生图验收。已使用独立 QA 账号和公开 corporate_01.jpg 示例，实际跑通 1K（896×1200）与 2K（1792×2400）生成、扣额度、私有 R2 保存、下载、历史读取、重复保存及匿名 401。原客户余额快照未变化。供应商报告费用合计 USD 0.142；详见 docs/production-acceptance.md。
 
-真实创建 Creem Professional checkout 成功：USD 25 / 30 次额度，仍 pending，未扣款。测试密钥文件 .dev.vars.creem-test 已准备且忽略；真实支付完成/回调到账/退款仍待平台测试环境或明确确认的正式交易。
+Professional 和 Executive 均已完成 Creem 沙箱支付和退款闭环，两笔付款表单均由用户手动填写。Professional 为 USD 25 / 30 次额度，真实商户 checkout.completed 回调使 QA 额度 5→35；Executive 为 USD 45 / 60+10 次额度，回调使额度 5→75。分别经 Test API 全额退款 2500 / 4500 美分后，refund.created 回调入库，供应商交易及本地订单均为 refunded，两次额度均恢复为 5、套餐恢复 Free/1K、水印恢复。这是 Test Mode 的真实回调验收，未进行正式现金扣款。此前创建的正式 Professional checkout 未付款，不计入成功交易。
 
-已通过 GitHub API 确认仓库 public，旧 Supabase service_role 仍有效。用户选择先连接 Supabase 管理权限，等待连接；管理页自动打开超时，不能当作密钥撤销成功。官方要求停用 legacy API keys，并撤销对应旧 JWT secret 的信任，仅新增新 key 不够。
+旧 Supabase 凭据已退役：用户已停用 legacy API keys，旧 service_role 只读请求在 2026-11-05 06:53 UTC 复测返回 401。用户提供的控制台截图显示 ECC (P-256) 为 Current、Previously used keys 为空、旧 HS256 为 Revoked。原域名 API 和 Google 登录初始化复查正常。仓库 public，旧值仍在 Git 历史中，但已失效；没有删除源数据或改写 Git 历史。脱敏证据在 .migration/acceptance/legacy-key-recheck.json。仅新增新 key 或 Migrate JWT secret 不等于撤销：必须继续 Rotate，再 Revoke 旧 HS256。
 
 原 index 备份在 .migration/pre-acceptance-git-index。4 个遗留 unmerged 路径已解决；f4549f1（密钥清理）和 642b01b（整体迁移）已 fast-forward 合并并推送 main。Cloudflare 自动发布已通过真实 Git 推送验证：50f59ae → 3c52c87d-32b4-4464-87a5-e915d91ac604，远端执行 pnpm verify，81 项测试及全部检查通过；原域名复查通过。后续当前提交以 Git/Cloudflare 实时状态为准。
 
-隔离支付 QA 项目 professional-headshot-ai-qa 已部署，独立 D1 ec703699-4599-4107-bffc-168067ff2753 与同名 R2；无原客户数据、无正式付费 key。测试回调地址 https://professional-headshot-ai-qa.pages.dev/api/auth/creem/webhook。测试文件只需提供 Creem 测试 API key，其余产品/回调可经 API 建立；现有测试 key 仍未提供。
+隔离支付 QA 项目 professional-headshot-ai-qa 已部署，独立 D1 ec703699-4599-4107-bffc-168067ff2753 与同名 R2；无原客户数据、无正式付费 key。测试回调地址 https://professional-headshot-ai-qa.pages.dev/api/auth/creem/webhook。用户已在本地忽略文件保存测试 key，bootstrap 已创建两个套餐的测试产品及 HTTP 投递 webhook。脱敏证据位于 .migration/acceptance/：creem-test-setup.json、payment-test-professional.json、payment-test-executive.json；不要读取或输出含会话令牌的 payment-test-state.json，不提交验收目录。
+
+支付测试脚本位于 scripts/cloudflare/：bootstrap-creem-test.ts 配置测试产品和回调，creem-test-api.ts 封装 Test API，test-payment-flow.ts 创建订单、核验账本和执行测试退款。本机 Node 连接 Test API 曾出现 TLS reset，已改用 curl.exe，通过本地临时配置传递凭据，不把密钥放到命令行或日志。出现结果不明时先核验现有订单/退款，不盲目重试。退款后供应商 checkout 仍可为 completed、order 仍可为 paid；应以 transaction、退款回调及本地账本的 refunded 状态判断退款结果。
 
 Windows Python 3.14 的 stdin 管道在本机曾错误进入交互模式并循环报错；改为保存 .py 文件再执行。出错进程已终止，不要重试 python - 管道。
 
@@ -18,9 +20,17 @@ Tailwind 不能扫描全仓库的 **/*：会扫入忽略的 .recovery 浏览器 
 
 后续支付回归复现两处 bug：首次购买丢失虚拟的 5 次免费额度、退款后升级档位未恢复。0003_payment_entitlements.sql 已在 QA/生产应用，新增 base_plan_type 保留原套餐；生产前后 8 条套餐余额和档位均一致。迁移前 Time Travel 恢复点及核验结果在 .migration/acceptance/。如果已有带结算金额的完成订单，迁移门禁会拒绝自动回填，必须先对账。当前 83 个测试通过。
 
-旧 3 条订单已只读核对：1 条过期，2 条 100% 优惠完成、实付 0；旧状态/额度未自动改写。原代码会拒绝优惠付款，0004 已在 QA/生产应用，新支付代码核对原价/优惠/税/实付并记录含税模式，兼容原价旧 Worker 的过渡；测试配置拒绝正式 checkout URL。当前 88 项回归通过。源 API Key 撤销和真实支付/退款仍待平台连接/测试凭据，不要据模拟测试宣称闭环完成。
+旧 3 条订单已只读核对：1 条过期，2 条 100% 优惠完成、实付 0；旧状态/额度未自动改写。原代码会拒绝优惠付款，0004 已在 QA/生产应用，新支付代码核对原价/优惠/税/实付并记录含税模式，兼容原价旧 Worker 的过渡；测试配置拒绝正式 checkout URL。当前 88 项回归通过，两个套餐的沙箱支付/退款均已有真实回调证据，正式现金扣款未做。1884396 对应生产部署 1d2d7338-1c41-4305-bc5e-bd23ff6b30ca 已成功，后续工具与文档收尾发布以 Git/Cloudflare 最新记录为准。
+
+check:payments 已改为当前网站 /api/plans 与正式 Creem 产品/回调的只读检查，不再依赖旧 Supabase；失败非零退出。check:secrets 收集 .env.local、.dev.vars、.dev.vars.creem-test 和进程环境中的所有敏感值，同名变量不能覆盖漏检。忽略目录和历史 Git 不属于当前源码扫描覆盖范围。
+
+2026-11-05 06:56 UTC 已撤销生产生图 QA 与隔离支付 QA 的两条验收会话，旧令牌访问各自 /api/account 均返回 401；没有动原客户会话、额度、订单或测试业务记录。证据在 .migration/acceptance/session-cleanup.json。付款 inspect 需要有效 QA 会话；验收结束后不要为了重跑报告重新执行 init 或重发付费任务，既有脱敏报告及账本可只读核对。
+
+测试配置复用也必须检查产品 active、webhook enabled/http 及必要事件，不能仅凭资源 ID 报成功。原价完整沙箱流程已有实际回调；优惠/税和并发幂等场景是本地回归覆盖，争议/拒付仍需人工处理。
 
 ## 2026-11-05 Cloudflare 全量迁移（已切换生产）
+
+以下为迁移切换当时的记录，付款、生图、密钥撤销及自动发布的后续结果以上方业务验收为准。
 
 最终生产部署 638fdf2d-73ba-4225-8d3f-dc1c3ddb8389，原域名 https://www.professionalheadshotai.ink。245 个文件 / 197346397 字节全部哈希一致；业务数据逐字段一致，切换前后源快照一致。用户已确认真实 Google 登录成功，D1 会话关联原账号，额度匹配。全站额度 210 / 已用 14 / 剩余 196。详细收尾见 docs/cloudflare-native-migration.md。
 
@@ -43,6 +53,8 @@ Tailwind 不能扫描全仓库的 **/*：会扫入忽略的 .recovery 浏览器 
 长迁移期间 OAuth access token 可能过期：scripts/cloudflare/api.ts 在 401 时调用现有 Wrangler whoami 刷新一次，不重复要求用户登录。不要同时执行多次 refresh 或打印令牌。
 
 ## 2026-11-02 网站恢复排查
+
+以下为迁移前历史状态，不代表当前生产阻断。当前生产入口与验收结果见本文顶部及 docs/production-acceptance.md。
 
 用户确认继续使用 www.professionalheadshotai.ink 和 Creem。详细事实、修复契约及上线步骤见 docs/recovery-audit.md、CREEM_SETUP.md、CLOUDFLARE_MIGRATION.md。
 

@@ -1,11 +1,12 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { config } from 'dotenv';
+import { parse } from 'dotenv';
 
-config({ path: '.env.local', quiet: true });
-config({ path: '.dev.vars', quiet: true });
-const secrets = Object.entries(process.env).filter(([name, value]) =>
+// Keep every value, even when production and sandbox reuse the same variable name.
+const sources = [process.env, ...['.env.local', '.dev.vars', '.dev.vars.creem-test']
+  .filter(file => existsSync(file)).map(file => parse(readFileSync(file)))];
+const secrets = sources.flatMap(source => Object.entries(source)).filter(([name, value]) =>
   !name.startsWith('VITE_') && /KEY|TOKEN|SECRET/.test(name) && value && value.length > 12);
 const files = new Set(execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'], { encoding: 'utf8' }).split('\0').filter(Boolean));
 if (existsSync('dist')) {

@@ -27,9 +27,10 @@ pnpm build
 pnpm audit
 pnpm check:secrets
 pnpm check:cloudflare
+pnpm check:payments
 ```
 
-check:cloudflare 检查正式域名的 API、套餐、私有照片鉴权、公开模板和真实登录初始化；会创建一个自动过期的 nonce，不创建用户、订单或额度。check:auth / check:recovery 也指向这套检查。check:source / check:supabase 只用于旧源库排查，不是当前上线门禁。
+check:cloudflare 检查正式域名的 API、套餐、私有照片鉴权、公开模板和真实登录初始化；会创建一个自动过期的 nonce，不创建用户、订单或额度。check:auth / check:recovery 也指向这套检查。check:payments 从 .env.local 读取正式 Creem 配置，只读核对当前网站套餐、产品及回调，不创建付款或退款。check:source / check:supabase 只用于旧源库排查，旧凭据已退役，不是当前上线门禁。
 
 ## 部署
 
@@ -46,6 +47,6 @@ Git 的遗留合并状态已解决，迁移代码已同步到 main。自动发�
 
 ## 数据和验证边界
 
-原用户 ID、Google subject、订单及额度保留。私有照片需要本人会话或限定对象的短期签名 URL。原 Supabase 数据保留为备份，三个旧存储桶已取消公开访问；已进入 Git 历史的旧管理密钥仍应在 Supabase 控制台轮换。
+原用户 ID、Google subject、订单及额度保留。私有照片需要本人会话或限定对象的短期签名 URL。原 Supabase 数据保留为备份，三个旧存储桶已取消公开访问；旧管理密钥请求已返回 401，旧 HS256 签名密钥已撤销。Git 历史未改写。
 
-数据库、文件哈希、Google 真实登录和支付回调签名检查已完成。1K/2K 实际出图、扣额度、保存、下载和历史读取已通过独立账号验收；真实 Creem 付款/退款仍待完成。见 docs/production-acceptance.md。旧占位图记录保留并标识，不作为真实照片显示。
+数据库、文件哈希、Google 真实登录和支付回调签名检查已完成。1K/2K 实际出图、扣额度、保存、下载和历史读取已通过独立账号验收；Professional 和 Executive 均完成 Creem Test Mode 付款、实际商户回调入账及全额退款，未进行正式现金扣款。见 [生产验收记录](docs/production-acceptance.md)。旧占位图记录保留并标识，不作为真实照片显示。

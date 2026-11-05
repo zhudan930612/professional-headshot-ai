@@ -22,7 +22,7 @@
 
 ## 执行结果
 
-2026-11-05 已切换生产域名 [www.professionalheadshotai.ink](https://www.professionalheadshotai.ink)。最终部署：638fdf2d-73ba-4225-8d3f-dc1c3ddb8389；Worker 构建 SHA-256：dd06988ef087c60ccb7470139a48ed5fcce5ba7789c6adf344df2bb9a219bad5。
+2026-11-05 已切换生产域名 [www.professionalheadshotai.ink](https://www.professionalheadshotai.ink)。迁移切换时部署：638fdf2d-73ba-4225-8d3f-dc1c3ddb8389；当时 Worker 构建 SHA-256：dd06988ef087c60ccb7470139a48ed5fcce5ba7789c6adf344df2bb9a219bad5。后续支付修复和发布结果见 [生产验收记录](production-acceptance.md)。下表为迁移快照，不含后续独立 QA 记录。
 
 | 对象 | 结果 |
 | --- | --- |
@@ -52,9 +52,9 @@ D1：professional-headshot-ai，ID a3c45b09-7544-4a08-8ec8-7d7b998ba8da；R2：p
 
 ## 仍需区分的边界
 
-迁移交付时尚未执行真实 Creem 付款、商户完成事件投递、退款或付费生图。后续验收已实际完成 1K/2K 生成、保存、下载、历史和扣额度；支付完成/退款仍待完成，详见 [生产验收记录](production-acceptance.md)。
+迁移交付后已实际完成 1K/2K 生成、保存、下载、历史和扣额度；两个套餐均完成 Creem Test Mode 付款、商户完成事件投递及全额退款，未进行正式现金扣款。详见 [生产验收记录](production-acceptance.md)。
 
-旧 Supabase 管理密钥仍在 Git 历史中且尚未轮换；当前网站已经不使用它，但保留源备份期间仍应在源平台轮换或停用。没有删除旧库或改写 Git 历史。
+旧 Supabase legacy API keys 已停用，旧管理密钥只读请求复测返回 401；用户提供的控制台截图确认新 ECC 密钥为 Current、旧 HS256 为 Revoked。旧值仍在 Git 历史，但已失效。没有删除旧库或改写 Git 历史。
 
 迁移交付时遗留的 4 个 unmerged 路径，已在后续验收中解决并提交推送；Git 自动发布已恢复且实际远端构建通过。Cloudflare Access 预览保护保持原状。后续进展以生产验收记录和 HANDOFF.MD 为准。
 
