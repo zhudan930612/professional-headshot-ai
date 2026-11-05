@@ -32,7 +32,7 @@ if (action === 'init') {
   await query('INSERT INTO users(id,email,name,created_at,updated_at) VALUES (?,NULL,?,?,?) ON CONFLICT(id) DO NOTHING', [state.userId, 'Release verification 2026-11-05', state.createdAt, state.createdAt]);
   const user = (await query('SELECT name FROM users WHERE id=?', [state.userId]))[0].results[0];
   if (user?.name !== 'Release verification 2026-11-05') throw new Error('Unexpected QA account.');
-  await query("INSERT INTO user_subscriptions(id,user_id,plan_type,status,purchased_quota,bonus_quota,used_quota,subscribed_at,created_at,updated_at) VALUES (?,?,'professional','active',4,0,0,?,?,?) ON CONFLICT(id) DO NOTHING", [state.subscriptionId,state.userId,state.createdAt,state.createdAt,state.createdAt]);
+  await query("INSERT INTO user_subscriptions(id,user_id,plan_type,base_plan_type,status,purchased_quota,bonus_quota,used_quota,subscribed_at,created_at,updated_at) VALUES (?,?,'professional','professional','active',4,0,0,?,?,?) ON CONFLICT(id) DO NOTHING", [state.subscriptionId,state.userId,state.createdAt,state.createdAt,state.createdAt]);
   await query('INSERT INTO auth_sessions(token_hash,user_id,expires_at,created_at) VALUES (?,?,?,?) ON CONFLICT(token_hash) DO UPDATE SET expires_at=excluded.expires_at', [createHash('sha256').update(state.token).digest('hex'),state.userId,Date.now()+2*3600_000,Date.now()]);
   if (!state.upload) {
     const bytes = await readFile('public/reference-templates/corporate/corporate_01.jpg');
@@ -47,7 +47,7 @@ if (action === 'init') {
   if (state.runs[quality]) throw new Error('A request already exists. Poll it; do not create another provider task.');
   if (quality === '2K') {
     if (state.runs['1K']?.status !== 'completed' || !state.runs['1K'].output) throw new Error('Verify and save 1K before testing 2K.');
-    await query("UPDATE user_subscriptions SET plan_type='executive' WHERE id=? AND user_id=?",[state.subscriptionId,state.userId]);
+    await query("UPDATE user_subscriptions SET plan_type='executive',base_plan_type='executive' WHERE id=? AND user_id=?",[state.subscriptionId,state.userId]);
   }
   const requestId = randomUUID();
   state.runs[quality] = { requestId, submittedAt:new Date().toISOString(), status:'submitting' };

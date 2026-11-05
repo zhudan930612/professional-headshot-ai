@@ -41,6 +41,8 @@ beforeAll(async () => {
   platform = await getPlatformProxy<CloudflareEnv>({ configPath: 'wrangler.toml', envFiles: [], remoteBindings: false, persist: false });
   env = { DB: platform.env.DB, PHOTOS: platform.env.PHOTOS, APP_URL: origin, GOOGLE_CLIENT_ID: 'google-client', MEDIA_SIGNING_SECRET: 's'.repeat(64), CREEM_WEBHOOK_SECRET: 'webhook-test' } as unknown as CloudflareEnv;
   await env.DB.exec((await readFile('database/d1/0001_core.sql', 'utf8')).replaceAll('\n', ' '));
+  const entitlementMigration = (await readFile('database/d1/0003_payment_entitlements.sql', 'utf8')).replace(/^--.*$/gm, '');
+  await env.DB.exec(entitlementMigration.replaceAll('\n', ' '));
   const keys = await generateKeyPair('RS256'); privateKey = keys.privateKey;
   keyResolver.mockImplementation(createLocalJWKSet({ keys: [{ ...await exportJWK(keys.publicKey), kid: 'test', alg: 'RS256' }] }));
 }, 30_000);
@@ -51,9 +53,9 @@ beforeEach(async () => {
   for (const id of [firstUser, secondUser]) await env.DB.prepare('INSERT INTO users(id,email,name,created_at,updated_at) VALUES (?,?,?,?,?)').bind(id, id + '@test.invalid', 'Test', now(), now()).run();
   await env.DB.prepare('INSERT INTO identities(provider,subject,user_id) VALUES (?,?,?)').bind('google', 'original-google-subject', firstUser).run();
   for (const [id, price, quota, bonus, quality] of [['free',0,5,0,'1K'],['professional',25,30,0,'1K'],['executive',45,60,10,'2K']] as const) {
-    await env.DB.prepare("INSERT INTO subscription_plans(id,name,display_name,price,quota,bonus_quota,quality,has_watermark,features,is_active,sort_order) VALUES (?,?,?,?,?,?,?,0,'[]',1,0)").bind(id,id,id,price,quota,bonus,quality).run();
+    await env.DB.prepare("INSERT INTO subscription_plans(id,name,display_name,price,quota,bonus_quota,quality,has_watermark,features,is_active,sort_order) VALUES (?,?,?,?,?,?,?,?,'[]',1,0)").bind(id,id,id,price,quota,bonus,quality,id==='free'?1:0).run();
   }
-  await env.DB.prepare("INSERT INTO user_subscriptions(id,user_id,plan_type,status,purchased_quota,bonus_quota,used_quota,subscribed_at,created_at,updated_at) VALUES (?,?,'professional','active',2,0,0,?,?,?)").bind(subscription,firstUser,now(),now(),now()).run();
+  await env.DB.prepare("INSERT INTO user_subscriptions(id,user_id,plan_type,base_plan_type,status,purchased_quota,bonus_quota,used_quota,subscribed_at,created_at,updated_at) VALUES (?,?,'professional','professional','active',2,0,0,?,?,?)").bind(subscription,firstUser,now(),now(),now()).run();
   await env.DB.prepare("INSERT INTO storage_objects(object_key,bucket,source_key,user_id,bytes,mime_type,sha256,created_at) VALUES (?,'user-uploads',?,?,8,'image/png','test',?)").bind(refKey, `${firstUser}/reference.png`, firstUser, now()).run();
   await env.PHOTOS.put(refKey, new Uint8Array([137,80,78,71,13,10,26,10]), { httpMetadata: { contentType: 'image/png' } });
 });
@@ -141,9 +143,9 @@ describe('Cloudflare generation and persistence', () => {
 
 describe('Cloudflare payment transactions', () => {
   const checkout = (paymentId: string, eventId = 'evt_checkout') => ({ id: eventId, eventType: 'checkout.completed', object: { id: 'ch_test', request_id: paymentId, status: 'completed', mode: 'prod', order: { id: 'ord_test', product: 'prod_test', amount: 2500, amount_paid: 3000, currency: 'usd', status: 'paid' } } });
-  const create = async () => {
+  const create = async (userId = firstUser) => {
     const id = crypto.randomUUID();
-    await env.DB.prepare("INSERT INTO payment_transactions(id,user_id,plan_type,amount,currency,status,creem_product_id,granted_quota,granted_bonus_quota,created_at,updated_at) VALUES (?,?,'professional',25,'USD','pending','prod_test',30,0,?,?)").bind(id,firstUser,now(),now()).run();
+    await env.DB.prepare("INSERT INTO payment_transactions(id,user_id,plan_type,amount,currency,status,creem_product_id,granted_quota,granted_bonus_quota,created_at,updated_at) VALUES (?,?,'professional',25,'USD','pending','prod_test',30,0,?,?)").bind(id,userId,now(),now()).run();
     return id;
   };
   it('atomically issues credits once despite concurrent duplicate callbacks', async () => {
@@ -169,6 +171,23 @@ describe('Cloudflare payment transactions', () => {
     await applyEvent(refund('evt_ref2','ref_2',1500),env);
     expect((await getQuota(firstUser, env)).total_quota).toBe(2);
     await expect(applyEvent(refund('evt_ref3','ref_3',1),env)).rejects.toMatchObject({ status: 503 });
+  });
+  it('preserves a new account’s displayed free credits across purchase and full refund', async () => {
+    expect((await getQuota(secondUser,env)).remaining_quota).toBe(5);
+    const id=await create(secondUser);
+    await applyEvent(checkout(id),env);
+    expect((await getQuota(secondUser,env)).remaining_quota).toBe(35);
+    await applyEvent({id:'evt_full',eventType:'refund.created',object:{id:'ref_full',order:'ord_test',status:'succeeded',refund_amount:3000,refund_currency:'USD'}},env);
+    expect(await getQuota(secondUser,env)).toMatchObject({remaining_quota:5,plan_type:'free',is_paid:false,has_watermark:true});
+  });
+  it('removes a refunded upgrade while preserving an existing legacy plan and balance', async () => {
+    const id=await create();
+    await env.DB.prepare("UPDATE payment_transactions SET plan_type='executive',amount=45,granted_quota=60,granted_bonus_quota=10 WHERE id=?").bind(id).run();
+    const event=checkout(id); event.object.order.amount=4500; event.object.order.amount_paid=4500;
+    await applyEvent(event,env);
+    expect((await getQuota(firstUser,env)).plan_type).toBe('executive');
+    await applyEvent({id:'evt_full',eventType:'refund.created',object:{id:'ref_full',order:'ord_test',status:'succeeded',refund_amount:4500,refund_currency:'USD'}},env);
+    expect(await getQuota(firstUser,env)).toMatchObject({remaining_quota:2,plan_type:'professional',is_paid:true,quality:'1K'});
   });
   it('rejects unsigned callbacks and cross-origin authenticated mutations', async () => {
     expect(await webhook(request('/api/creem/webhook', {}), env).catch(error => error.status)).toBe(401);

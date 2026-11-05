@@ -16,6 +16,8 @@ Windows Python 3.14 的 stdin 管道在本机曾错误进入交互模式并循�
 
 Tailwind 不能扫描全仓库的 **/*：会扫入忽略的 .recovery 浏览器 profile 与 .migration 构建产物，导致本地/CI CSS 不一致。内容扫描已限定实际前端目录。
 
+后续支付回归复现两处 bug：首次购买丢失虚拟的 5 次免费额度、退款后升级档位未恢复。0003_payment_entitlements.sql 已在 QA/生产应用，新增 base_plan_type 保留原套餐；生产前后 8 条套餐余额和档位均一致。迁移前 Time Travel 恢复点及核验结果在 .migration/acceptance/。如果已有带结算金额的完成订单，迁移门禁会拒绝自动回填，必须先对账。当前 83 个测试通过。
+
 ## 2026-11-05 Cloudflare 全量迁移（已切换生产）
 
 最终生产部署 638fdf2d-73ba-4225-8d3f-dc1c3ddb8389，原域名 https://www.professionalheadshotai.ink。245 个文件 / 197346397 字节全部哈希一致；业务数据逐字段一致，切换前后源快照一致。用户已确认真实 Google 登录成功，D1 会话关联原账号，额度匹配。全站额度 210 / 已用 14 / 剩余 196。详细收尾见 docs/cloudflare-native-migration.md。

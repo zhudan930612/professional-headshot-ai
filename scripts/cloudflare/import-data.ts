@@ -47,6 +47,7 @@ function rewrite(value: unknown): unknown {
 for (const table of ['subscription_plans', 'user_subscriptions', 'payment_transactions', 'generation_sessions', 'generated_images', 'uploaded_files']) {
   for (const sourceRow of source[table]) {
     const row = { ...sourceRow };
+    if (table === 'user_subscriptions') row.base_plan_type = row.plan_type;
     if (table === 'payment_transactions' && typeof row.creem_order_id === 'string' && row.creem_order_id.startsWith('ch_')) row.creem_checkout_id = row.creem_order_id;
     if (table === 'generated_images') for (const field of ['url', 'jpg_url', 'webp_url', 'thumbnail_url']) if (field in row) row[field] = rewrite(row[field]);
     await insertVerified(table, 'id', row);
