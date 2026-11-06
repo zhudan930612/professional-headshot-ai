@@ -1,12 +1,14 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { createHash } from 'node:crypto';
 import type { Manifest } from 'vite';
 import { PUBLIC_PAGE_PATHS, SITE_URL } from '@/lib/seo';
 import { renderDocument } from '@/prerender/document';
 import { fetchPublicPlans } from '@/prerender/plans';
 import { BLOG_PRESENTATION, getRelatedPosts } from '@/lib/blogPresentation';
 import { BLOG_POSTS } from '@/constants';
+import { SOCIAL_IMAGES, SOCIAL_WIDTH, SOCIAL_HEIGHT } from '@/lib/socialPreview';
 import type { PublicPageData } from '@/types';
 import type { ParsedBlog } from '@/utils/markdownParser';
 
@@ -25,6 +27,17 @@ const sitemapPaths = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map(match => {
 if (JSON.stringify([...sitemapPaths].sort()) !== JSON.stringify([...PUBLIC_PAGE_PATHS].sort())) throw new Error('The sitemap and prerender route list must contain exactly the same public pages.');
 
 const plansSource = process.env.PRERENDER_PLANS_URL || `${SITE_URL}/api/plans`;
+const socialManifest = JSON.parse(await readFile('scripts/assets/social-manifest.json', 'utf8')) as { rendererHash: string; fontHash: string; images: Record<string, { title: string; portrait: string; sourceHash: string; imageHash: string }> };
+const digest = (bytes: Buffer | string) => createHash('sha256').update(bytes).digest('hex');
+if (socialManifest.rendererHash !== digest((await readFile('scripts/create-social-images.ts', 'utf8')).replace(/\r\n/g, '\n')) || socialManifest.fontHash !== digest(await readFile('scripts/assets/Inter.ttf'))) throw new Error('Social renderer changed; run pnpm generate:social.');
+for (const image of Object.values(SOCIAL_IMAGES)) {
+  const bytes = await readFile(`public${image.path}`);
+  const recorded = socialManifest.images[image.path];
+  if (!recorded || recorded.title !== image.title || recorded.portrait !== image.portrait || recorded.imageHash !== digest(bytes) || recorded.sourceHash !== digest(await readFile(`public${image.portrait}`))) throw new Error(`Stale social image: ${image.path}; run pnpm generate:social.`);
+  if (bytes.length > 1_000_000 || bytes.length < 24 || bytes.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' || bytes.readUInt32BE(16) !== SOCIAL_WIDTH || bytes.readUInt32BE(20) !== SOCIAL_HEIGHT) {
+    throw new Error(`Missing or invalid social PNG: ${image.path}`);
+  }
+}
 if (Object.keys(BLOG_PRESENTATION).length !== BLOG_POSTS.length) throw new Error('Blog presentation must cover every article.');
 for (const post of BLOG_POSTS) {
   const presentation = BLOG_PRESENTATION[post.slug];

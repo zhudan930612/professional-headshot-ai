@@ -1,4 +1,5 @@
 import { BLOG_POSTS } from '@/constants';
+import { getSocialPreview } from '@/lib/socialPreview';
 
 export const SITE_URL = 'https://www.professionalheadshotai.ink';
 
@@ -75,5 +76,6 @@ export const getPageSeo = (pathname: string, overrides: Partial<PageSeo> = {}) =
     description: overrides.description || defaults.description,
     canonicalUrl: overrides.canonicalPath === null ? undefined : `${SITE_URL}${normalizePagePath(overrides.canonicalPath || pagePath)}`,
     noIndex: overrides.noIndex ?? false,
+    social: PUBLIC_PAGE_PATHS.includes(pagePath) ? getSocialPreview(pagePath, overrides.noIndex ?? false) : undefined,
   };
 };

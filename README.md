@@ -34,6 +34,10 @@ HTTP 验收使用 `pnpm check:prerender http://localhost:4173`，禁止自动跟
 
 ## 检查
 
+分享预览由 `lib/socialPreview.ts` 集中定义，初始 HTML 和客户端 SEOHead 复用同一组 Open Graph/Twitter 标签。首页、LinkedIn 和 8 篇文章使用独立分享图，其他公开页使用默认品牌图；博客为 article，其他页面为 website，私有/404 页面不携带分享图。
+
+运行 `pnpm generate:social` 可用本地 Inter 字体和现有人像重新生成 `public/social/` 的 11 张 1200×630 PNG。仅开发脚本使用 resvg，不增加 Worker 渲染；正常构建校验尺寸、大小和源/产物哈希，不自动出图、不联网下载字体。修改标题或素材后须重新生成。图片在未发布时仅能在本地检查，真实平台展示及缓存应在最终发布后验证。
+
 博客封面、阅读标题、摘要和文末推荐集中在 `lib/blogPresentation.ts`：每篇两条固定关联及一个工具入口。`BlogCover` 直接复用现有 JPEG 人像；列表采用图片索引，焦点/悬停切换预览，详情使用短阅读标题、目录与正文分区。旧 SVG 拼贴和生成脚本已撤下，备份在忽略目录 `.recovery/blog-svg-v1`。
 
 `lib/blogReading.ts` 在解析时移除装饰 emoji、重复提示标签和分隔线，保留后续段落与列表，并给二级标题生成稳定目录锚点。原 Markdown、文章 URL、发布日期和 SEO 标题保留；阅读标题及呈现单独配置，不代表已完成原文事实核验。博客专用布局和样式位于 `pages/blog.css`，不替换其他业务页面的版式。视觉记录及三宽截图在忽略目录 `.taste-skill/`。

@@ -15,6 +15,7 @@
     "typecheck": "tsc --noEmit",
     "check:prerender": "tsx scripts/check-prerender.ts",
     "check:hydration": "vitest run --config vitest.hydration.config.ts",
+    "generate:social": "tsx scripts/create-social-images.ts",
     "build:functions": "pnpm build:worker",
     "dev:full": "pnpm build && wrangler pages dev dist --port 3000 --env-file .dev.vars",
     "check:payments": "tsx scripts/check-payments.ts",
@@ -45,6 +46,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261104.1",
     "@electric-sql/pglite": "^0.5.8",
+    "@resvg/resvg-js": "2.6.2",
     "@types/jsdom": "21.1.7",
     "@types/node": "^22.20.5",
     "@types/react": "^19.3.0",

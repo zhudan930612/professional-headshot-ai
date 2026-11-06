@@ -64,6 +64,7 @@ async function mount(pathname: string, notFound = false) {
   window.history.replaceState({}, '', pathname);
   const title = document.title;
   const description = document.querySelector('meta[name="description"]')?.getAttribute('content');
+  const social = [...document.querySelectorAll('meta[property^="og:"],meta[name^="twitter:"]')].map(tag => tag.outerHTML).sort();
   const main = document.querySelector('main');
   const heading = document.querySelector('h1')?.textContent;
   expect(main?.textContent?.length).toBeGreaterThan(150);
@@ -79,7 +80,7 @@ async function mount(pathname: string, notFound = false) {
     await act(async () => {});
     expect(fetchMock.mock.calls.some(([url]) => url === '/api/account')).toBe(true);
   });
-  return { title, description, main, heading };
+  return { title, description, main, heading, social };
 }
 
 async function click(selector: string) {
@@ -89,6 +90,18 @@ async function click(selector: string) {
 }
 
 describe('all public pages without JavaScript and after hydration', () => {
+  it('clears article sharing metadata when navigating to an account page', async () => {
+    await mount('/blog/top-5-mistakes-in-resume-photos');
+    expect(document.querySelector('meta[property="og:type"]')?.getAttribute('content')).toBe('article');
+    await click('a[href="/history"]');
+    await vi.waitFor(async () => {
+      await act(async () => {});
+      expect(document.title).toBe('My History – Professional Headshot AI');
+      expect(document.querySelector('meta[property="og:image"]')).toBeNull();
+      expect(document.querySelector('meta[name="twitter:image"]')).toBeNull();
+      expect(document.querySelector('meta[property="og:type"]')?.getAttribute('content')).toBe('website');
+    });
+  });
   it('uses real portrait previews when browsing the editorial index with focus', async () => {
     await mount('/blog');
     const link = document.querySelector<HTMLAnchorElement>('.journal-row[href="/blog/lighting-101-studio-vs-natural"]')!;
@@ -125,6 +138,7 @@ describe('all public pages without JavaScript and after hydration', () => {
     await mount(`/blog/${slug}`);
     const presentation = getBlogPresentation(slug);
     expect(document.querySelector('article figure img')?.getAttribute('src')).toBe(presentation.cover);
+    expect(document.querySelector('meta[property="og:type"]')?.getAttribute('content')).toBe('article');
     expect(document.querySelectorAll('nav[aria-label="Related articles"] a')).toHaveLength(2);
     const contents = [...document.querySelectorAll('nav[aria-label="Article contents"] a')];
     expect(contents.length).toBeGreaterThan(0);
@@ -136,6 +150,7 @@ describe('all public pages without JavaScript and after hydration', () => {
       await act(async () => {});
       expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(`${SITE_URL}/blog/${target}`);
       expect(document.querySelector('article figure img')?.getAttribute('src')).toBe(getBlogPresentation(target).cover);
+      expect(document.querySelector('meta[property="og:image"]')?.getAttribute('content')).toBe(`${SITE_URL}/social/${target}.png`);
     });
   });
 
@@ -146,6 +161,8 @@ describe('all public pages without JavaScript and after hydration', () => {
     expect(document.querySelector('h1')?.textContent).toBe('Page not found');
     expect(document.querySelector('meta[name="robots"]')?.getAttribute('content')).toContain('noindex');
     expect(document.querySelector('link[rel="canonical"]')).toBeNull();
+    expect(document.querySelector('meta[property="og:image"]')).toBeNull();
+    expect(document.querySelector('meta[name="twitter:image"]')).toBeNull();
     await click('main a[href="/blog"]');
     await vi.waitFor(async () => { await act(async () => {}); expect(document.title).toBe('Blog – Professional Headshot AI'); });
     expect(document.title).toBe('Blog – Professional Headshot AI');
@@ -171,6 +188,7 @@ describe('all public pages without JavaScript and after hydration', () => {
     expect(document.querySelector('main')).toBe(before.main);
     expect(document.querySelector('h1')?.textContent).toBe(before.heading);
     expect(document.title).toBe(before.title);
+    expect([...document.querySelectorAll('meta[property^="og:"],meta[name^="twitter:"]')].map(tag => tag.outerHTML).sort()).toEqual(before.social);
     expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).toBe(before.description);
     expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(`${SITE_URL}${pathname}`);
     expect(document.querySelectorAll('link[rel="canonical"]')).toHaveLength(1);
@@ -189,6 +207,8 @@ describe('all public pages without JavaScript and after hydration', () => {
     await act(async () => { await vi.waitFor(() => expect(document.title).toContain('Top 5 Mistakes')); });
     await click('a[href="/pricing"]');
     expect(document.title).toBe('Pricing – Professional Headshot AI');
+    expect(document.querySelector('meta[property="og:image"]')?.getAttribute('content')).toBe(`${SITE_URL}/social/default.png`);
+    expect(document.querySelector('meta[property="og:type"]')?.getAttribute('content')).toBe('website');
     expect(document.querySelector('main')?.textContent).toContain('$25');
     expect(document.querySelectorAll('link[rel="canonical"]')).toHaveLength(1);
   });

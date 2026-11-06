@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { getPageSeo, type PageSeo } from '@/lib/seo';
+import { getPageSeo, SITE_URL, type PageSeo } from '@/lib/seo';
+import { socialMetaTags, SOCIAL_META_KEYS } from '@/lib/socialPreview';
 
 export const SEOHead = ({ title, description, canonicalPath, noIndex }: Partial<PageSeo>) => {
   const { pathname } = useLocation();
@@ -29,15 +30,12 @@ export const SEOHead = ({ title, description, canonicalPath, noIndex }: Partial<
     else canonical?.remove();
     if (seo.noIndex) setMeta('robots', 'noindex, nofollow');
     else document.querySelector('meta[name="robots"]')?.remove();
-    setMeta('og:title', seo.title, true);
-    setMeta('og:description', seo.description, true);
-    if (seo.canonicalUrl) setMeta('og:url', seo.canonicalUrl, true);
-    else document.querySelector('meta[property="og:url"]')?.remove();
-    setMeta('og:type', 'website', true);
-    setMeta('twitter:card', 'summary_large_image');
-    setMeta('twitter:title', seo.title);
-    setMeta('twitter:description', seo.description);
-  }, [seo.title, seo.description, seo.canonicalUrl, seo.noIndex]);
+    const tags = socialMetaTags(seo, SITE_URL);
+    for (const key of SOCIAL_META_KEYS) {
+      if (!tags.some(tag => tag.key === key)) document.querySelector(`meta[${key.startsWith('og:') ? 'property' : 'name'}="${key}"]`)?.remove();
+    }
+    tags.forEach(tag => setMeta(tag.key, tag.content, tag.property));
+  }, [seo.title, seo.description, seo.canonicalUrl, seo.noIndex, seo.social?.path, seo.social?.alt, seo.social?.type]);
 
   return null;
 };

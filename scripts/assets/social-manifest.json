@@ -1,0 +1,72 @@
+{
+  "rendererHash": "ba876dc9f7daa4dacf5c563cae38d7bc6a8e199931e92c339e1c95be487b251a",
+  "fontHash": "29160a80ff49ddcab2c97711247e08b1fab27a484a329ce8b813d820dc559031",
+  "images": {
+    "/social/default.png": {
+      "title": "Professional\nHeadshot AI",
+      "portrait": "/best-headshot/best_12.jpeg",
+      "sourceHash": "3e0eb0ea7c95d78155131035368974c6c10efbcc103da5de09688675f9d7ec0f",
+      "imageHash": "01b8101b6383ca66c2e90aeae733e26c83867b171e499f534a7e451e8782d8cf"
+    },
+    "/social/home.png": {
+      "title": "Your next\nprofessional\nheadshot",
+      "portrait": "/best-headshot/best_01.jpeg",
+      "sourceHash": "2e8be07b6642b6cbaac9aa5141250da14a614975d6d543e8a542f287433b5b4c",
+      "imageHash": "5fe8fd6cdc345c331919a9208f3f330c7f1a5aabdd0f69cb0e4fbc879596a2d0"
+    },
+    "/social/linkedin.png": {
+      "title": "Headshots for\nyour LinkedIn\nprofile",
+      "portrait": "/best-headshot/best_12.jpeg",
+      "sourceHash": "3e0eb0ea7c95d78155131035368974c6c10efbcc103da5de09688675f9d7ec0f",
+      "imageHash": "ca761136a9aa6bf9602f1ebd3f79e94156fd455a7233255b658036cbe78c084b"
+    },
+    "/social/what-to-wear-for-a-professional-headshot.png": {
+      "title": "What to wear",
+      "portrait": "/best-headshot/best_01.jpeg",
+      "sourceHash": "2e8be07b6642b6cbaac9aa5141250da14a614975d6d543e8a542f287433b5b4c",
+      "imageHash": "ca4a6a3ed286b6091bfb3b3e840b8e84c4d2c2d7e6b6de417dd607d6253d1b4a"
+    },
+    "/social/top-5-mistakes-in-resume-photos.png": {
+      "title": "Résumé photo mistakes",
+      "portrait": "/best-headshot/best_12.jpeg",
+      "sourceHash": "3e0eb0ea7c95d78155131035368974c6c10efbcc103da5de09688675f9d7ec0f",
+      "imageHash": "d1c7ced8491b123de5e67bc21ea17f0b994ce1f9d78ee11f97f994b92795faa0"
+    },
+    "/social/lighting-101-studio-vs-natural.png": {
+      "title": "Choosing your light",
+      "portrait": "/best-headshot/best_03.jpeg",
+      "sourceHash": "281d8a55af597314de7728babde732805006dbc2c0cb2979bd5ba968234e160b",
+      "imageHash": "0e84ea353dd8f36a101f600aafaed2e0eed3ad8201f0128d7638ea22cf44e26e"
+    },
+    "/social/what-makes-professional-headshot-effective-2025.png": {
+      "title": "A headshot that works",
+      "portrait": "/best-headshot/best_08.jpeg",
+      "sourceHash": "90886333c7cfde6ec74c711cc8f1eb478f117cf27a6389b048f5bd1f51807e5d",
+      "imageHash": "006f99beb4fd353b8bccfa26b7af69f084b5096fc0f5bd37e9fb74748f78ab9d"
+    },
+    "/social/ai-professional-headshots-vs-studio-photography.png": {
+      "title": "AI or a photographer?",
+      "portrait": "/best-headshot/best_17.jpeg",
+      "sourceHash": "5aafc0206afa5c9fb3fd326f0208ccb72a589ea94b187b05005fd9c44bca20d2",
+      "imageHash": "9620a971074b79799254b693476a265b9cb45148a483f6e59353e645ce4a76f4"
+    },
+    "/social/how-to-upload-photos-best-ai-headshot-results.png": {
+      "title": "Choosing your photos",
+      "portrait": "/best-headshot/best_01.jpeg",
+      "sourceHash": "2e8be07b6642b6cbaac9aa5141250da14a614975d6d543e8a542f287433b5b4c",
+      "imageHash": "74fdcf4a0803e0b5deda612682dec3640d32d551e80be9e79854eee6245b4fad"
+    },
+    "/social/professional-headshots-by-industry-tech-finance-creative.png": {
+      "title": "Headshots by profession",
+      "portrait": "/best-headshot/best_04.jpeg",
+      "sourceHash": "e1a6c045bbc3e61c71f8e66a080aeb8532d155e1ff107b6bfcd6f527f02e1802",
+      "imageHash": "c3295595b711833e44923a8178784819a4e30804e7fedba6399696878cb572d5"
+    },
+    "/social/linkedin-resume-website-headshot-optimization-guide.png": {
+      "title": "One photo, different formats",
+      "portrait": "/best-headshot/best_12.jpeg",
+      "sourceHash": "3e0eb0ea7c95d78155131035368974c6c10efbcc103da5de09688675f9d7ec0f",
+      "imageHash": "1204584c32423a921b22530ea1f7f9e9ccac0e87f2c95dbdbb6fc2f5d2f8e8c2"
+    }
+  }
+}

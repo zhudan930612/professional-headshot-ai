@@ -5,6 +5,8 @@ import { JSDOM } from 'jsdom';
 import { PUBLIC_PAGE_PATHS, SITE_URL } from '@/lib/seo';
 import type { PublicPageData } from '@/types';
 import { getBlogPresentation } from '@/lib/blogPresentation';
+import { getPageSeo } from '@/lib/seo';
+import { socialMetaTags } from '@/lib/socialPreview';
 
 const base = process.argv[2];
 const titles = new Set<string>();
@@ -22,6 +24,26 @@ for (const pathname of PUBLIC_PAGE_PATHS) {
   } else html = await readFile(`dist/${file}`, 'utf8');
   const dom = new JSDOM(html); // Scripts are deliberately disabled.
   const document = dom.window.document;
+  const seo = getPageSeo(pathname);
+  for (const tag of socialMetaTags(seo, SITE_URL)) {
+    const matches = document.querySelectorAll(`meta[${tag.property ? 'property' : 'name'}="${tag.key}"]`);
+    assert.equal(matches.length, 1, `${pathname}: one ${tag.key}`);
+    const expected = tag.key.endsWith(':title') ? document.title : tag.key.endsWith(':description')
+      ? document.querySelector('meta[name="description"]')?.getAttribute('content') : tag.content;
+    assert.equal(matches[0].getAttribute('content'), expected);
+  }
+  const imageUrl = new URL(document.querySelector('meta[property="og:image"]')!.getAttribute('content')!);
+  assert.equal(imageUrl.origin, SITE_URL);
+  let image: Buffer;
+  if (base) {
+    const response = await fetch(new URL(imageUrl.pathname, base), { redirect: 'manual', signal: AbortSignal.timeout(10_000) });
+    assert.equal(response.status, 200);
+    assert.match(response.headers.get('content-type') || '', /image\/png/);
+    image = Buffer.from(await response.arrayBuffer());
+  } else image = await readFile(`dist${imageUrl.pathname}`);
+  assert.equal(image.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+  assert.equal(image.readUInt32BE(16), 1200);
+  assert.equal(image.readUInt32BE(20), 630);
   const footer = document.querySelector('footer')?.outerHTML;
   assert.ok(footer, 'Public pages must include the shared footer.');
   if (pathname === '/') homepageFooter = footer;
@@ -112,6 +134,8 @@ for (const pathname of base ? missingPaths : ['/404']) {
   assert.match(doc.title, /Page Not Found/);
   assert.match(doc.querySelector('meta[name="robots"]')?.getAttribute('content') || '', /noindex/);
   assert.equal(doc.querySelector('link[rel="canonical"]'), null);
+  assert.equal(doc.querySelector('meta[property="og:image"]'), null);
+  assert.equal(doc.querySelector('meta[name="twitter:image"]'), null);
   assert.ok(doc.querySelector('main a[href="/"]'));
   assert.ok(doc.querySelector('main a[href="/blog"]'));
   dom.window.close();

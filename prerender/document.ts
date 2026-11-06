@@ -1,4 +1,5 @@
-import { getPageSeo, NOT_FOUND_SEO } from '@/lib/seo';
+import { getPageSeo, NOT_FOUND_SEO, SITE_URL } from '@/lib/seo';
+import { socialMetaTags } from '@/lib/socialPreview';
 import type { PublicPageData } from '@/types';
 
 const escapeHtml = (value: string) => value.replace(/[&<>"']/g, character => ({
@@ -18,13 +19,7 @@ export function renderDocument(template: string, body: string, data: PublicPageD
     `<meta name="description" content="${escapeHtml(seo.description)}" />`,
     ...(seo.canonicalUrl ? [`<link rel="canonical" href="${escapeHtml(seo.canonicalUrl)}" />`] : []),
     ...(seo.noIndex ? ['<meta name="robots" content="noindex, nofollow" />'] : []),
-    `<meta property="og:title" content="${escapeHtml(seo.title)}" />`,
-    `<meta property="og:description" content="${escapeHtml(seo.description)}" />`,
-    ...(seo.canonicalUrl ? [`<meta property="og:url" content="${escapeHtml(seo.canonicalUrl)}" />`] : []),
-    '<meta property="og:type" content="website" />',
-    '<meta name="twitter:card" content="summary_large_image" />',
-    `<meta name="twitter:title" content="${escapeHtml(seo.title)}" />`,
-    `<meta name="twitter:description" content="${escapeHtml(seo.description)}" />`,
+    ...socialMetaTags(seo, SITE_URL).map(tag => `<meta ${tag.property ? 'property' : 'name'}="${tag.key}" content="${escapeHtml(tag.content)}" />`),
     ...styles.filter(style => !template.includes(`href="/${style}"`)).map(style => `<link rel="stylesheet" href="/${escapeHtml(style)}" />`),
   ].join('\n    ');
   return template
