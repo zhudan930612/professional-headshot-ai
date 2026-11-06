@@ -795,26 +795,57 @@ export const USE_CASE_OPTIONS = [
   { value: UseCase.SocialMedia, label: 'Social Media', icon: 'user' },
 ];
 
-export const FAQ_ITEMS = [
+export const FAQ_ITEMS: { question: string; answer: string; href?: string; linkLabel?: string }[] = [
   {
-    question: "What is a professional headshot?",
-    answer: "A professional headshot is a high-quality photo focused on your face, typically used for business profiles like LinkedIn, resumes, and company websites to convey professionalism and approachability."
+    question: "Can I try it for free?",
+    answer: "Yes. Sign in with Google to use your free generation allowance. Free results have a watermark, and no credit card is required. The allowance is granted once, not every month. See Pricing for the current number of credits and paid options.",
+    href: "/pricing", linkLabel: "Compare packages"
   },
   {
-    question: "Do I really just need selfies to start?",
-    answer: "Yes! Our AI analyzes your facial features from 1-5 varied selfies to construct a photorealistic professional image. No studio required."
+    question: "Which photo will the AI use?",
+    answer: "You can upload up to five photos, then select one as the reference for your generations. Only that selected photo is used, alongside your chosen style template. Use a clear photo of yourself alone, with your face visible, even lighting and no heavy filters."
   },
   {
-    question: "How many headshots can I generate?",
-    answer: "Our free plan provides 5 headshots as a permanent quota. For more generations, you can upgrade to our Professional (30 images) or Executive (70 images) plans, which never expire."
+    question: "Will the headshot look like me?",
+    answer: "The AI uses your selected photo as its reference, but likeness and details can vary. Try your own photo before buying. Review each result before using it; a different reference photo or template may work better."
   },
   {
-    question: "Will the headshots still look like me?",
-    answer: "We strive for high fidelity. The more angles and lighting conditions you provide in your input selfies, the more accurate the result will be."
+    question: "How do credits and retries work?",
+    answer: "Each template you generate uses one credit to create one image. Selecting three templates uses three credits. Each completed image that used a credit allows one free retry with the same template and resolution. The retry does not use another credit, and it cannot be retried again for free."
   },
   {
-    question: "Is my data private?",
-    answer: "Your photos are stored privately and used to generate your headshots. You can request removal of uploaded photos and generated images. See our Privacy Policy for details."
+    question: "What if generation fails or stalls?",
+    answer: "A confirmed failure returns the credit used for that generation. If the outcome is still being checked, use the recovery option to retrieve the original result rather than starting another generation. Contact support if the task remains unresolved."
+  },
+  {
+    question: "What changes when I buy a package?",
+    answer: "A purchase adds generation credits to your remaining balance. Paid packages provide watermark-free downloads; the higher-resolution option applies to new generations. Buying a package does not upscale images you already generated. Check Pricing for each package's credit count and resolution.",
+    href: "/pricing", linkLabel: "View package details"
+  },
+  {
+    question: "Will I be charged again automatically?",
+    answer: "No. Packages are one-time purchases, not subscriptions. Credits do not expire, and another payment only happens when you choose to buy again."
+  },
+  {
+    question: "How long does a generation take?",
+    answer: "Processing time varies with demand and image quality. Progress is shown in the generator. We do not promise a fixed completion time or a faster queue for a particular package."
+  },
+  {
+    question: "Can I download earlier images without a watermark?",
+    answer: "Downloads from My Headshots use your current account's watermark entitlement. With an active paid package, you can download saved images without the service watermark, including earlier free results. Existing images keep their original resolution."
+  },
+  {
+    question: "Where can I use my headshots?",
+    answer: "Use a result that accurately represents you on your professional profile, personal website or work bio. Check the requirements of the site or organization receiving it. For a resume or CV, include a photo only when appropriate for the application."
+  },
+  {
+    question: "How are my photos stored and removed?",
+    answer: "Uploads and generated images are stored privately. Your selected reference photo is processed by our AI generation provider to create your result. Photos are retained for generation, recovery and account history until removal is requested and processed. Contact support to request deletion.",
+    href: "/privacy", linkLabel: "Read the Privacy Policy"
+  },
+  {
+    question: "How do I request payment help or a refund?",
+    answer: "Email support@professionalheadshotai.ink with your account email, order details and a description of the issue. Support will review your request. Do not include payment card details. A refund request is not an automatic refund approval."
   }
 ];
 

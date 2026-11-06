@@ -1,229 +1,82 @@
-import React, { useState, useEffect } from 'react';
-import { Check } from 'lucide-react';
-import { Layout } from '../components/Layout';
-import { getSubscriptionPlans } from '../services/subscriptionService';
-import { createCreemPayment } from '../services/paymentService';
-import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import type { SubscriptionPlanConfig } from '../types';
-import { usePublicPageData } from '@/contexts/PublicPageContext';
+import React, { useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Layout } from '@/components/Layout';
+import { useAuth } from '@/contexts/AuthContext';
+import { usePublicPlans } from '@/hooks/usePublicPlans';
+import { presentPlan } from '@/lib/planPresentation';
+import { createCreemPayment } from '@/services/paymentService';
+import type { SubscriptionPlan } from '@/types';
+import './marketing.css';
+import './pricing.css';
 
-export const Pricing: React.FC = () => {
+export const Pricing = () => {
   const { user, openAuthModal } = useAuth();
-  const navigate = useNavigate();
-  const pageData = usePublicPageData();
-  const [plans, setPlans] = useState<SubscriptionPlanConfig[]>(pageData?.plans ?? []);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    const loadPlans = async () => {
-      try {
-        const data = await getSubscriptionPlans(controller.signal);
-        if (!controller.signal.aborted) setPlans(data);
-      } catch (err) {
-        if (controller.signal.aborted) return;
-        console.error('加载套餐失败:', err);
-        setError('无法加载价格信息，请稍后重试');
-      }
-    };
-    loadPlans();
-    return () => controller.abort();
-  }, []);
-
-  const [isProcessing, setIsProcessing] = useState(false);
-
-  const handleSelectPlan = async (planType: string) => {
-    // Free 计划直接跳转
-    if (planType === 'free') {
-      navigate('/');
-      return;
-    }
-
-    // 检查用户是否登录
-    if (!user) {
-      openAuthModal('/pricing');
-      return;
-    }
-
-    // 防止重复点击
-    if (isProcessing) return;
-    setIsProcessing(true);
-    setError(null);
-
+  const { plans, loading, unavailable } = usePublicPlans();
+  const [error, setError] = useState('');
+  const [processing, setProcessing] = useState<SubscriptionPlan | null>(null);
+  const checkoutPending = useRef(false);
+  const descriptions = { free: 'Try your own photo', professional: 'Explore your professional look', executive: 'More looks, larger images' };
+  const buy = async (id: SubscriptionPlan) => {
+    if (!user) { openAuthModal('/pricing'); return; }
+    if (checkoutPending.current || unavailable || loading) return;
+    checkoutPending.current = true;
+    setProcessing(id);
+    setError('');
     try {
-      // 调用后端创建支付订单
-      const { paymentUrl } = await createCreemPayment(planType);
-      
-      // 跳转到 Creem 支付页面
+      const { paymentUrl } = await createCreemPayment(id);
       window.location.href = paymentUrl;
-    } catch (err) {
-      console.error('创建支付订单失败:', err);
-      setError(err instanceof Error ? err.message : '创建支付订单失败，请稍后重试');
-      setIsProcessing(false);
+    } catch {
+      setError('Checkout could not be opened. Please try again.');
+      checkoutPending.current = false;
+      setProcessing(null);
     }
   };
-
-  return (
-    <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-16 px-4">
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-16">
-            <h1 className="text-5xl font-bold text-slate-900 mb-6">
-              Simple, Transparent Pricing
-            </h1>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-              Choose the perfect plan for your professional headshot needs. All plans include our AI-powered generation technology.
-            </p>
-          </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="mb-8 bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
-              {error}
+  return <Layout editorial>
+    <div className="marketing pricing-page marketing-wrap">
+      <header className="pricing-heading">
+        <h1>Headshot pricing</h1>
+        <p>Start free. Buy more credits when you need them.</p>
+      </header>
+      {error && <p role="alert" className="marketing-error">{error}</p>}
+      {unavailable && <p role="alert" className="marketing-error">We could not confirm current prices. Please reload this page before purchasing.</p>}
+      {loading && !plans.length && <p role="status">Loading packages…</p>}
+      <div className="pricing-tiers">
+        {plans.map(plan => {
+          const details = presentPlan(plan);
+          return <section key={plan.id} className={`pricing-tier pricing-tier-${plan.id} marketing-plan`} aria-label={`${details.name} package`}>
+            <div className="pricing-tier-header">
+              <div><h2>{details.name}</h2><p className="pricing-description">{descriptions[plan.id]}</p></div>
+              <div className="pricing-tier-price"><p className="pricing-amount">${plan.price}</p><p className="pricing-payment">{plan.price === 0 ? 'No credit card' : 'USD · one-time'}</p></div>
             </div>
-          )}
-
-          {/* Pricing Cards */}
-          <div className="grid md:grid-cols-3 gap-8 mb-16">
-            {plans.map((plan) => {
-              // 直接判断：professional 套餐为 Most Popular
-              const isPopular = plan.id === 'professional';
-              return (
-                <div
-                  key={plan.id}
-                  className={`
-                    rounded-3xl transition-all duration-300 overflow-hidden flex flex-col h-full relative
-                    ${isPopular ? 'popular-card' : 'regular-card'}
-                  `}
-                  style={isPopular ? {
-                    borderWidth: '2px',
-                    borderColor: '#3b82f6',
-                    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-                    background: 'linear-gradient(to bottom right, #eff6ff, #ffffff)',
-                  } : {
-                    borderWidth: '1px',
-                    borderColor: '#e2e8f0',
-                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                    background: '#ffffff'
-                  }}
-                >
-                  {/* Top gradient bar for popular */}
-                  {isPopular && (
-                    <div
-                      className="absolute top-0 left-0 right-0 h-1"
-                      style={{
-                        background: 'linear-gradient(to right, #60a5fa, #3b82f6, #1d4ed8)'
-                      }}
-                    ></div>
-                  )}
-
-                  {/* Plan Header */}
-                  <div className="p-8">
-                    <div className="flex items-center gap-3 mb-3">
-                      <h3 className="font-bold text-slate-900 text-2xl">
-                        {isPopular ? plan.display_name.replace(' (Most Popular)', '') : plan.display_name}
-                      </h3>
-                      {isPopular && (
-                        <div
-                          className="inline-block text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg"
-                          style={{
-                            background: 'linear-gradient(to right, #3b82f6, #2563eb)'
-                          }}
-                        >
-                          ⭐ Most Popular
-                        </div>
-                      )}
-                    </div>
-                    <div className="mb-3">
-                      <span className={`font-bold text-slate-900 ${isPopular ? 'text-6xl' : 'text-5xl'}`}>
-                        ${plan.price}
-                      </span>
-                      {plan.price > 0 && (
-                        <span className="text-slate-600 ml-2">{isPopular ? 'one-time' : 'one-time'}</span>
-                      )}
-                    </div>
-                    <p className={`text-sm font-medium ${isPopular ? 'text-primary-700' : 'text-slate-600'}`}>
-                      {plan.id === 'free' ? 'Lifetime quota' : 'Never expires'}
-                    </p>
-                  </div>
-
-                  {/* Divider */}
-                  {isPopular && (
-                    <div
-                      className="h-px mx-8"
-                      style={{
-                        background: 'linear-gradient(to right, transparent, #dbeafe, transparent)'
-                      }}
-                    ></div>
-                  )}
-
-                  {/* Features List */}
-                  <div className={`flex-grow ${isPopular ? 'p-8' : 'p-8'}`}>
-                    <ul className={isPopular ? 'space-y-3' : 'space-y-4'}>
-                      <li className="flex items-start gap-3">
-                        <Check className={`w-5 h-5 flex-shrink-0 mt-0.5 ${isPopular ? 'text-primary-600' : 'text-green-500'}`} />
-                        <span className="text-slate-700">
-                          <strong className="text-slate-900">{plan.quota}</strong> images generated
-                          {plan.bonus_quota > 0 && (
-                            <span className={isPopular ? 'text-primary-600 font-medium ml-1' : 'text-green-600 ml-1'}>
-                              + {plan.bonus_quota} bonus
-                            </span>
-                          )}
-                        </span>
-                      </li>
-
-                      {plan.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-start gap-3">
-                          <Check className={`w-5 h-5 flex-shrink-0 mt-0.5 ${isPopular ? 'text-primary-600' : 'text-green-500'}`} />
-                          <span className="text-slate-700">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* CTA Button */}
-                  <div className="p-8 pt-6">
-                    <button
-                      onClick={() => handleSelectPlan(plan.id)}
-                      className="w-full py-3 px-6 rounded-xl font-semibold transition-all duration-300"
-                      style={isPopular ? {
-                        background: 'linear-gradient(to right, #3b82f6, #2563eb)',
-                        color: '#ffffff',
-                        boxShadow: '0 10px 15px -3px rgba(59, 130, 246, 0.3)',
-                        cursor: 'pointer'
-                      } : {
-                        background: '#f3f4f6',
-                        color: '#111827',
-                        cursor: 'pointer'
-                      }}
-                      onMouseEnter={(e) => {
-                        if (isPopular) {
-                          e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(59, 130, 246, 0.4)';
-                          e.currentTarget.style.transform = 'translateY(-2px)';
-                        } else {
-                          e.currentTarget.style.background = '#e5e7eb';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (isPopular) {
-                          e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(59, 130, 246, 0.3)';
-                          e.currentTarget.style.transform = 'translateY(0)';
-                        } else {
-                          e.currentTarget.style.background = '#f3f4f6';
-                        }
-                      }}
-                    >
-                      {plan.price === 0 ? 'Get Started' : 'Upgrade Now'}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+            <div className="pricing-allowance" data-plan-credits={plan.id}>
+              <p><strong>{details.credits}</strong> generation credits</p>
+              {plan.bonus_quota > 0 && <p className="pricing-bonus">{plan.quota} + {plan.bonus_quota} bonus included</p>}
+            </div>
+            <ul className="pricing-entitlements">
+              <li><strong>{plan.quality}</strong> · {details.resolution} px</li>
+              <li>{details.watermark}</li>
+            </ul>
+            {plan.price === 0
+              ? <Link className="marketing-button pricing-action" aria-label="Try for free" to="/#upload-tool">Try for free</Link>
+              : <button className="marketing-button pricing-action" aria-label={processing === plan.id ? 'Opening checkout…' : `Buy ${details.name}`} aria-busy={processing === plan.id} disabled={Boolean(processing) || loading || unavailable} onClick={() => void buy(plan.id)}>
+                {processing === plan.id ? 'Opening checkout…' : `Buy ${details.name}`}
+              </button>}
+          </section>;
+        })}
       </div>
-    </Layout>
-  );
+      {plans.length > 0 && <div className="pricing-shared">
+        <p>No subscription. Credits never expire.</p>
+        <p>Every plan includes the template library and one free retry per original image, using the same template.</p>
+      </div>}
+      <section className="pricing-questions">
+        <div><h2>Before you buy</h2><Link className="marketing-link" to="/faq">All questions & answers</Link></div>
+        <div className="pricing-answers">
+          <details><summary>How do I use my credits?<span className="pricing-disclosure-icon" aria-hidden="true" /></summary><p>Each template you generate uses one credit to create one image. Spend your credits across different sessions. The free allowance is granted once, not every month. Sign in with Google to get started.</p></details>
+          <details><summary>What if a generation fails?<span className="pricing-disclosure-icon" aria-hidden="true" /></summary><p>A confirmed failure returns its credit. If a result is still being checked, use the recovery option rather than starting another generation. Results vary with your reference photo and selected template.</p></details>
+          <details><summary>What happens to my existing credits?<span className="pricing-disclosure-icon" aria-hidden="true" /></summary><p>A purchase adds credits to your remaining balance. Higher resolution applies to new generations; it does not upscale images you already generated.</p></details>
+          <details><summary>How do payment and refunds work?<span className="pricing-disclosure-icon" aria-hidden="true" /></summary><p>Review the final total at checkout. For payment help or a refund request, <a href="mailto:support@professionalheadshotai.ink">contact support</a> with your order details for review.</p></details>
+        </div>
+      </section>
+    </div>
+  </Layout>;
 };

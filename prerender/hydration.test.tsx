@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from '@/App';
 import { generateHeadshots } from '@/services/generationService';
+import { createCreemPayment } from '@/services/paymentService';
 import { serializePublicData } from '@/prerender/document';
 import { TEST_PLANS } from '@/prerender/fixtures';
 import { PUBLIC_PAGE_PATHS, SITE_URL } from '@/lib/seo';
@@ -21,6 +22,7 @@ vi.mock('@/services/generationService', async original => ({
   ...await original<typeof import('@/services/generationService')>(),
   generateHeadshots: vi.fn(),
 }));
+vi.mock('@/services/paymentService', () => ({ createCreemPayment: vi.fn() }));
 
 let root: Root | undefined;
 const recoveries: unknown[] = [];
@@ -295,7 +297,7 @@ describe('all public pages without JavaScript and after hydration', () => {
     await click('a[href="/blog/top-5-mistakes-in-resume-photos"]');
     await act(async () => { await vi.waitFor(() => expect(document.title).toContain('Top 5 Mistakes')); });
     await click('a[href="/pricing"]');
-    expect(document.title).toBe('Pricing – Professional Headshot AI');
+    expect(document.title).toBe('AI Headshot Pricing — One-Time Packages | Professional Headshot AI');
     expect(document.querySelector('script[type="application/ld+json"]')).toBeNull();
     expect(document.querySelector('meta[property="og:image"]')?.getAttribute('content')).toBe(`${SITE_URL}/social/default.png`);
     expect(document.querySelector('meta[property="og:type"]')?.getAttribute('content')).toBe('website');
@@ -305,11 +307,11 @@ describe('all public pages without JavaScript and after hydration', () => {
 
   it('opens login from the hydrated home page and preserves its return path', async () => {
     await mount('/');
-    const button = [...document.querySelectorAll('button')].find(item => item.textContent === 'Create Headshots Free');
+    const button = [...document.querySelectorAll('button')].find(item => item.textContent === 'Try 5 free generations');
     expect(button).toBeDefined();
     await act(async () => button!.click());
     expect(document.querySelector('[role="dialog"]')?.textContent).toContain('Sign in to Professional Headshot AI');
-    expect(localStorage.getItem('auth_return_path')).toBe('/');
+    expect(localStorage.getItem('auth_return_path')).toBe('/#upload-tool');
     await click('button[aria-label="Close sign in"]');
     expect(document.querySelector('[role="dialog"]')).toBeNull();
   });
@@ -320,17 +322,78 @@ describe('all public pages without JavaScript and after hydration', () => {
       : { user: null }));
     await mount('/pricing');
     expect(document.querySelector('main')?.textContent).toContain('$29');
-    const upgrade = [...document.querySelectorAll('button')].find(item => item.textContent === 'Upgrade Now');
+    const upgrade = [...document.querySelectorAll('button')].find(item => item.textContent === 'Buy Professional');
     await act(async () => upgrade!.click());
     expect(document.querySelector('[role="dialog"]')).not.toBeNull();
     expect(localStorage.getItem('auth_return_path')).toBe('/pricing');
     expect(fetchMock.mock.calls.some(([url]) => String(url).includes('create-payment'))).toBe(false);
   });
 
+  it('keeps saved prices readable but disables purchases when the live plans request fails', async () => {
+    fetchMock.mockImplementation(async (url: string) => {
+      if (url === '/api/plans') throw new Error('Offline');
+      return Response.json({ user: null });
+    });
+    await mount('/pricing');
+    const buyButtons = [...document.querySelectorAll('button')].filter(button => button.textContent?.startsWith('Buy '));
+    expect(buyButtons).toHaveLength(2);
+    expect(buyButtons.every(button => button.disabled)).toBe(true);
+    expect(document.querySelector('main')?.textContent).toContain('$25');
+    expect(document.querySelector('[role="alert"]')?.textContent).toContain('confirm current prices');
+  });
+
+  it('displays current entitlements without carrying forward unsupported database marketing claims', async () => {
+    fetchMock.mockImplementation(async (url: string) => Response.json(url === '/api/plans'
+      ? TEST_PLANS.map(plan => ({ ...plan, features: ['Priority queue', 'Unlimited retries'], display_name: 'Most Popular' }))
+      : { user: null }));
+    await mount('/pricing');
+    const main = document.querySelector('main')!.textContent!;
+    expect(main).not.toMatch(/Priority queue|Unlimited retries|Most Popular/);
+    expect(document.querySelector('[data-plan-credits=executive]')?.textContent).toContain('70');
+    expect(main).toContain('1792 × 2400');
+    expect(main).toContain('same template');
+  });
+
+  it('prevents duplicate checkout requests and restores the buttons after a failed request', async () => {
+    let rejectCheckout!: (reason: Error) => void;
+    vi.mocked(createCreemPayment).mockClear();
+    vi.mocked(createCreemPayment).mockImplementation(() => new Promise((_resolve, reject) => { rejectCheckout = reject; }));
+    fetchMock.mockImplementation(async (url: string) => {
+      if (url === '/api/plans') return Response.json(TEST_PLANS);
+      if (url === '/api/auth/session') return Response.json({ user: { id: 'marketing-test-user', email: 'test@example.invalid' } });
+      if (url === '/api/account') return Response.json({ subscription: null, quota: { remaining_quota: 5, plan_type: 'free', has_watermark: true } });
+      throw new Error(`Unexpected request: ${url}`);
+    });
+    await mount('/pricing');
+    const buttons = [...document.querySelectorAll('button')].filter(button => button.textContent?.startsWith('Buy '));
+    await act(async () => { buttons[0].click(); buttons[1].click(); buttons[0].click(); });
+    expect(createCreemPayment).toHaveBeenCalledTimes(1);
+    expect(createCreemPayment).toHaveBeenCalledWith('professional');
+    expect(buttons.every(button => button.disabled)).toBe(true);
+    await act(async () => rejectCheckout(new Error('Internal provider details')));
+    expect(buttons.every(button => !button.disabled)).toBe(true);
+    expect(document.querySelector('[role="alert"]')?.textContent).toBe('Checkout could not be opened. Please try again.');
+  });
+
+  it('returns from pricing to the home generator and opens FAQ answers', async () => {
+    await mount('/pricing');
+    await click('a[href="/#upload-tool"]');
+    await vi.waitFor(() => expect(document.getElementById('upload-tool')).not.toBeNull());
+    expect(window.location.hash).toBe('#upload-tool');
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
+    await click('a[href="/faq"]');
+    await vi.waitFor(() => expect(document.querySelectorAll('.marketing-faq-list details')).toHaveLength(12));
+    const question = document.querySelectorAll<HTMLDetailsElement>('.marketing-faq-list details')[1];
+    await act(async () => question.querySelector('summary')!.click());
+    expect(question.open).toBe(true);
+    expect(question.textContent).toContain('Only that selected photo is used');
+  });
+
   it.each(['/', '/linkedin-headshots'])('restores a signed-in session and runs the generation result UI on %s', async pathname => {
     const user = { id: 'seo-local-user', email: 'seo@example.invalid', user_metadata: { name: 'SEO Tester' } };
     const quota = { plan_type: 'professional', total_quota: 30, remaining_quota: 30, used_quota: 0, is_paid: true, quality: '1K', has_watermark: false };
     fetchMock.mockImplementation(async (url: string) => {
+      if (url === '/api/plans') return Response.json(TEST_PLANS);
       if (url === '/api/auth/session') return Response.json({ user });
       if (url === '/api/account') return Response.json({ quota, subscription: null });
       if (url === '/api/history') return Response.json({ saved: true });

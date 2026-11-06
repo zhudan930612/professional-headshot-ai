@@ -71,7 +71,7 @@ function pageStyles(pathname: string): string[] {
 
 for (const pathname of PUBLIC_PAGE_PATHS) {
   const data: PublicPageData = { pathname, year };
-  if (pathname === '/pricing') data.plans = plans;
+  if (pathname === '/pricing' || pathname === '/') data.plans = plans;
   if (pathname.startsWith('/blog/')) {
     const slug = pathname.slice('/blog/'.length);
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) throw new Error('Unsafe article path.');

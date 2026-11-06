@@ -615,7 +615,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
     <div className="flex flex-col h-full animate-in fade-in duration-300">
       <div className="mb-6 text-center">
         <h3 className="text-xl font-bold text-slate-900 mb-2">Step 1: Upload Your Photos</h3>
-        <p className="text-slate-500">We recommend uploading 3–5 clear selfies to help the AI better capture your facial features.</p>
+        <p className="text-slate-500">Upload up to five photos, then select one clear selfie as the reference for your headshots.</p>
       </div>
 
       <div
@@ -926,7 +926,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
                     <Loader2 className="animate-spin text-primary-600 mb-3" size={40} />
                     <span className="text-sm font-semibold text-slate-600 animate-pulse" translate="no">Generating...</span>
                     <span className="text-xs text-slate-500 mt-2" translate="no">
-                      {result.progress >= 95 ? 'Finalizing...' : 'Estimated time: 30-60s'}
+                      {result.progress >= 95 ? 'Finalizing...' : 'Processing your photo…'}
                     </span>
                   </div>
                 ) : (

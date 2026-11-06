@@ -143,7 +143,9 @@ for (const pathname of PUBLIC_PAGE_PATHS) {
     assert.ok(document.querySelectorAll('main img[src^="/optimized/portraits/"]').length >= 8);
     assert.equal(document.querySelectorAll('main img[src*="picsum.photos"]').length, 0);
   }
-  if (data.plans) for (const plan of data.plans) assert.ok(document.querySelector('main')?.textContent?.includes(`$${plan.price}`));
+  if (data.plans) for (const plan of data.plans.filter(plan => pathname === '/pricing' || plan.price > 0)) {
+    assert.ok(document.querySelector('main')?.textContent?.includes(`$${plan.price}`));
+  }
   assert.ok(!html.includes('Loading article...'));
   report.push({ pathname, bytes: Buffer.byteLength(html), gzipBytes: gzipSync(html).length });
   dom.window.close();

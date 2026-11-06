@@ -1,5 +1,35 @@
 # 项目交接
 
+## 2026-11-06 定价页交互反馈（本地验证）
+
+- 用户要求增加交互效果，沿用三档紧凑布局。新增桌面精细指针悬停抬升5px/边线/轻投影、键盘focus-within反馈、按钮按压及箭头显现、checkout处理中标记与指示器。卡片本身不成为购买入口，不增加选中态或网络请求；禁用按钮不响应按压/悬停动效。
+- 购买说明保留原生details/summary，加入装饰性的加减号。支持interpolate-size的浏览器平滑开合，不支持时回退原生开合及短淡入。prefers-reduced-motion关闭位移、过渡与旋转，不隐藏内容。全部CSS，无新依赖或指针跟踪；未改价格、额度、支付业务逻辑。
+- IAB实测Professional悬停transform为translateY(-5px)，过渡220ms；说明内容240ms展开/收起，Enter连续开合后open=false、内容高度0；390px无横向溢出。已恢复默认视口并刷新用户原预览标签。静态减少动画规则已核对，未修改用户系统偏好来测试。
+- 装饰箭头由伪元素生成时会进入按钮可访问名称，因此给购买按钮/免费入口显式设置原有名称；处理中的按钮使用aria-busy。构建、类型检查和49项交互测试通过，Impeccable检查空问题列表；证据 `.recovery/pricing-motion-*`。没有真实付款/生图、提交或发布。
+
+
+## 2026-11-06 定价页三档紧凑排版（Impeccable，本地验证）
+
+- 用户否定两档大块与后续参数对照表，调用impeccable并明确选择“紧凑三档套餐，突出付费差异”。现役版为Free/Professional/Executive三档完整聚合，Professional深蓝底；名称、价格、额度、分辨率、水印和按钮在同一档内。共用权益只写一次，购买说明用原生details展开。保留既有价格/额度/支付逻辑、蓝白Inter品牌及共用导航页脚；未提交、推送或发布。
+- 仅本页使用 `pages/pricing.css`；清理共用marketing.css中的旧定价专用规则。首页与FAQ未重做。撤下对照表与免费区的装饰图库，手机小于760px按DOM顺序单列，名称与价格左右排。不要再以“便于参数比较”为由把手机强行压成多列表格。
+- 踩坑：Vite路由CSS与共用marketing CSS的加载顺序不能代替选择器作用域。`.marketing h2`曾覆盖等优先级的本页标题字号导致窄屏套餐名重叠；本页标题使用`.pricing-page .pricing-tier h2`等明确作用域。共用说明段落的max-width同样需本页作用域，否则会在容器内偏左。
+- 按技能先做独立只读布局评估和机械扫描，最终impeccable detect对Pricing.tsx/pricing.css返回空问题列表。用户选择暂不升级技能，仍用已加载v4.0.1。没有创建PRODUCT.md或修改全局技能配置。
+- 类型检查、构建、15页预渲染及49项交互测试通过。IAB核对1440/768/390/320排版；1440下三档高469px，三个按钮top均629.28px、bottom均677.28px，首屏完整；320下无横向溢出，按钮均48px高。购买入口仍先弹登录，预览使用匿名夹具所以不验真实Google挑战；已关闭弹窗、恢复浏览器默认尺寸并刷新用户原标签。无付款/生图操作。
+- 定价CSS gzip约1.38KB，无新依赖/接口/后端变更，撤下的图库不再产生本页图片请求。证据 `.recovery/pricing-v3-{build,prerender,hydration}.log`、`pricing-v3-detect.json`；设计记录 `.taste-skill/pricing-v3-impeccable.md`。当前预览仍为 `http://127.0.0.1:4175/pricing`，只供页面查看，不是正式发布。
+
+
+## 2026-11-06 首页、定价、FAQ 与 SEO 文案改版（本地已验证）
+
+- 用户授权新建分支并按竞品调研建议执行。已从当时干净的main创建 `codex/headshot-marketing-clarity`，保留Free 5、Professional $25/30、Executive $45/60+10；未加入候选$9包、未修改D1/Creem产品或退款政策，未提交、推送或部署。另一会话追加的EvoLink CLI交接记录原样保留。
+- 首页改为单张自拍主张、明确标注的现有AI示例、生成工具、4张风格图、操作步骤、套餐摘要及FAQ；删除3倍面试、30秒、无限风格和缺乏依据的摄影对比。现有照片没有可核验对应自拍，所以没有伪造前后对比。保留共用导航/页脚、生成流程及LinkedIn入口。HeroTool两处提示同步为选一张参考图及无固定时限。
+- 定价页展示两个付费包和独立免费入口；从实际价格、quota+bonus_quota、quality及has_watermark生成权益，不再展示数据库历史features/display_name中的Priority queue、Most Popular等营销声明。原公开API数据未被改写。新增 `hooks/usePublicPlans.ts` 复用预渲染快照并刷新/验证公开接口；价格确认失败时保留可读快照、禁用购买。购买中通过同步ref及禁用按钮防重复，错误不回显供应商内部细节。
+- FAQ扩为12项，与首页共用constants来源，说明一次性免费额度、单张参考图、每模板扣1额度、原任务同模板同分辨率免费重试一次、失败退额度与未知结果恢复、购买保留余额、无自动续费、旧图下载按当前水印权益且不升级旧图分辨率、隐私/删除及退款联系审核。旧图口径已对照History下载逻辑；未新增退款承诺。三页SEO标题/描述与预渲染/客户端同步。
+- 完整 `pnpm verify` 通过：116项回归、49项接管/交互、15页预渲染、产物/密钥扫描及依赖审计0已知漏洞。新增交互覆盖接口失败禁购、剔除旧营销声明、重复checkout/失败恢复、定价返回生成锚点与FAQ展开。修改SEO标题须同步原有标题断言，不能误认为导航失败。证据 `.recovery/marketing-verify.log`。
+- 浏览器最终检查3页×1440/768/390/320共12次，单H1/canonical、无横向溢出、无坏图/未捕获异常，匿名购买弹登录、FAQ展开通过；已目视桌面/平板/手机截图。`.recovery/marketing-browser/report.json`及截图为证据。预览 `http://127.0.0.1:4175` 由 `.recovery/marketing-preview.mjs`提供构建页面与匿名只读夹具，拒绝写操作；仅用于页面查看，不代表真实Google/付款/生图验收。未调用付费生成或创建订单。
+- 性能：无新依赖，Worker哈希仍为412351b653aa852d0022bc096272febfb4de213f5084794465f0dc983cfdedcb。移除40个滚动图库实例，改为首屏1张+懒加载4张，保留响应式WebP；新增共用CSS gzip 1.86KB，首页增加一次公开套餐读取，复用已有构建阶段套餐请求。未测生产CWV或宣称线上速度提升。
+- 设计技能源码lint为0FAIL/0WARN；原始全页inspect首页5FAIL/2WARN、最终定价4FAIL/3WARN、FAQ4FAIL/5WARN，不能宣称全部风格检查通过。主要来自保留的导航/页脚边线阴影和小字、disabled工具按钮对比度、真实AI图片说明被判作eyebrow、刻意克制的动效、定价/FAQ无装饰照片/视频。功能浏览器检查通过。细节及设计判断在忽略目录 `.taste-skill/marketing/decisions.md`；仍需用户查看页面效果。
+
+
 ## 2026-11-06 Sitemap 重提与索引请求交接
 
 - 用户授权重新提交现有sitemap，并为简历照片常见错误文章和LinkedIn用途页请求编入索引。GSC Wizard `submit_sitemap` 于16:05:27（Asia/Taipei）返回accepted=true、confirmed=true，submitted=1、failed=0、isPending=true；这是请求被接受、等待下载，不是页面已经收录。

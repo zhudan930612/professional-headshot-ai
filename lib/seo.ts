@@ -17,16 +17,16 @@ const PAGE_SEO: Record<string, PageSeo> = {
     description: 'Create a professional LinkedIn profile photo from your selfies. Explore AI headshot examples, check your framing, and choose a style that fits your work.',
   },
   '/': {
-    title: 'Professional Headshot AI – Headshots That Look Like You',
-    description: 'Create realistic AI professional headshots that actually look like you. Upload photos, choose a style, and get studio-quality results in minutes.',
+    title: 'AI Headshot Generator from a Selfie | Professional Headshot AI',
+    description: 'Create professional AI headshots from one selfie. Choose a style for LinkedIn or work profiles. Try free watermarked generations with no credit card.',
   },
   '/pricing': {
-    title: 'Pricing – Professional Headshot AI',
-    description: 'Compare one-time AI headshot packages, generation credits, image quality, and watermark options. Start with free generations on signup. No credit card required.',
+    title: 'AI Headshot Pricing — One-Time Packages | Professional Headshot AI',
+    description: 'Compare one-time AI headshot packages, generation credits, image sizes and watermark-free downloads. Try free watermarked generations. No subscription.',
   },
   '/faq': {
-    title: 'FAQ – Professional Headshot AI',
-    description: 'Frequently asked questions about AI professional headshots. Learn how it works, photo requirements, delivery time, and more.',
+    title: 'AI Headshot FAQ — Photos, Credits & Downloads',
+    description: 'Learn which photo to use, how generation credits and retries work, and what to expect from downloads, paid packages and photo privacy.',
   },
   '/blog': {
     title: 'Blog – Professional Headshot AI',
