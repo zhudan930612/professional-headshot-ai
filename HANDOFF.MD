@@ -1,5 +1,16 @@
 # 项目交接
 
+## 2026-11-06 营销页面正式发布与验收
+
+- 用户明确要求“提交推送发布”。应用提交 `a19fe241f546ab42cc1329afd9ec25c0eb477fc0` 已从 `codex/headshot-marketing-clarity` 快进合入main并推送，Cloudflare生产部署 `3e9fd889-9345-4925-bf98-7216f0b8ee46` 于2026-11-06 18:14:31（Asia/Taipei）成功，GitHub Cloudflare检查为success。下方“未提交/未发布”均为实施阶段历史记录；后续仅文档提交不改变本次应用实现。
+- 已发布首页单张参考图口径、三档紧凑定价及交互动效、12项FAQ、三页SEO描述和公开套餐展示逻辑；Free 5、Professional $25/30、Executive $45/70保持不变，未修改D1、支付配置或实际生图流程。另一会话的EvoLink CLI段落未纳入网站提交，原样留在工作区。
+- 发布前完整pnpm verify通过116项回归/49项交互/15页预渲染，产物与密钥扫描、依赖审计通过；云端pnpm verify及部署成功，Worker哈希保持412351b653aa852d0022bc096272febfb4de213f5084794465f0dc983cfdedcb。最终定价CSS gzip约2.12KB、共用marketing CSS约1.59KB；无新依赖或后端计算，首页增加一次公开套餐刷新，未声称生产CWV提升。
+- 正式域名check:cloudflare全部通过，包括Google登录初始化真实challenge；15公开页、6私有路由、5类404及图片/SEO/结构化数据核验通过；sitemap仍15页、robots正常、裸域301到www，6个入口JS/CSS资源均200及类型正确。
+- 生产首页/定价/FAQ在1440与390两种宽度共6次隔离浏览器检查通过，无横向溢出、本地坏图、未捕获异常或hydration错误，截图已目视。仅匿名只读验收，未进行账号登录、付款或收费生图。
+- 首次全站HTTP检查10秒阈值遇到读取超时，IAB生产页加载也超时；后用项目既有隔离浏览器及带路径日志的HTTP复核。HTTP复核上限30秒，80个响应全部通过，最慢响应头约2.3秒，未复现超时；此数据不是访客LCP。未改生产超时配置。
+- 证据：`.recovery/marketing-release-verify.log`、`marketing-live-runtime.log`、`marketing-live-pages-recheck.log`、`marketing-live-resources.json`、`marketing-live-browser/report.json`。发布用隔离main工作区 `F:/codex_temp/2026-11-06/headshot-marketing-release`；原目录保留功能分支和另一会话文档修改。
+
+
 ## 2026-11-06 定价页交互反馈（本地验证）
 
 - 用户要求增加交互效果，沿用三档紧凑布局。新增桌面精细指针悬停抬升5px/边线/轻投影、键盘focus-within反馈、按钮按压及箭头显现、checkout处理中标记与指示器。卡片本身不成为购买入口，不增加选中态或网络请求；禁用按钮不响应按压/悬停动效。
