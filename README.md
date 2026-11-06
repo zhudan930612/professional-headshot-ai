@@ -4,7 +4,7 @@ React + TypeScript + Vite，Cloudflare Pages advanced-mode Worker + D1 + 私有 
 
 先读 [HANDOFF.MD](HANDOFF.MD) 和 [迁移记录](docs/cloudflare-native-migration.md)。生产运行入口是 cloudflare/worker.ts，构建为 dist/_worker.js；旧 functions/、api/、server/ 中的 Supabase 实现和 PostgreSQL 测试保留用于历史对照，不参与当前生产 Worker。
 
-当前 SEO 分支的验证范围、保留事项与发布后检查见 [SEO 分支综合验收记录](docs/seo-branch-acceptance.md)。本地验收通过不代表已经发布或恢复 Google 收录。
+本轮 SEO 改动已于 2026-11-06 发布；验证范围、保留事项与后续检查见 [SEO 分支综合验收记录](docs/seo-branch-acceptance.md)。发布和技术验收通过不代表 Google 已恢复收录。
 
 ## 本地运行
 

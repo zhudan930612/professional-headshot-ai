@@ -1,6 +1,6 @@
 # SEO 分支综合验收记录
 
-2026-11-06。本地验收对象为 `codex/seo-improvements` 的 `4dd5c9a` 加首页 WebSite 改动。综合技术回归通过，未发现所测范围内的新阻断问题。用户随后明确授权“提交并进行发布”；发布与线上核验结果将在完成后补录，本地结果不能代表 Google 已恢复收录。
+2026-11-06。本轮SEO功能版本 `55100df4dc59e6443c6f5651180494cddb019e5c` 已合入main并发布。Cloudflare生产部署 `ba344843-340d-49c1-90a0-556e5e2e4c8b` 于15:47:45（Asia/Taipei）成功，GitHub部署检查为success。综合技术回归及正式域名验证通过，未发现所测范围内的新阻断问题；Google索引恢复仍须后续独立核验。
 
 ## 本轮改动与验收结果
 
@@ -24,22 +24,26 @@
 
 图片优化阶段的同条件本地测量：桌面首页图片传输约 1728→388KB，手机 1728→207KB；博客列表约 358→167KB、467→126KB。该实验屏蔽外部资源、每页冷缓存观察 12 秒，属于实验室数据；本次综合回归未重复计时，也未测得真实访客 Core Web Vitals。不得据此宣称线上 LCP/排名已提升。
 
-## 发布后待验证
+## 正式域名验证
 
-以下事项仅列计划，须在用户批准发布后执行：
+`https://www.professionalheadshotai.ink` 的15页正文/标题/canonical、分享PNG/响应式图片、WebSite和8篇文章标记均通过HTTP检查；6个私有路由和5类真实404正常。线上sitemap含15页、robots引用正确，裸域301跳转到www。检查的4个入口JS/CSS资源均200且类型正确。
 
-1. 对正式域名复核 15 页正文/标题/canonical、404/私有路由、sitemap 和新增静态资源，确认 CDN 实际返回新产物。
-2. 检查 Google 登录初始化与原有业务入口；本轮没有进行真实 Google 登录、非零实付或付费生图，旧验收记录见 [生产验收记录](production-acceptance.md)。
-3. 核对 sitemap 读取和 URL Inspection，优先首页、简历照片常见错误文章及 LinkedIn 页。请求重新抓取/提交 sitemap 须在发布后按当时授权执行；随后观察实际索引、展示和点击变化。
-4. 验证真实社交平台的分享卡片及缓存。WebSite 站点名称不受 Google Rich Results Test 支持，不能将该工具未检出当成错误；最终搜索名称由 Google 决定。
-5. 收集线上性能数据，区分单次实验与真实访客指标；没有足够样本时标记数据不足。
+`pnpm check:cloudflare` 通过健康、匿名会话、套餐、账号/支付状态/私图鉴权、未知API404、模板图片及真实Google登录挑战初始化。4个页面在1440/390宽度共8次生产浏览器检查通过，无横向溢出、可见本地坏图、未捕获异常或hydration错误；统计请求因QA而屏蔽。本轮没有进行真实Google账号登录、非零实付或付费生图，旧业务验收见 [生产验收记录](production-acceptance.md)。
+
+云端完整 `pnpm verify` 成功，首次生成80张响应式图，预渲染15页，产物共283文件；Worker哈希与本地相同。后续上线记录提交只修改文档，应用功能版本仍为55100df。
+
+## 仍待后续验证
+
+1. 核对Search Console的sitemap读取和URL Inspection，优先首页、简历照片常见错误文章及LinkedIn页；按后续授权请求重新抓取/提交sitemap，再观察实际索引、展示和点击变化。
+2. 验证真实社交平台的分享卡片及缓存。图片与标签已在线可访问，但平台缓存尚未实测。WebSite不受Google Rich Results Test支持；最终搜索名称由Google决定。
+3. 收集线上真实访客性能数据；没有足够样本时标记数据不足，不把本地实验当作生产CWV。
 
 ## 保留事项与当前状态
 
 - **内容审核另行处理**：用户已跳过宣传文案/套餐权益一致性，博客中的量化效果、年份和事实依据尚未完成内容验收。本次技术通过不代表这些表述已经核实。
 - **已有风格提示保留**：此前全页设计检查仍有页脚阴影/分隔线/渐变、文章少图片、窄屏长标题等 5 类 FAIL/5 类 WARN；按用户要求保留统一页脚及现有正文，本轮没有扩大改版。30 次技术布局检查通过不等于全页风格评分为零警告。
-- **提交范围**：首页 WebSite 改动和本验收文档已获提交授权。原有 `CREEM_SETUP.md` 的 8 行、`HANDOFF.MD` 中两段支付记录共 18 行继续保留，与 SEO 提交分离。
-- **发布已获授权**：沿用既有 Cloudflare Git 自动发布，正式结果待部署及线上检查完成后记录。原先6个SEO提交和本轮首页WebSite一起发布。
+- **提交范围**：原先6个SEO提交和首页WebSite已一起发布。原有 `CREEM_SETUP.md` 的8行、`HANDOFF.MD` 中两段支付记录共18行继续保留，未纳入SEO提交。
+- **发布已完成**：沿用既有Cloudflare Git自动发布，未修改数据库、支付配置或原私有资源。发布使用仓库外独立main工作区，原工作区保持功能分支及原有文档改动。
 - **文档与规则已对齐**：README 增加本记录入口，AGENTS 命令表修正历史 auth 检查说明；历史迁移资料保留历史标识。长期记忆和其他项目为 out-of-scope，未改动。
 - **复核现场保留**：隔离 Pages 预览 `http://127.0.0.1:4173` 继续可用；没有删除分支、worktree、验收证据或其他会话资料。
 
@@ -48,3 +52,5 @@
 主要命令：`pnpm install --frozen-lockfile --ignore-scripts`、`pnpm verify`、`pnpm check:prerender http://127.0.0.1:4173`。本地 Pages 使用仓库外隔离配置；不要在仓库子目录启动而误加载正式 `.dev.vars`。
 
 完整日志与截图均为忽略的本地验收资料：`.recovery/seo-final-verify.log`、`seo-final-http.log`、`seo-final-install.log`、`seo-final-assets.json`、`seo-final-interactions.log`、`seo-final-browser/report.json` 及同目录截图。浏览器/资源检查脚本为 `.recovery/seo-final-browser.mjs`、`.recovery/seo-final-assets.mjs`。固定等待可能早于页面接管：本轮一次旧交互脚本误报示例未切换，改为等待页面和图像完成、使用原生点击并核对选中态后通过，业务代码未因该误报修改。
+
+生产验证命令：`pnpm check:prerender https://www.professionalheadshotai.ink`、`pnpm check:cloudflare`。证据：`.recovery/seo-live-pages.log`、`seo-live-runtime.log`、`seo-live-resources.json`、`seo-live-browser/report.json` 及截图。

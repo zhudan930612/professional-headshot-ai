@@ -1,8 +1,12 @@
 # 项目交接
 
-## 2026-11-06 SEO 发布授权
+## 2026-11-06 SEO 正式发布与线上验证
 
-- 用户在综合回归通过后明确要求“提交并进行发布”，授权本轮SEO改动提交并按现有Cloudflare Git流程发布。下方“暂不发布/未提交”为各阶段验收时的历史状态；正式部署和线上验证结果待本次执行完成后补录。原有CREEM_SETUP.md及两段支付记录仍不纳入SEO提交。
+- 用户在综合回归通过后明确要求“提交并进行发布”。功能提交 `55100df4dc59e6443c6f5651180494cddb019e5c` 已快进合入main并推送，Cloudflare Git生产部署 `ba344843-340d-49c1-90a0-556e5e2e4c8b` 于2026-11-06 15:47:45（Asia/Taipei）成功，GitHub Cloudflare检查也为success。下方“暂不发布/未提交”为各阶段历史状态。
+- 正式 `https://www.professionalheadshotai.ink` 已通过15公开页/6私有路由/5类404检查，包含完整HTML、canonical、分享PNG及响应式候选图片、WebSite与8篇BlogPosting/BreadcrumbList。sitemap含15页、robots引用正确、裸域301到www；4个入口JS/CSS资源200且类型正确。
+- `pnpm check:cloudflare` 全部通过：健康、匿名会话、3个套餐、账号/支付状态/私图鉴权、未知API404、模板图片、Google登录挑战（clientId及安全cookie）。未进行真实Google账号登录、付费交易或生图。生产4页×桌面/手机8次浏览器检查通过，无横向溢出、本地坏图、未捕获异常或hydration错误；QA屏蔽统计请求。
+- 云端首次生成80张WebP，构建预渲染15页，完整pnpm verify成功，Worker哈希保持412351b653aa852d0022bc096272febfb4de213f5084794465f0dc983cfdedcb。证据在 `.recovery/seo-live-pages.log`、`seo-live-runtime.log`、`seo-live-resources.json`、`seo-live-browser/report.json`。Search Console重抓/索引恢复、真实社交卡片缓存和访客性能仍待后续核验，不因已发布而视为完成。
+- main发布使用隔离工作区 `F:/codex_temp/2026-11-06/headshot-seo-release`；原工作区仍在codex/seo-improvements，原有CREEM_SETUP.md和两段支付记录未纳入提交。上线记录的后续提交只改文档，应用功能版本仍为55100df。
 
 
 ## 2026-11-06 SEO 分支综合回归
