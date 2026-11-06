@@ -68,6 +68,7 @@ async function mount(pathname: string, notFound = false) {
   const social = [...document.querySelectorAll('meta[property^="og:"],meta[name^="twitter:"]')].map(tag => tag.outerHTML).sort();
   const main = document.querySelector('main');
   const heading = document.querySelector('h1')?.textContent;
+  const structured = [...document.querySelectorAll('script[type="application/ld+json"]')].map(script => script.textContent);
   expect(main?.textContent?.length).toBeGreaterThan(150);
   expect(document.querySelectorAll('h1')).toHaveLength(1);
   expect(document.querySelectorAll('link[rel="canonical"]')).toHaveLength(notFound ? 0 : 1);
@@ -81,7 +82,7 @@ async function mount(pathname: string, notFound = false) {
     await act(async () => {});
     expect(fetchMock.mock.calls.some(([url]) => url === '/api/account')).toBe(true);
   });
-  return { title, description, main, heading, social };
+  return { title, description, main, heading, social, structured };
 }
 
 async function click(selector: string) {
@@ -91,6 +92,34 @@ async function click(selector: string) {
 }
 
 describe('all public pages without JavaScript and after hydration', () => {
+  it.each(['/', '/blog'])('follows the article breadcrumb to %s and removes article data', async target => {
+    await mount('/blog/what-to-wear-for-a-professional-headshot');
+    await click(`nav[aria-label="Breadcrumb"] a[href="${target}"]`);
+    await vi.waitFor(async () => {
+      await act(async () => {});
+      expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(`${SITE_URL}${target}`);
+      expect(document.querySelector('script[type="application/ld+json"]')).toBeNull();
+      expect(document.querySelector('nav[aria-label="Breadcrumb"]')).toBeNull();
+    });
+  });
+  it('removes the old article data while the next article is still loading', async () => {
+    const slug = 'what-to-wear-for-a-professional-headshot';
+    await mount(`/blog/${slug}`);
+    const target = getBlogPresentation(slug).related[0];
+    const originalFetch = fetchMock.getMockImplementation() as (input: string | URL | Request) => Promise<Response>;
+    let finish!: (response: Response) => void;
+    fetchMock.mockImplementation(input => String(input) === `/content/blog/${target}.md`
+      ? new Promise<Response>(resolve => { finish = resolve; }) : originalFetch(input));
+    await click(`nav[aria-label="Related articles"] a[href="/blog/${target}"]`);
+    expect(document.body.textContent).toContain('Loading article...');
+    expect(document.querySelector('script[type="application/ld+json"]')).toBeNull();
+    await act(async () => finish(new Response(await readFile(`public/content/blog/${target}.md`, 'utf8'))));
+    await vi.waitFor(() => {
+      const scripts = document.querySelectorAll('script[type="application/ld+json"]');
+      expect(scripts).toHaveLength(1);
+      expect(JSON.parse(scripts[0].textContent!)['@graph'][0].url).toBe(`${SITE_URL}/blog/${target}`);
+    });
+  });
   it('clears article sharing metadata when navigating to an account page', async () => {
     await mount('/blog/top-5-mistakes-in-resume-photos');
     expect(document.querySelector('meta[property="og:type"]')?.getAttribute('content')).toBe('article');
@@ -98,6 +127,7 @@ describe('all public pages without JavaScript and after hydration', () => {
     await vi.waitFor(async () => {
       await act(async () => {});
       expect(document.title).toBe('My History – Professional Headshot AI');
+      expect(document.querySelector('script[type="application/ld+json"]')).toBeNull();
       expect(document.querySelector('meta[property="og:image"]')).toBeNull();
       expect(document.querySelector('meta[name="twitter:image"]')).toBeNull();
       expect(document.querySelector('meta[property="og:type"]')?.getAttribute('content')).toBe('website');
@@ -152,6 +182,13 @@ describe('all public pages without JavaScript and after hydration', () => {
       expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(`${SITE_URL}/blog/${target}`);
       expect(document.querySelector('article figure img')?.getAttribute('src')).toBe(portraitImageProps(getBlogPresentation(target).cover, '36vw').src);
       expect(document.querySelector('meta[property="og:image"]')?.getAttribute('content')).toBe(`${SITE_URL}/social/${target}.png`);
+      const scripts = document.querySelectorAll('script[type="application/ld+json"]');
+      expect(scripts).toHaveLength(1);
+      const [article, breadcrumb] = JSON.parse(scripts[0].textContent!)['@graph'];
+      expect(article.url).toBe(`${SITE_URL}/blog/${target}`);
+      expect(article.headline).toBe(document.querySelector('h1')?.textContent);
+      expect(breadcrumb.itemListElement[2].item).toBe(article.url);
+      expect(document.querySelector('nav[aria-label="Breadcrumb"] [aria-current="page"]')?.textContent).toBe(article.headline);
     });
   });
 
@@ -172,13 +209,14 @@ describe('all public pages without JavaScript and after hydration', () => {
   });
 
   it('shows noindex and clears the previous canonical on client navigation to a missing article', async () => {
-    await mount('/blog');
+    await mount('/blog/what-to-wear-for-a-professional-headshot');
     await act(async () => {
       window.history.pushState({}, '', '/blog/missing-article');
       window.dispatchEvent(new PopStateEvent('popstate'));
     });
     await vi.waitFor(async () => { await act(async () => {}); expect(document.title).toBe('Page Not Found – Professional Headshot AI'); });
     expect(document.querySelector('h1')?.textContent).toBe('Page not found');
+    expect(document.querySelector('script[type="application/ld+json"]')).toBeNull();
     expect(document.querySelector('meta[name="robots"]')?.getAttribute('content')).toContain('noindex');
     expect(document.querySelector('link[rel="canonical"]')).toBeNull();
     expect(fetchMock.mock.calls.some(([url]) => String(url).includes('missing-article.md'))).toBe(false);
@@ -189,6 +227,7 @@ describe('all public pages without JavaScript and after hydration', () => {
     expect(document.querySelector('main')).toBe(before.main);
     expect(document.querySelector('h1')?.textContent).toBe(before.heading);
     expect(document.title).toBe(before.title);
+    expect([...document.querySelectorAll('script[type="application/ld+json"]')].map(script => script.textContent)).toEqual(before.structured);
     expect([...document.querySelectorAll('meta[property^="og:"],meta[name^="twitter:"]')].map(tag => tag.outerHTML).sort()).toEqual(before.social);
     expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).toBe(before.description);
     expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(`${SITE_URL}${pathname}`);
@@ -208,6 +247,7 @@ describe('all public pages without JavaScript and after hydration', () => {
     await act(async () => { await vi.waitFor(() => expect(document.title).toContain('Top 5 Mistakes')); });
     await click('a[href="/pricing"]');
     expect(document.title).toBe('Pricing – Professional Headshot AI');
+    expect(document.querySelector('script[type="application/ld+json"]')).toBeNull();
     expect(document.querySelector('meta[property="og:image"]')?.getAttribute('content')).toBe(`${SITE_URL}/social/default.png`);
     expect(document.querySelector('meta[property="og:type"]')?.getAttribute('content')).toBe('website');
     expect(document.querySelector('main')?.textContent).toContain('$25');

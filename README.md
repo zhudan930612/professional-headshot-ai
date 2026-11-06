@@ -46,6 +46,8 @@ HTTP 验收使用 `pnpm check:prerender http://localhost:4173`，禁止自动跟
 
 构建会检查 JPEG 封面、关联文章及工具目标；静态检查和交互测试覆盖封面一致性、目录锚点、正文装饰清理、两条推荐及跳转后的 canonical。
 
+8 篇博客的 `BlogPosting` 与 `BreadcrumbList` 由 `lib/blogStructuredData.ts` 生成，随文章组件写入初始 HTML，并在路由切换时更新或移除。结构化标题、摘要、封面、日期与页面可见信息一致；面包屑为 Home / Blog / 当前阅读标题。沿用 Markdown 原发布日期，不生成作者或更新时间；有真实来源后再补充。JSON-LD 转义 `<` 等字符，避免文本提前关闭 script。`check:prerender` 检查全部文章的结构化字段和可见导航，`check:hydration` 检查接管一致性、加载中清理及离开文章页后的残留。
+
 ```powershell
 pnpm typecheck
 pnpm test

@@ -10,6 +10,7 @@ import { parseMarkdownFile } from '../utils/markdownParser';
 import { NotFound } from '@/pages/NotFound';
 import { BlogCover } from '@/components/BlogCover';
 import { getBlogPresentation, getRelatedPosts } from '@/lib/blogPresentation';
+import { getBlogBreadcrumbs, getBlogStructuredData, serializeStructuredData } from '@/lib/blogStructuredData';
 
 export const BlogPost = () => {
   const { slug } = useParams();
@@ -67,13 +68,23 @@ export const BlogPost = () => {
       canonicalPath: `/blog/${slug}`,
     }}>
       <article className="journal">
+        <script id="blog-structured-data" type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: serializeStructuredData(getBlogStructuredData(post)) }} />
+        <nav aria-label="Breadcrumb" className="article-breadcrumb">
+          <ol>
+            {getBlogBreadcrumbs(post.slug).map((item, index) => <li key={item.path}>
+              {index > 0 && <span aria-hidden="true" className="breadcrumb-separator">/</span>}
+              {index < 2 ? <Link to={item.path}>{item.name}</Link> : <span aria-current="page">{item.name}</span>}
+            </li>)}
+          </ol>
+        </nav>
         <header className="article-opening">
           <figure><BlogCover slug={post.slug} priority /></figure>
           <div className="article-heading">
             <h1>{presentation.displayTitle}</h1>
             <p>{presentation.summary}</p>
             <a href={`#${sections[0]?.id ?? 'article-body'}`} className="journal-action">Read guide</a>
-            <div className="article-meta"><time>{post.date}</time><span>{post.readTime}</span><Link to="/blog">All guides</Link></div>
+            <div className="article-meta"><time dateTime={post.date}>{post.date}</time><span>{post.readTime}</span><Link to="/blog">All guides</Link></div>
           </div>
         </header>
         <div className="article-layout">

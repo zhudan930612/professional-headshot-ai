@@ -27,6 +27,13 @@
 .journal-row span { font-size:14px; color:var(--soft); }
 .journal-row img { display:none; }
 .article-back { display:inline-block; font-size:16px; margin:0 0 40px; }
+.article-breadcrumb { margin-bottom:28px; color:var(--soft); font-size:14px; line-height:1.5; }
+.article-breadcrumb ol { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 0; list-style:none; margin:0; padding:0; }
+.article-breadcrumb li { display:flex; align-items:baseline; min-width:0; }
+.article-breadcrumb .breadcrumb-separator { margin:0 10px; }
+.article-breadcrumb a { padding:6px 0; text-decoration:underline; }
+.article-breadcrumb a:hover { color:var(--accent); }
+.article-breadcrumb [aria-current] { padding:6px 0; overflow-wrap:anywhere; }
 .article-opening { display:grid; grid-template-columns:42% 58%; align-items:center; gap:0; margin-bottom:88px; }
 .article-opening>figure { margin:0 15% 0 0; height:530px; overflow:hidden; }
 .article-opening img {animation:photo-settle 1.2s both}

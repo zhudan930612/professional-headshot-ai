@@ -89,8 +89,33 @@ for (const pathname of PUBLIC_PAGE_PATHS) {
   assert.equal(document.querySelector('meta[name="robots"]'), null);
   const data: PublicPageData = JSON.parse(document.getElementById('__PUBLIC_PAGE_DATA__')!.textContent!);
   assert.equal(data.pathname, pathname);
+  const structuredScripts = document.querySelectorAll('script[type="application/ld+json"]');
+  assert.equal(structuredScripts.length, data.post ? 1 : 0, `${pathname}: article data only on articles`);
   if (data.post) {
     const presentation = getBlogPresentation(data.post.slug);
+    const structured = JSON.parse(structuredScripts[0].textContent!);
+    assert.equal(structured['@context'], 'https://schema.org');
+    assert.equal(structured['@graph'].length, 2);
+    const [article, breadcrumb] = structured['@graph'];
+    assert.equal(article['@type'], 'BlogPosting');
+    assert.equal(article.url, `${SITE_URL}${pathname}`);
+    assert.equal(article['@id'], `${article.url}#article`);
+    assert.equal(article.mainEntityOfPage['@id'], article.url);
+    assert.equal(article.headline, document.querySelector('h1')?.textContent);
+    assert.equal(article.description, document.querySelector('.article-heading>p')?.textContent);
+    assert.equal(article.datePublished, document.querySelector('time')?.getAttribute('datetime'));
+    assert.equal(article.datePublished, data.post.date);
+    assert.equal(article.image, `${SITE_URL}${presentation.cover}`);
+    assert.ok(!('author' in article) && !('dateModified' in article), 'Do not invent article attribution or modification dates.');
+    assert.equal(breadcrumb['@type'], 'BreadcrumbList');
+    const trail = [...document.querySelectorAll('nav[aria-label="Breadcrumb"] li')];
+    assert.equal(trail.length, 3);
+    assert.equal(trail[2].querySelector('[aria-current="page"]')?.textContent, article.headline);
+    assert.deepEqual(breadcrumb.itemListElement, trail.map((item, index) => ({
+      '@type': 'ListItem', position: index + 1,
+      name: item.querySelector('a, [aria-current]')!.textContent,
+      item: `${SITE_URL}${item.querySelector('a')?.getAttribute('href') ?? pathname}`,
+    })));
     assert.equal(document.querySelector('article figure img')?.getAttribute('src'), portraitImageProps(presentation.cover, '36vw').src);
     const recommendations = [...document.querySelectorAll('nav[aria-label="Related articles"] a')].map(link => link.getAttribute('href'));
     assert.deepEqual(recommendations, presentation.related.map(slug => `/blog/${slug}`));
