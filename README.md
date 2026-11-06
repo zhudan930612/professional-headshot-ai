@@ -4,6 +4,8 @@ React + TypeScript + Vite，Cloudflare Pages advanced-mode Worker + D1 + 私有 
 
 先读 [HANDOFF.MD](HANDOFF.MD) 和 [迁移记录](docs/cloudflare-native-migration.md)。生产运行入口是 cloudflare/worker.ts，构建为 dist/_worker.js；旧 functions/、api/、server/ 中的 Supabase 实现和 PostgreSQL 测试保留用于历史对照，不参与当前生产 Worker。
 
+当前 SEO 分支的验证范围、保留事项与发布后检查见 [SEO 分支综合验收记录](docs/seo-branch-acceptance.md)。本地验收通过不代表已经发布或恢复 Google 收录。
+
 ## 本地运行
 
 需要 Node.js 22+、pnpm 10.26.1。复制 .dev.vars.example 为 .dev.vars；填写 Google Client ID 和随机图片签名密钥。付费服务默认留空。
@@ -47,6 +49,8 @@ HTTP 验收使用 `pnpm check:prerender http://localhost:4173`，禁止自动跟
 构建会检查 JPEG 封面、关联文章及工具目标；静态检查和交互测试覆盖封面一致性、目录锚点、正文装饰清理、两条推荐及跳转后的 canonical。
 
 8 篇博客的 `BlogPosting` 与 `BreadcrumbList` 由 `lib/blogStructuredData.ts` 生成，随文章组件写入初始 HTML，并在路由切换时更新或移除。结构化标题、摘要、封面、日期与页面可见信息一致；面包屑为 Home / Blog / 当前阅读标题。沿用 Markdown 原发布日期，不生成作者或更新时间；有真实来源后再补充。JSON-LD 转义 `<` 等字符，避免文本提前关闭 script。`check:prerender` 检查全部文章的结构化字段和可见导航，`check:hydration` 检查接管一致性、加载中清理及离开文章页后的残留。
+
+首页另有唯一的 `WebSite` JSON-LD，名称为 Professional Headshot AI，网址与首页 canonical 一致。`lib/siteIdentity.ts` 集中定义名称和正式域名，分享标签复用同一名称；`lib/structuredData.ts` 提供首页标记和共用的安全 JSON 序列化。标记随首页预渲染、挂载和卸载，博客继续使用自己的文章标记。站点名称不属于 Google Rich Results Test 支持的验证类型，发布后需待抓取再检查搜索展示。
 
 ```powershell
 pnpm typecheck

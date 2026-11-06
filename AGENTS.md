@@ -14,8 +14,8 @@ A professional headshot AI application built with React 19, TypeScript, and Vite
 | `npm run dev` | Start Vite dev server with HMR on port 3000 |
 | `npm run build` | Create production bundle in `dist/` |
 | `npm run preview` | Serve production build locally for QA |
-| `npm run check:auth` | Validate auth configuration (tsx scripts/check-auth-config.ts) |
-| `npm run check:supabase` | Validate Supabase environment config (tsx scripts/check-supabase.ts) |
+| `npm run check:auth` | Check current Cloudflare runtime (alias of check:cloudflare) |
+| `npm run check:supabase` | Check the archived Supabase migration source (tsx scripts/check-supabase.ts) |
 | `npx tsc --noEmit` | Run TypeScript compiler check without emitting files |
 
 For single test execution, this project uses Vitest when tests are added. Run tests with:

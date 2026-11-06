@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BLOG_POSTS } from '@/constants';
-import { getBlogStructuredData, serializeStructuredData } from './blogStructuredData';
+import { getBlogStructuredData } from './blogStructuredData';
+import { serializeStructuredData } from './structuredData';
 
 describe('article structured data', () => {
   it('preserves the recorded date without inventing an author or modification date', () => {

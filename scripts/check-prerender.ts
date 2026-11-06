@@ -90,7 +90,17 @@ for (const pathname of PUBLIC_PAGE_PATHS) {
   const data: PublicPageData = JSON.parse(document.getElementById('__PUBLIC_PAGE_DATA__')!.textContent!);
   assert.equal(data.pathname, pathname);
   const structuredScripts = document.querySelectorAll('script[type="application/ld+json"]');
-  assert.equal(structuredScripts.length, data.post ? 1 : 0, `${pathname}: article data only on articles`);
+  assert.equal(structuredScripts.length, pathname === '/' || data.post ? 1 : 0, `${pathname}: structured data belongs to this route`);
+  if (pathname === '/') {
+    const website = JSON.parse(structuredScripts[0].textContent!);
+    assert.deepEqual(website, {
+      '@context': 'https://schema.org', '@type': 'WebSite', '@id': `${SITE_URL}/#website`,
+      name: 'Professional Headshot AI', url: `${SITE_URL}/`,
+    });
+    assert.equal(website.url, document.querySelector('link[rel="canonical"]')?.getAttribute('href'));
+    assert.equal(website.name, document.querySelector('meta[property="og:site_name"]')?.getAttribute('content'));
+    assert.equal(document.querySelector('nav a[href="/"][aria-label]')?.getAttribute('aria-label'), `${website.name} home`);
+  }
   if (data.post) {
     const presentation = getBlogPresentation(data.post.slug);
     const structured = JSON.parse(structuredScripts[0].textContent!);
@@ -161,6 +171,7 @@ for (const pathname of base ? privatePaths : ['/app-shell']) {
   assert.equal(dom.window.document.querySelector('meta[name="robots"]')?.getAttribute('content'), 'noindex, nofollow');
   assert.equal(dom.window.document.getElementById('__PUBLIC_PAGE_DATA__'), null, 'Private routes must not receive a public page snapshot.');
   assert.equal(dom.window.document.getElementById('root')?.childNodes.length, 0);
+  assert.equal(dom.window.document.querySelector('script[type="application/ld+json"]'), null);
   dom.window.close();
 }
 const missingPaths = ['/seo-missing-page', '/seo-missing-page/', '/blog/seo-missing-article', '/blog/seo-missing-article/', '/nested/missing/page?source=test'];
@@ -185,6 +196,7 @@ for (const pathname of base ? missingPaths : ['/404']) {
   assert.equal(doc.querySelector('link[rel="canonical"]'), null);
   assert.equal(doc.querySelector('meta[property="og:image"]'), null);
   assert.equal(doc.querySelector('meta[name="twitter:image"]'), null);
+  assert.equal(doc.querySelector('script[type="application/ld+json"]'), null);
   assert.ok(doc.querySelector('main a[href="/"]'));
   assert.ok(doc.querySelector('main a[href="/blog"]'));
   dom.window.close();

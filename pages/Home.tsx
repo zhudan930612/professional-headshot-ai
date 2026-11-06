@@ -7,6 +7,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { UseCase } from '@/types';
 import { portraitImageProps } from '@/lib/responsiveImages';
+import { serializeStructuredData, WEBSITE_STRUCTURED_DATA } from '@/lib/structuredData';
 
 // Data structure for gallery images
 const ROW_1_DATA: string[] = [
@@ -55,6 +56,8 @@ export const Home = () => {
 
   return (
     <Layout>
+      <script id="website-structured-data" type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeStructuredData(WEBSITE_STRUCTURED_DATA) }} />
       <div className="space-y-24 pb-24">
       {/* Hero Section */}
       <section className="relative pt-12 pb-16 md:pt-20 md:pb-24 overflow-hidden bg-slate-50">

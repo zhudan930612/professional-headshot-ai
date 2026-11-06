@@ -1,4 +1,5 @@
 import { BLOG_PRESENTATION } from '@/lib/blogPresentation';
+import { SITE_NAME } from '@/lib/siteIdentity';
 
 export const SOCIAL_WIDTH = 1200;
 export const SOCIAL_HEIGHT = 630;
@@ -32,7 +33,7 @@ export const SOCIAL_META_KEYS = ['og:title', 'og:description', 'og:url', 'og:typ
 export function socialMetaTags(seo: { title: string; description: string; canonicalUrl?: string; social?: ReturnType<typeof getSocialPreview> }, baseUrl: string): SocialMetaTag[] {
   const values: Record<string, string> = {
     'og:title': seo.title, 'og:description': seo.description, 'og:type': seo.social?.type || 'website',
-    'og:site_name': 'Professional Headshot AI',
+    'og:site_name': SITE_NAME,
     'twitter:card': seo.social ? 'summary_large_image' : 'summary',
     'twitter:title': seo.title, 'twitter:description': seo.description,
   };

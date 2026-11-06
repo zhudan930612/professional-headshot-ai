@@ -1,7 +1,8 @@
 import { BLOG_POSTS } from '@/constants';
 import { getSocialPreview } from '@/lib/socialPreview';
+import { SITE_URL } from '@/lib/siteIdentity';
 
-export const SITE_URL = 'https://www.professionalheadshotai.ink';
+export { SITE_URL } from '@/lib/siteIdentity';
 
 export interface PageSeo {
   title: string;

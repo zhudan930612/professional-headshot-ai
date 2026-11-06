@@ -1,5 +1,5 @@
 import { getBlogPresentation } from '@/lib/blogPresentation';
-import { SITE_URL } from '@/lib/seo';
+import { SITE_URL } from '@/lib/siteIdentity';
 import type { BlogPost } from '@/types';
 
 export function getBlogBreadcrumbs(slug: string) {
@@ -41,9 +41,4 @@ export function getBlogStructuredData(post: BlogPost) {
       },
     ],
   };
-}
-
-export function serializeStructuredData(data: unknown): string {
-  // JSON is embedded in a raw-text script element, so HTML escaping is insufficient.
-  return JSON.stringify(data).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
 }

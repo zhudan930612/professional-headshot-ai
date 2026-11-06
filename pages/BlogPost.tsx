@@ -10,7 +10,8 @@ import { parseMarkdownFile } from '../utils/markdownParser';
 import { NotFound } from '@/pages/NotFound';
 import { BlogCover } from '@/components/BlogCover';
 import { getBlogPresentation, getRelatedPosts } from '@/lib/blogPresentation';
-import { getBlogBreadcrumbs, getBlogStructuredData, serializeStructuredData } from '@/lib/blogStructuredData';
+import { getBlogBreadcrumbs, getBlogStructuredData } from '@/lib/blogStructuredData';
+import { serializeStructuredData } from '@/lib/structuredData';
 
 export const BlogPost = () => {
   const { slug } = useParams();

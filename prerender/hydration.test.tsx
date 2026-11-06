@@ -92,13 +92,62 @@ async function click(selector: string) {
 }
 
 describe('all public pages without JavaScript and after hydration', () => {
+  it('switches between homepage and article structured data without duplicates', async () => {
+    await mount('/');
+    const website = document.getElementById('website-structured-data')!.textContent;
+    expect(JSON.parse(website!)).toEqual({
+      '@context': 'https://schema.org', '@type': 'WebSite', '@id': `${SITE_URL}/#website`,
+      name: 'Professional Headshot AI', url: `${SITE_URL}/`,
+    });
+    expect(JSON.parse(website!).name).toBe(document.querySelector('meta[property="og:site_name"]')?.getAttribute('content'));
+    await click('a[href="/blog"]');
+    await vi.waitFor(async () => {
+      await act(async () => {});
+      expect(document.title).toBe('Blog – Professional Headshot AI');
+      expect(document.querySelector('script[type="application/ld+json"]')).toBeNull();
+    });
+    await click('a[href="/blog/what-to-wear-for-a-professional-headshot"]');
+    await vi.waitFor(async () => {
+      await act(async () => {});
+      expect(document.querySelectorAll('script[type="application/ld+json"]')).toHaveLength(1);
+      expect(document.getElementById('blog-structured-data')).not.toBeNull();
+      expect(document.getElementById('website-structured-data')).toBeNull();
+    });
+    await click('nav[aria-label="Breadcrumb"] a[href="/"]');
+    await vi.waitFor(async () => {
+      await act(async () => {});
+      expect(document.querySelectorAll('script[type="application/ld+json"]')).toHaveLength(1);
+      expect(document.getElementById('website-structured-data')?.textContent).toBe(website);
+      expect(document.getElementById('blog-structured-data')).toBeNull();
+    });
+  });
+  it.each(['/pricing', '/history', '/missing-page'])('clears homepage structured data at %s and restores it on return', async target => {
+    await mount('/');
+    await act(async () => {
+      window.history.pushState({}, '', target);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+    await vi.waitFor(async () => {
+      await act(async () => {});
+      expect(document.querySelector('script[type="application/ld+json"]')).toBeNull();
+    });
+    await click('a[href="/"]');
+    await vi.waitFor(async () => {
+      await act(async () => {});
+      expect(document.querySelectorAll('script[type="application/ld+json"]')).toHaveLength(1);
+      expect(document.getElementById('website-structured-data')).not.toBeNull();
+      expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(`${SITE_URL}/`);
+    });
+  });
   it.each(['/', '/blog'])('follows the article breadcrumb to %s and removes article data', async target => {
     await mount('/blog/what-to-wear-for-a-professional-headshot');
     await click(`nav[aria-label="Breadcrumb"] a[href="${target}"]`);
     await vi.waitFor(async () => {
       await act(async () => {});
       expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(`${SITE_URL}${target}`);
-      expect(document.querySelector('script[type="application/ld+json"]')).toBeNull();
+      expect(document.getElementById('blog-structured-data')).toBeNull();
+      expect(document.querySelectorAll('script[type="application/ld+json"]')).toHaveLength(target === '/' ? 1 : 0);
+      if (target === '/') expect(JSON.parse(document.getElementById('website-structured-data')!.textContent!)['@type']).toBe('WebSite');
       expect(document.querySelector('nav[aria-label="Breadcrumb"]')).toBeNull();
     });
   });
