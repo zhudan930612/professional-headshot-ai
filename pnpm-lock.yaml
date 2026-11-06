@@ -87,6 +87,9 @@ importers:
       postcss:
         specifier: ^8.5.29
         version: 8.5.29
+      sharp:
+        specifier: 0.35.5
+        version: 0.35.5(@types/node@22.20.5)
       tailwindcss:
         specifier: ^3.4.19
         version: 3.4.19(tsx@4.23.15)

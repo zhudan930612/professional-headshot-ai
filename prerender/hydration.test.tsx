@@ -11,6 +11,7 @@ import { PUBLIC_PAGE_PATHS, SITE_URL } from '@/lib/seo';
 import type { PublicPageData } from '@/types';
 import { BLOG_POSTS } from '@/constants';
 import { getBlogPresentation } from '@/lib/blogPresentation';
+import { portraitImageProps } from '@/lib/responsiveImages';
 
 vi.mock('@/services/authService', async original => ({
   ...await original<typeof import('@/services/authService')>(),
@@ -106,7 +107,7 @@ describe('all public pages without JavaScript and after hydration', () => {
     await mount('/blog');
     const link = document.querySelector<HTMLAnchorElement>('.journal-row[href="/blog/lighting-101-studio-vs-natural"]')!;
     await act(async () => link.focus());
-    const source = getBlogPresentation('lighting-101-studio-vs-natural').cover;
+    const source = portraitImageProps(getBlogPresentation('lighting-101-studio-vs-natural').cover, '484px').src;
     await vi.waitFor(async () => { await act(async () => {}); expect(document.querySelector(`.journal-preview img[src="${source}"]`)).not.toBeNull(); });
     expect(document.querySelector('.journal-preview img[data-active="true"]')?.getAttribute('src')).not.toBe(source);
     await act(async () => document.querySelector(`.journal-preview img[src="${source}"]`)!.dispatchEvent(new Event('load')));
@@ -115,7 +116,7 @@ describe('all public pages without JavaScript and after hydration', () => {
   it('ignores a preview that finishes loading after focus has moved away', async () => {
     await mount('/blog');
     const link = document.querySelector<HTMLAnchorElement>('.journal-row[href="/blog/lighting-101-studio-vs-natural"]')!;
-    const source = getBlogPresentation('lighting-101-studio-vs-natural').cover;
+    const source = portraitImageProps(getBlogPresentation('lighting-101-studio-vs-natural').cover, '484px').src;
     await act(async () => link.focus());
     await vi.waitFor(async () => { await act(async () => {}); expect(document.querySelector(`.journal-preview img[src="${source}"]`)).not.toBeNull(); });
     await act(async () => link.blur());
@@ -137,7 +138,7 @@ describe('all public pages without JavaScript and after hydration', () => {
   it.each(BLOG_POSTS.map(post => post.slug))('follows the related reading from %s with matching cover and canonical', async slug => {
     await mount(`/blog/${slug}`);
     const presentation = getBlogPresentation(slug);
-    expect(document.querySelector('article figure img')?.getAttribute('src')).toBe(presentation.cover);
+    expect(document.querySelector('article figure img')?.getAttribute('src')).toBe(portraitImageProps(presentation.cover, '36vw').src);
     expect(document.querySelector('meta[property="og:type"]')?.getAttribute('content')).toBe('article');
     expect(document.querySelectorAll('nav[aria-label="Related articles"] a')).toHaveLength(2);
     const contents = [...document.querySelectorAll('nav[aria-label="Article contents"] a')];
@@ -149,7 +150,7 @@ describe('all public pages without JavaScript and after hydration', () => {
     await vi.waitFor(async () => {
       await act(async () => {});
       expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(`${SITE_URL}/blog/${target}`);
-      expect(document.querySelector('article figure img')?.getAttribute('src')).toBe(getBlogPresentation(target).cover);
+      expect(document.querySelector('article figure img')?.getAttribute('src')).toBe(portraitImageProps(getBlogPresentation(target).cover, '36vw').src);
       expect(document.querySelector('meta[property="og:image"]')?.getAttribute('content')).toBe(`${SITE_URL}/social/${target}.png`);
     });
   });
@@ -284,7 +285,7 @@ describe('all public pages without JavaScript and after hydration', () => {
     const sample = [...document.querySelectorAll('button')].find(button => button.textContent === 'Business casual');
     await act(async () => sample!.click());
     expect(sample?.getAttribute('aria-pressed')).toBe('true');
-    expect(document.querySelector('figure img')?.getAttribute('src')).toBe('/best-headshot/best_12.jpeg');
+    expect(document.querySelector('figure img')?.getAttribute('src')).toBe('/optimized/portraits/best_12-640.webp');
     await click('a[href="#linkedin-generator"]');
     expect(document.querySelector('[role="dialog"]')).not.toBeNull();
     expect(localStorage.getItem('auth_return_path')).toBe('/linkedin-headshots#linkedin-generator');

@@ -93,7 +93,7 @@ export const BlogPost = () => {
           <h2>Keep reading</h2>
           <div className="journal-related-list">
             {relatedPosts.map(related => <Link key={related.slug} to={`/blog/${related.slug}`}>
-              <figure><BlogCover slug={related.slug} /></figure>
+              <figure><BlogCover slug={related.slug} sizes="(max-width: 600px) 36vw, (max-width: 1440px) 18vw, 250px" /></figure>
               <h3>{getBlogPresentation(related.slug).displayTitle}</h3>
             </Link>)}
           </div>

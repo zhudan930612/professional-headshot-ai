@@ -21,6 +21,7 @@ dist-ssr
 .recovery/
 .migration/
 .taste-skill/
+/public/optimized/
 
 # Editor directories and files
 .vscode/*

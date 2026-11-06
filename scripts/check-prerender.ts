@@ -7,12 +7,15 @@ import type { PublicPageData } from '@/types';
 import { getBlogPresentation } from '@/lib/blogPresentation';
 import { getPageSeo } from '@/lib/seo';
 import { socialMetaTags } from '@/lib/socialPreview';
+import { portraitImageProps } from '@/lib/responsiveImages';
+import sharp from 'sharp';
 
 const base = process.argv[2];
 const titles = new Set<string>();
 const publicLinks = new Map<string, string[]>();
 const report = [];
 let homepageFooter: string | undefined;
+const checkedPortraits = new Set<string>();
 for (const pathname of PUBLIC_PAGE_PATHS) {
   const file = pathname === '/' ? 'index.html' : `${pathname.slice(1)}.html`;
   let html: string;
@@ -24,6 +27,27 @@ for (const pathname of PUBLIC_PAGE_PATHS) {
   } else html = await readFile(`dist/${file}`, 'utf8');
   const dom = new JSDOM(html); // Scripts are deliberately disabled.
   const document = dom.window.document;
+  for (const portrait of document.querySelectorAll('img[src^="/optimized/portraits/"]')) {
+    assert.ok(portrait.getAttribute('width') && portrait.getAttribute('height'), 'Portraits reserve layout space.');
+    assert.ok(portrait.getAttribute('sizes'), 'Responsive portraits declare their display size.');
+    const candidates = portrait.getAttribute('srcset')!.split(', ');
+    assert.equal(candidates.length, 5);
+    for (const candidate of candidates) {
+      const [path, descriptor] = candidate.split(' ');
+      if (checkedPortraits.has(path)) continue;
+      let bytes: Buffer;
+      if (base) {
+        const response = await fetch(new URL(path, base), { signal: AbortSignal.timeout(10_000) });
+        assert.equal(response.status, 200, path);
+        assert.match(response.headers.get('content-type') || '', path.endsWith('.jpeg') ? /image\/jpeg/ : /image\/webp/);
+        bytes = Buffer.from(await response.arrayBuffer());
+      } else bytes = await readFile(`dist${path}`);
+      const metadata = await sharp(bytes).metadata();
+      assert.equal(metadata.format, path.endsWith('.jpeg') ? 'jpeg' : 'webp');
+      assert.equal(metadata.width, Number.parseInt(descriptor));
+      checkedPortraits.add(path);
+    }
+  }
   const seo = getPageSeo(pathname);
   for (const tag of socialMetaTags(seo, SITE_URL)) {
     const matches = document.querySelectorAll(`meta[${tag.property ? 'property' : 'name'}="${tag.key}"]`);
@@ -67,7 +91,7 @@ for (const pathname of PUBLIC_PAGE_PATHS) {
   assert.equal(data.pathname, pathname);
   if (data.post) {
     const presentation = getBlogPresentation(data.post.slug);
-    assert.equal(document.querySelector('article figure img')?.getAttribute('src'), presentation.cover);
+    assert.equal(document.querySelector('article figure img')?.getAttribute('src'), portraitImageProps(presentation.cover, '36vw').src);
     const recommendations = [...document.querySelectorAll('nav[aria-label="Related articles"] a')].map(link => link.getAttribute('href'));
     assert.deepEqual(recommendations, presentation.related.map(slug => `/blog/${slug}`));
     assert.equal(document.querySelectorAll('img[src*="picsum.photos"]').length, 0);
@@ -81,7 +105,7 @@ for (const pathname of PUBLIC_PAGE_PATHS) {
     assert.ok([...document.querySelectorAll('link[rel="stylesheet"]')].some(link => link.getAttribute('href')?.includes('BlogPost-')), 'Article CSS must work without JavaScript.');
   }
   if (pathname === '/blog') {
-    assert.ok(document.querySelectorAll('main img[src^="/best-headshot/"]').length >= 8);
+    assert.ok(document.querySelectorAll('main img[src^="/optimized/portraits/"]').length >= 8);
     assert.equal(document.querySelectorAll('main img[src*="picsum.photos"]').length, 0);
   }
   if (data.plans) for (const plan of data.plans) assert.ok(document.querySelector('main')?.textContent?.includes(`$${plan.price}`));

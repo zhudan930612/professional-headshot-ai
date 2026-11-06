@@ -4,6 +4,7 @@ import { BLOG_POSTS } from '@/constants';
 import { Layout } from '@/components/Layout';
 import { BlogCover } from '@/components/BlogCover';
 import { getBlogPresentation } from '@/lib/blogPresentation';
+import { portraitImageProps } from '@/lib/responsiveImages';
 import './blog.css';
 
 export const Blog = () => {
@@ -48,7 +49,7 @@ export const Blog = () => {
   return <Layout editorial>
     <div className="journal">
       <div className="journal-masthead" aria-label="Portrait examples">
-        {BLOG_POSTS.slice(0, 4).map(post => <BlogCover key={post.slug} slug={post.slug} priority />)}
+        {BLOG_POSTS.slice(0, 4).map(post => <BlogCover key={post.slug} slug={post.slug} priority sizes="(max-width: 600px) 165px, (max-width: 1440px) 23.5vw, 338px" />)}
       </div>
       <header className="journal-intro">
         <div><p>Clothing, light and the photos you bring. Practical reading before your next professional portrait.</p>
@@ -61,8 +62,8 @@ export const Blog = () => {
             {previews.map(slug => {
               const info = getBlogPresentation(slug);
               const visible = slug === active;
-              return <img key={slug} src={info.cover} alt={visible ? info.coverAlt : ''}
-                width={896} height={1200} decoding="async" aria-hidden={!visible}
+              return <img key={slug} {...portraitImageProps(info.cover, '(max-width: 1440px) 34vw, 484px')} alt={visible ? info.coverAlt : ''}
+                width={896} height={1200} loading="lazy" decoding="async" aria-hidden={!visible}
                 data-active={visible} className="journal-photo journal-preview-layer"
                 onLoad={event => { void imageReady(slug, event.currentTarget); }} />;
             })}
@@ -77,7 +78,7 @@ export const Blog = () => {
               style={{ '--i': index } as React.CSSProperties}
               onMouseEnter={() => requestPreview(post.slug, 140)} onMouseLeave={cancelPreview}
               onFocus={() => requestPreview(post.slug, 0)} onBlur={cancelPreview}>
-              <BlogCover slug={post.slug} />
+              <BlogCover slug={post.slug} sizes="74px" />
               <div><h3>{info.displayTitle}</h3><p>{info.summary}</p><span>{post.readTime}</span></div>
             </Link>;
           })}

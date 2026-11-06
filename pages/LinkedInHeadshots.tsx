@@ -4,6 +4,7 @@ import { ArrowRight, Check } from 'lucide-react';
 import { Layout } from '@/components/Layout';
 import { HeroTool } from '@/components/HeroTool';
 import { useAuth } from '@/contexts/AuthContext';
+import { portraitImageProps } from '@/lib/responsiveImages';
 
 const EXAMPLES = [
   { src: '/best-headshot/best_01.jpeg', label: 'Warm indoor', alt: 'AI-generated headshot with a checked blazer and softly lit indoor background' },
@@ -51,10 +52,10 @@ export const LinkedInHeadshots = () => {
 
           <figure className="w-full max-w-md mx-auto lg:ml-auto">
             <div className="relative pl-6 pr-14 sm:pl-8 sm:pr-16">
-              <img src={example.src} alt={example.alt} width={896} height={1200} fetchPriority="high"
+              <img {...portraitImageProps(example.src, '(max-width: 600px) calc(100vw - 112px), 352px')} alt={example.alt} width={896} height={1200} fetchPriority="high" decoding="async"
                 className="w-full aspect-[3/4] object-cover rounded-2xl bg-slate-100" />
               <div className="absolute right-0 bottom-6 sm:bottom-8 bg-white p-2 rounded-full shadow-lg">
-                <img src={example.src} alt="Circular crop preview of the selected example" width={144} height={144}
+                <img {...portraitImageProps(example.src, '(max-width: 639px) 112px, 144px')} alt="Circular crop preview of the selected example" width={144} height={144} decoding="async"
                   className="w-28 h-28 sm:w-36 sm:h-36 rounded-full object-cover object-[center_30%] border border-slate-200" />
               </div>
             </div>

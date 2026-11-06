@@ -6,6 +6,7 @@ import { CheckCircle, Upload, Download, ArrowRight, Shield, Clock, DollarSign, S
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { UseCase } from '@/types';
+import { portraitImageProps } from '@/lib/responsiveImages';
 
 // Data structure for gallery images
 const ROW_1_DATA: string[] = [
@@ -140,7 +141,7 @@ export const Home = () => {
                           key={`row1-${i}`}
                           className="w-48 md:w-64 aspect-[3/4] rounded-xl overflow-hidden shadow-md flex-shrink-0 relative"
                         >
-                            <img src={imageUrl} alt="Professional headshot" className="w-full h-full object-cover" />
+                            <img {...portraitImageProps(imageUrl, '(max-width: 767px) 192px, 256px')} width={896} height={1200} loading="lazy" decoding="async" alt="Professional headshot" className="w-full h-full object-cover" />
                             <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white px-2 py-0.5 rounded-full text-[10px] font-medium z-10 flex items-center gap-1">
                                 <Sparkles size={8} className="fill-white" /> AI Generated
                             </div>
@@ -157,7 +158,7 @@ export const Home = () => {
                           key={`row2-${i}`}
                           className="w-48 md:w-64 aspect-[3/4] rounded-xl overflow-hidden shadow-md flex-shrink-0 relative"
                         >
-                            <img src={imageUrl} alt="Professional headshot" className="w-full h-full object-cover" />
+                            <img {...portraitImageProps(imageUrl, '(max-width: 767px) 192px, 256px')} width={896} height={1200} loading="lazy" decoding="async" alt="Professional headshot" className="w-full h-full object-cover" />
                             <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white px-2 py-0.5 rounded-full text-[10px] font-medium z-10 flex items-center gap-1">
                                 <Sparkles size={8} className="fill-white" /> AI Generated
                             </div>
