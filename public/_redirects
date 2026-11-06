@@ -1,5 +1,8 @@
-# Cloudflare Pages 路由配置
-# API 路径由 Functions 处理
-
-# 所有其他路径回退到 index.html (SPA 路由)
-/* /index.html 200
+# Public pages are real HTML assets. A catch-all rewrite would hide them.
+# Private routes keep the client-rendered app shell. APIs use _routes.json.
+/history /app-shell 200
+/history/ /app-shell 200
+/subscription /app-shell 200
+/subscription/ /app-shell 200
+/auth/callback /app-shell 200
+/auth/callback/ /app-shell 200

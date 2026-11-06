@@ -6,24 +6,29 @@ import { createCreemPayment } from '../services/paymentService';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import type { SubscriptionPlanConfig } from '../types';
+import { usePublicPageData } from '@/contexts/PublicPageContext';
 
 export const Pricing: React.FC = () => {
   const { user, openAuthModal } = useAuth();
   const navigate = useNavigate();
-  const [plans, setPlans] = useState<SubscriptionPlanConfig[]>([]);
+  const pageData = usePublicPageData();
+  const [plans, setPlans] = useState<SubscriptionPlanConfig[]>(pageData?.plans ?? []);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
     const loadPlans = async () => {
       try {
-        const data = await getSubscriptionPlans();
-        setPlans(data);
+        const data = await getSubscriptionPlans(controller.signal);
+        if (!controller.signal.aborted) setPlans(data);
       } catch (err) {
+        if (controller.signal.aborted) return;
         console.error('加载套餐失败:', err);
         setError('无法加载价格信息，请稍后重试');
       }
     };
     loadPlans();
+    return () => controller.abort();
   }, []);
 
   const [isProcessing, setIsProcessing] = useState(false);

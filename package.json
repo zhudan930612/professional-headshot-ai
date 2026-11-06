@@ -9,10 +9,12 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build && pnpm build:worker",
+    "build": "vite build && vite build --ssr prerender/entry-server.tsx --outDir dist-ssr && tsx scripts/prerender.ts && pnpm build:worker",
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
+    "check:prerender": "tsx scripts/check-prerender.ts",
+    "check:hydration": "vitest run --config vitest.hydration.config.ts",
     "build:functions": "pnpm build:worker",
     "dev:full": "pnpm build && wrangler pages dev dist --port 3000 --env-file .dev.vars",
     "check:payments": "tsx scripts/check-payments.ts",
@@ -24,7 +26,7 @@
     "check:cloudflare": "tsx scripts/cloudflare/check-runtime.ts",
     "check:source": "tsx scripts/check-supabase.ts",
     "export:source": "tsx scripts/cloudflare/export-source.ts",
-    "verify": "pnpm typecheck && pnpm test && pnpm build && pnpm exec tsx scripts/cloudflare/verify-artifact.ts && pnpm check:secrets && pnpm audit"
+    "verify": "pnpm typecheck && pnpm test && pnpm build && pnpm check:prerender && pnpm check:hydration && pnpm exec tsx scripts/cloudflare/verify-artifact.ts && pnpm check:secrets && pnpm audit"
   },
   "dependencies": {
     "@google/genai": "^1.52.0",
@@ -43,6 +45,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261104.1",
     "@electric-sql/pglite": "^0.5.8",
+    "@types/jsdom": "21.1.7",
     "@types/node": "^22.20.5",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
@@ -50,6 +53,7 @@
     "autoprefixer": "^10.6.1",
     "dotenv": "^17.4.2",
     "esbuild": "^0.28.2",
+    "jsdom": "26.1.0",
     "postcss": "^8.5.29",
     "tailwindcss": "^3.4.19",
     "tsx": "^4.23.15",

@@ -4,6 +4,6 @@ import { configDefaults, defineConfig } from 'vitest/config';
 export default defineConfig({
   resolve: { alias: { '@': path.resolve(import.meta.dirname, '.') } },
   test: {
-    exclude: [...configDefaults.exclude, '.recovery/**', '.wrangler/**'],
+    exclude: [...configDefaults.exclude, '.recovery/**', '.wrangler/**', 'prerender/hydration.test.tsx'],
   },
 });

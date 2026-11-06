@@ -2,10 +2,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Layout } from '../components/Layout';
 import { ArrowLeft, Compass } from 'lucide-react';
+import { NOT_FOUND_SEO } from '@/lib/seo';
 
 export const NotFound: React.FC = () => {
   return (
-    <Layout>
+    <Layout seo={NOT_FOUND_SEO}>
       <div className="max-w-3xl mx-auto px-4 py-16 sm:py-24 text-center">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-50 text-primary-600 mb-6">
           <Compass size={32} />
@@ -24,10 +25,10 @@ export const NotFound: React.FC = () => {
             Back to home
           </Link>
           <Link
-            to="/history"
+            to="/blog"
             className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-primary-600 hover:text-primary-700"
           >
-            View my headshots
+            Browse headshot guides
           </Link>
         </div>
       </div>

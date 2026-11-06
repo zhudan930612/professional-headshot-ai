@@ -52,21 +52,27 @@ export interface ParsedBlog {
  * @param filePath - Markdown 文件的公开访问路径
  * @returns 解析后的博客元数据和 HTML 内容
  */
-export const parseMarkdownFile = async (filePath: string): Promise<ParsedBlog> => {
+export const parseMarkdown = async (markdown: string): Promise<ParsedBlog> => {
+  const { data, content } = matter(markdown);
+  for (const field of ['id', 'slug', 'title', 'excerpt', 'date', 'readTime']) {
+    if (typeof data[field] !== 'string' || !data[field].trim()) throw new Error(`Invalid blog metadata: ${field}`);
+  }
+  if (!content.trim()) throw new Error(`Empty blog article: ${data.slug}`);
+  // The page already renders the title. Keep one visible article heading.
+  const lines = content.trimStart().split('\n');
+  const body = lines[0].trim() === `# ${data.title}` ? lines.slice(1).join('\n') : content;
+  return { metadata: data as BlogMetadata, html: await marked(body) };
+};
+
+export const parseMarkdownFile = async (filePath: string, signal?: AbortSignal): Promise<ParsedBlog> => {
   try {
-    const response = await fetch(filePath);
+    const response = await fetch(filePath, { signal });
     if (!response.ok) {
       throw new Error(`Failed to fetch markdown file: ${response.statusText}`);
     }
 
     const markdown = await response.text();
-    const { data, content } = matter(markdown);
-    const html = await marked(content);
-
-    return {
-      metadata: data as BlogMetadata,
-      html: html as string,
-    };
+    return await parseMarkdown(markdown);
   } catch (error) {
     console.error('Error parsing markdown file:', error);
     throw error;

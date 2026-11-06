@@ -4,6 +4,8 @@ import { Camera, Menu, X, User, LogIn, LogOut, ChevronDown, Zap } from 'lucide-r
 import { getRemainingQuota, getUserQuotaInfo } from '../services/storageService';
 import { useAuth } from '../contexts/AuthContext';
 import { SEOHead } from './SEOHead';
+import { usePublicPageData } from '@/contexts/PublicPageContext';
+import type { PageSeo } from '@/lib/seo';
 import type { QuotaInfo } from '../types';
 
 const Navbar = () => {
@@ -354,6 +356,7 @@ const Navbar = () => {
 
 const Footer = () => {
   const location = useLocation();
+  const pageData = usePublicPageData();
 
   return (
     <footer className="bg-slate-900 text-slate-300 py-12">
@@ -519,13 +522,13 @@ const Footer = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-5 pt-8 border-t border-slate-800 text-center text-xs text-slate-500">
-        © {new Date().getFullYear()} Professional Headshot AI. All rights reserved.
+        © {pageData?.year ?? new Date().getFullYear()} Professional Headshot AI. All rights reserved.
       </div>
     </footer>
   );
 };
 
-export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const Layout: React.FC<{ children: React.ReactNode; seo?: Partial<PageSeo> }> = ({ children, seo }) => {
   const location = useLocation();
 
   // Determine if the current page should be noindex (private/user-specific pages)
@@ -534,7 +537,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <SEOHead noIndex={shouldNoIndex} />
+      <SEOHead {...seo} noIndex={seo?.noIndex ?? shouldNoIndex} />
       <Navbar />
       <main className="flex-grow">
         {children}

@@ -1,80 +1,45 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { BLOG_POSTS } from '../constants';
 import { Layout } from '../components/Layout';
-import { SEOHead } from '../components/SEOHead';
+import { usePublicPageData } from '@/contexts/PublicPageContext';
 import { ArrowLeft, Clock, Calendar } from 'lucide-react';
 import type { BlogPost as BlogPostType } from '../types';
 import { parseMarkdownFile } from '../utils/markdownParser';
-import hljs from 'highlight.js/lib/core';
+import { NotFound } from '@/pages/NotFound';
 
 export const BlogPost = () => {
   const { slug } = useParams();
-  const navigate = useNavigate();
-  const [post, setPost] = useState<BlogPostType | null>(null);
-  const [loading, setLoading] = useState(true);
+  const pageData = usePublicPageData();
+  const initialPost = pageData?.post && pageData.post.slug === slug ? pageData.post : null;
+  const [state, setState] = useState<{ slug?: string; post: BlogPostType | null; loading: boolean }>({
+    slug, post: initialPost, loading: !initialPost,
+  });
+  const { post, loading } = state.slug === slug ? state : { post: null, loading: true };
 
-  // Load post content (Markdown or HTML from constants)
   useEffect(() => {
-    const loadPost = async () => {
-      if (!slug) {
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-
-      // Load blogs from Markdown files
-      const markdownBlogs = [
-        'what-to-wear-for-a-professional-headshot',
-        'top-5-mistakes-in-resume-photos',
-        'lighting-101-studio-vs-natural',
-        'what-makes-professional-headshot-effective-2025',
-        'ai-professional-headshots-vs-studio-photography',
-        'how-to-upload-photos-best-ai-headshot-results',
-        'professional-headshots-by-industry-tech-finance-creative',
-        'linkedin-resume-website-headshot-optimization-guide'
-      ];
-
-      if (markdownBlogs.includes(slug)) {
-        try {
-          console.log('[BlogPost] Loading from Markdown...');
-          const { metadata, html } = await parseMarkdownFile(`/content/blog/${slug}.md`);
-          setPost({
-            ...metadata,
-            content: html,
-          });
-          console.log('[BlogPost] ✅ Markdown loaded successfully');
-        } catch (error) {
-          console.error('[BlogPost] ❌ Failed to load markdown, falling back to constants.ts:', error);
-          // Fallback: Use HTML from constants.ts
-          const fallbackPost = BLOG_POSTS.find(p => p.slug === slug);
-          setPost(fallbackPost || null);
-        }
-      } else {
-        // Other blogs: Use HTML from constants.ts
-        console.log('[BlogPost] Loading from constants.ts...');
-        const htmlPost = BLOG_POSTS.find(p => p.slug === slug);
-        setPost(htmlPost || null);
-      }
-
-      setLoading(false);
-    };
-
-    loadPost();
-    window.scrollTo(0, 0);
-  }, [slug]);
-
-  // Highlight code blocks after content is rendered
-  useEffect(() => {
-    if (post && post.content) {
-      // Wait for DOM to update
-      setTimeout(() => {
-        hljs.highlightAll();
-        console.log('[BlogPost] ✨ Code highlighting applied');
-      }, 100);
+    const controller = new AbortController();
+    if (initialPost) {
+      setState({ slug, post: initialPost, loading: false });
+      return () => controller.abort();
     }
-  }, [post]);
+    const fallbackPost = BLOG_POSTS.find(item => item.slug === slug);
+    if (!fallbackPost) {
+      setState({ slug, post: null, loading: false });
+      return () => controller.abort();
+    }
+    setState({ slug, post: null, loading: true });
+    void parseMarkdownFile(`/content/blog/${slug}.md`, controller.signal).then(({ metadata, html }) => {
+      if (!controller.signal.aborted) setState({ slug, post: { ...metadata, content: html }, loading: false });
+    }).catch(error => {
+      if (controller.signal.aborted) return;
+      console.error('Could not load article; using the bundled copy.', error);
+      setState({ slug, post: fallbackPost, loading: false });
+    });
+    return () => controller.abort();
+  }, [slug, initialPost]);
+
+  if (!BLOG_POSTS.some(item => item.slug === slug)) return <NotFound />;
 
   if (loading) {
     return (
@@ -87,30 +52,14 @@ export const BlogPost = () => {
     );
   }
 
-  if (!post) {
-    return (
-      <Layout>
-        <div className="min-h-[60vh] flex flex-col items-center justify-center p-4">
-          <h2 className="text-2xl font-bold text-slate-900 mb-4">Article not found</h2>
-          <button
-            onClick={() => navigate('/blog')}
-            className="text-primary-600 hover:underline flex items-center gap-2"
-          >
-            <ArrowLeft size={16} /> Back to Blog
-          </button>
-        </div>
-      </Layout>
-    );
-  }
+  if (!post) return <NotFound />;
 
   return (
-    <Layout>
-      {/* Dynamic SEO for blog post */}
-      <SEOHead
-        title={`${post.title} – Professional Headshot AI Blog`}
-        description={post.excerpt || post.title}
-        canonicalPath={`/blog/${slug}`}
-      />
+    <Layout seo={{
+      title: `${post.title} – Professional Headshot AI Blog`,
+      description: post.excerpt || post.title,
+      canonicalPath: `/blog/${slug}`,
+    }}>
       <style>{`
         /* 博客内容自定义排版样式 */
         .blog-content h2 {

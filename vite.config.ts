@@ -2,7 +2,7 @@ import path from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-export default defineConfig(() => {
+export default defineConfig(({ isSsrBuild }) => {
     return {
       server: {
         port: 3000,
@@ -15,9 +15,11 @@ export default defineConfig(() => {
         }
       },
       build: {
+        manifest: !isSsrBuild,
+        copyPublicDir: !isSsrBuild,
         rollupOptions: {
           output: {
-            manualChunks: {
+            manualChunks: isSsrBuild ? undefined : {
               'react-vendor': ['react', 'react-dom', 'react-router-dom'],
               'markdown': ['marked', 'gray-matter', 'highlight.js/lib/core'],
             }

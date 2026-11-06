@@ -1,5 +1,54 @@
 # 项目交接
 
+## 2026-11-06 用户确认的 SEO 工作范围
+
+- 用户已授权将本轮 SEO 修复提交到本地分支；下方各阶段“未提交”是当时的状态记录。提交不代表验收全部完成或授权推送、合并及发布。
+- 全部 SEO 修改仅在 `codex/seo-improvements` 分支修改和本地验证；待全部修改任务完成并经用户统一验收后，再确认正式发布。此约束覆盖下方早先“先发布再复查”的建议，不提前合并/推送触发自动发布，也不发布到生产、提交 sitemap 或请求索引。
+- 当前优先处理未编入索引的技术问题。分支可验收正文、canonical、robots、HTTP 状态和静态内链可发现性；Google 实际收录恢复只能在最终发布后复查，不能把本地验证通过写成已恢复收录。
+
+## 2026-11-06 优先处理未编入索引（发布前准备）
+
+- 用户要求优先处理另一会话 01a1ae81-5991-7c21-a42c-28e52870976f 的索引问题；已实际 read_thread 并读取 GSC Wizard 保存的 11-06 检查记录。14 页中 5 页已收录、FAQ+7 篇文章为 Crawled - currently not indexed、pricing 为 URL is unknown to Google。8 页均允许抓取/索引，Google canonical 为自身，不能据此断言内容差或被判成首页重复。基线在忽略目录 `.recovery/indexing-20261106/baseline.json`。
+- 本轮线上 GET pricing/faq/top-5-mistakes-in-resume-photos 仍为空 root、首页 canonical，证明分支预渲染还未生效。下一步应先发布已验证的预渲染、canonical、404，再核对线上内容；索引恢复需 Google 重新抓取和选择，不能当场承诺。
+- sitemap 接口返回 0 错误/警告，最后提交/下载记录为 2026-01-14；tracker 未配置。移除 public/sitemap.xml 中无法逐页核验的统一旧 lastmod，保留全部 14 个规范 URL；不把当天构建日期冒充文章更新时间。本轮重新 build 和 14 页静态检查通过，未重复消耗 URL Inspection 配额。
+- 拟发布范围仅为当前已验证 SEO 改动；发布后检查 14 页、账户/回调、真实 404、登录初始化，再重新提交 `https://www.professionalheadshotai.ink/sitemap.xml`。优先复查 pricing、top-5-mistakes-in-resume-photos、faq；当前未发布、未提交 sitemap、未创建索引追踪或定时任务，等待正式发布范围确认。
+
+## 2026-11-06 SEO 任务 2：真实 404（分支本地验证完成）
+
+- 在 `codex/seo-improvements` 上为构建新增根目录 `404.html`，复用 NotFound 页面，带 noindex、独立标题、首页/博客恢复入口，不输出 canonical。不存在的普通路径和文章由 Pages 直接返回 HTTP 404，无新增 Worker 请求时渲染、D1 查询或路由绑定变更。未知文章客户端也立即显示相同错误页；SPA 内部跳转不产生文档 HTTP 响应，直接访问/刷新才返回 HTTP 404。
+- 404 静态数据标记允许在任意未知路径 hydration；错误页返回正常页面后移除 noindex 并恢复正常 canonical。Layout 必须保留页面显式 noIndex，不能被默认 false 覆盖。根 404 文件不加入 sitemap，6 个账户/回调路径继续显式重写到 `/app-shell`。
+- `pnpm verify` 全部通过：96 项回归、23 项 hydration/交互测试、14 页静态检查、类型/构建/密钥/产物检查与依赖审计（0 已知漏洞）。隔离本地 Pages 实测 5 类未知路径 GET/HEAD 为 404、无重定向；14 个有效页面、6 个账户路径及 health/plans/account/未知 API 的 JSON 状态通过。IAB 实测未知文章错误页与返回博客，标签恢复正确，无 hydration 错误。
+- 测试坑：首次 lazy 页面尚未完成 hydration 时，点击静态链接可能触发原生导航；DOM 验收需等待组件 effect 可观察信号，并在轮询之间退出 act 以让 React 提交，不能把整个等待包在 act 中阻塞其提交。
+- 本轮未提交、推送或部署，未执行真实登录、付款或付费生图；临时本地 Pages 服务已停止。README 和检查脚本已同步，下一项待沟通的是宣传文案与实际套餐权益的一致性。
+
+## 2026-11-06 SEO 任务 1：14 页预渲染（分支本地验证完成）
+
+- 当前工作分支 `codex/seo-improvements`。复用 React 页面，在构建时为 sitemap 中全部 14 个公开 URL 输出完整 HTML、独立 title/description/canonical、既有 OG/Twitter 标签。文章直接读取 public/content/blog 的 Markdown，正文标题只保留一处；构建期与客户端复用相同初始数据。SEOHead 由 Layout 单一管理，避免文章标题被第二个实例覆盖。
+- 价格快照只读调用正式 `/api/plans`，校验并仅保留公开字段；失败中止构建。`PRERENDER_PLANS_URL` 可指定本地/测试公开接口，不能带凭据或查询参数。D1 套餐变更必须重新构建发布，浏览器价格页仍实时刷新；价格 SEO 描述移除了与额度套餐矛盾的 unlimited。其他营销文案、内容扩充、sitemap 日期和真实 404 留待后续任务。
+- 公开页面采用 `pricing.html`、`blog/<slug>.html` 等文件，由 Pages 直接匹配无扩展名 URL；移除覆盖所有资产的 `/* /index.html 200`。history/subscription/auth callback 显式使用带 noindex 的 app-shell，API 仍由原 `_routes.json` 和 Worker 处理。hydrateRoot 只接管 URL 与静态数据匹配的页面，未知 URL 回退不错误接管首页。
+- Pages 200 重写的目标须用无扩展名 `/app-shell`；写 `/app-shell.html` 会触发自动 clean-URL 308 并改变浏览器地址，破坏账户/回调路由。已修复；HTTP 验收用 `redirect: manual`，核验 6 个私有路径（含尾斜线和查询参数）均原地址 200、无 Location、noindex。PowerShell 自动跟随重定向的最终 200 不能当作这项验证通过。
+- `pnpm verify` 全部通过：strict TypeScript、96 项原有/新增回归、14 页禁用脚本产物检查、19 项 hydration/交互测试、产物/密钥检查、依赖审计（0 已知漏洞）。另用隔离的本地 Pages 实测 14/14 HTTP 200、正文/标签、3 个私有路由 noindex 与公开 API；IAB 已实际核验定价页购买入口打开登录框、博客 SPA 跳转和直接刷新，无 React hydration 错误。生图结果界面与登录后状态为模拟接口回归，本轮未执行真实 Google 登录、付费出图或支付。
+- 性能：生成 HTML gzip 约 4.5–11.7 KB/页；客户端入口约 224 KB（gzip 70.8 KB），保留页面懒加载；Worker 约 105 KB，源码未改，无请求时页面渲染和额外 D1 查询。构建报告为忽略目录 `dist-ssr/prerender-report.json`，不部署 dist-ssr。真实访客 Core Web Vitals 未测量。
+- 验证坑：SSR 与浏览器渲染若在同一测试进程共用 React Router context，首次 lazy/stream 渲染可能产生伪“嵌套 Router”错误；hydration 测试直接读取先前构建的 HTML，在独立浏览器 DOM 环境验收，`pnpm check:hydration` 必须在 build 之后运行。不要从 index.tsx 同步导入包含全部文章的 SEO 模块，否则会将文章常量提前打入入口包。
+- 隔离验收坑：本版 Wrangler Pages dev 在仓库子目录启动时可能再次解析祖先配置，并忽略传给 Pages 的 env-file；发现日志加载了父目录 .dev.vars 后已立即停服，未发业务请求。最终使用仓库外独立 package.json/config/空 .dev.vars，日志确认绑定仅为 local 的 headshot-seo-local、无付费 key。验收目录 `F:/codex_temp/2026-11-06/headshot-seo-validation-01a1ae6f`；子目录试验在忽略的 `.recovery/seo-prerender`。
+- 未提交、推送或部署；保留原有 CREEM_SETUP.md 和 HANDOFF.MD 改动，包括另一会话新增的 Search Console 核验记录。
+
+## 2026-11-06 Search Console 数据核验
+
+- 通过 GSC Wizard 的 Google API 读取域名属性，Web 搜索完整数据截至 2026-11-03（America/Los_Angeles）。10-07～11-03：29 展示、0 点击；09-09～10-06：74 展示、0 点击。平均排名 7.88→65.86，但公开查询词两期无重叠，不能说同一批关键词跌了 58 位。
+- 展示减少集中于 `/blog/top-5-mistakes-in-resume-photos`（68→1）；首页反而 4→26。11-06 URL Inspection：首页 Submitted and indexed；该文章 Crawled - currently not indexed，允许抓取/索引、fetch 成功，Google 与用户 canonical 在检查记录中均为文章自身。检查结果不提供退出索引日期，不能断言与某次发布存在因果关系。
+- 同日线上原始 GET 首页和上述文章均为空 root、首页 title/canonical；客户端会改写 canonical。应区分当前初始 HTML、JS 渲染结果与 Google 历史检查记录，不能将非 JS 抓取器的“8 words / missing H1”当作真实文章全文缺失，也不能断言 Google 完全无法渲染。
+- 查询明细只覆盖 24/29 展示；其余查询未披露。CrUX 未配置，不能评价真实访客性能；GSC 无法给出付费转化结论。工作区已有预渲染等未提交改动，本轮未修改业务代码或部署，线上检查不代表这些本地改动已经生效。
+
+## 2026-11-06 SEO 只读审查
+
+- 线上 GET 首页、`/pricing`、`/blog/what-to-wear-for-a-professional-headshot` 均返回相同的 3939 字节 HTML：空 `#root`、首页 title/canonical、无正文。代码由 `SEOHead` 在客户端改写，不能把它表述为 Google 完全无法收录；应优先让公开内容页初始 HTML 含正文和各自唯一、前后一致的 canonical。当前构建没有预渲染。
+- 随机不存在路径 `/seo-audit-missing-page-20261106` 返回 200；需服务端真实 404。裸域到 www 的 301 正常。sitemap 含 14 个 URL（8 篇文章），lastmod 全为 2026-01-14，与已经更新的隐私页等不一致；不要每天统一刷新日期冒充内容更新。
+- 价格 SEO 描述仍写 unlimited，但线上 `/api/plans` 为 Free 5、Professional USD25/30、Executive USD45/60+10。首页有“3x More Interview Invitations”，本轮未找到该倍数依据；博客封面仍用 Picsum 占位图。修正文案须依据真实产品能力和可核验案例。
+- 首页 20 张独立图库文件共 1,679,579 字节，循环渲染 40 个 img，均未设懒加载；不能把重复 img 数算作重复传输量。仅完成源码和 HTTP 检查，未取得 Search Console、真实访客 Core Web Vitals 或关键词搜索量，不据此断言零收录/流量损失/性能不合格。
+- 浏览器工具仅提供 IAB，无 Chrome；本次 IAB 打开文章超时，未完成渲染 DOM 验证，不反复重试或冒充完成。Google 官方更新记录已确认 FAQ 富结果自 2026-05-07 停用，不能把增加 FAQ schema 当作当前富结果收益承诺。
+- 本轮未修改业务代码、发布、付费查询或创建订单；保留原有 CREEM_SETUP.md、HANDOFF.MD 未提交改动。
+
 ## 2026-11-05 后续业务验收（业务闭环已通过）
 
 用户开启持续目标：完成迁移、线上功能、支付及生图验收。已使用独立 QA 账号和公开 corporate_01.jpg 示例，实际跑通 1K（896×1200）与 2K（1792×2400）生成、扣额度、私有 R2 保存、下载、历史读取、重复保存及匿名 401。原客户余额快照未变化。供应商报告费用合计 USD 0.142；详见 docs/production-acceptance.md。

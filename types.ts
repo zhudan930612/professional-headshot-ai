@@ -84,6 +84,15 @@ export interface BlogPost {
   content: string;  // HTML content
 }
 
+// Public build data only: never include accounts, sessions, orders or user photos.
+export interface PublicPageData {
+  pathname: string;
+  year: number;
+  notFound?: boolean;
+  post?: BlogPost;
+  plans?: SubscriptionPlanConfig[];
+}
+
 // ========================================
 // 订阅系统类型定义
 // ========================================

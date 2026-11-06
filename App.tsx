@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { GoogleOneTap } from './components/GoogleOneTap';
 import { AuthModal } from './components/AuthModal';
+import { PublicPageContext } from '@/contexts/PublicPageContext';
+import type { PublicPageData } from '@/types';
 
 // 懒加载页面组件以减少初始包大小
 const Home = lazy(() => import('./pages/Home').then(m => ({ default: m.Home })));
@@ -40,9 +42,9 @@ const GlobalAuthModal = () => {
   return <AuthModal isOpen={isAuthModalOpen} onClose={closeAuthModal} />;
 };
 
-const App: React.FC = () => {
+export const AppContent: React.FC<{ initialData?: PublicPageData }> = ({ initialData }) => {
   return (
-    <BrowserRouter>
+    <PublicPageContext.Provider value={initialData ?? null}>
       <AuthProvider>
         <ScrollToTop />
         {/* Global AuthModal - rendered once at the top level */}
@@ -69,8 +71,14 @@ const App: React.FC = () => {
         </Suspense>
 
       </AuthProvider>
-    </BrowserRouter>
+    </PublicPageContext.Provider>
   );
 };
+
+const App: React.FC<{ initialData?: PublicPageData }> = ({ initialData }) => (
+  <BrowserRouter>
+    <AppContent initialData={initialData} />
+  </BrowserRouter>
+);
 
 export default App;

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- lastmod is omitted until a reliable per-page content modification date is available. -->
   <!-- 首页 -->
   <url>
     <loc>https://www.professionalheadshotai.ink/</loc>
-    <lastmod>2026-01-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -11,14 +11,12 @@
   <!-- 核心功能/商业页 -->
   <url>
     <loc>https://www.professionalheadshotai.ink/pricing</loc>
-    <lastmod>2026-01-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
     <loc>https://www.professionalheadshotai.ink/faq</loc>
-    <lastmod>2026-01-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -26,7 +24,6 @@
   <!-- 博客列表 -->
   <url>
     <loc>https://www.professionalheadshotai.ink/blog</loc>
-    <lastmod>2026-01-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -34,56 +31,48 @@
   <!-- 博客文章 -->
   <url>
     <loc>https://www.professionalheadshotai.ink/blog/what-to-wear-for-a-professional-headshot</loc>
-    <lastmod>2026-01-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://www.professionalheadshotai.ink/blog/top-5-mistakes-in-resume-photos</loc>
-    <lastmod>2026-01-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://www.professionalheadshotai.ink/blog/lighting-101-studio-vs-natural</loc>
-    <lastmod>2026-01-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://www.professionalheadshotai.ink/blog/what-makes-professional-headshot-effective-2025</loc>
-    <lastmod>2026-01-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://www.professionalheadshotai.ink/blog/ai-professional-headshots-vs-studio-photography</loc>
-    <lastmod>2026-01-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://www.professionalheadshotai.ink/blog/how-to-upload-photos-best-ai-headshot-results</loc>
-    <lastmod>2026-01-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://www.professionalheadshotai.ink/blog/professional-headshots-by-industry-tech-finance-creative</loc>
-    <lastmod>2026-01-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://www.professionalheadshotai.ink/blog/linkedin-resume-website-headshot-optimization-guide</loc>
-    <lastmod>2026-01-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -91,14 +80,12 @@
   <!-- 法律/信任页 -->
   <url>
     <loc>https://www.professionalheadshotai.ink/privacy</loc>
-    <lastmod>2026-01-14</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
 
   <url>
     <loc>https://www.professionalheadshotai.ink/terms</loc>
-    <lastmod>2026-01-14</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

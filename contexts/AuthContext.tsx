@@ -24,13 +24,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<AccountUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [returnPath, setReturnPath] = useState(() => safeReturnPath(localStorage.getItem(RETURN_PATH_KEY)));
+  const [returnPath, setReturnPath] = useState('/');
   const [quotaInfo, setQuotaInfo] = useState<QuotaInfo | null>(null);
   const refreshQuota = useCallback(async () => {
     if (!user) { setQuotaInfo(null); return null; }
     try { const quota = await getUserQuotaInfo(); setQuotaInfo(quota); return quota; } catch { return null; }
   }, [user]);
   useEffect(() => {
+    setReturnPath(safeReturnPath(localStorage.getItem(RETURN_PATH_KEY)));
     let alive = true;
     const refresh = () => { void getCurrentUser().then(value => { if (alive) setUser(value); }).catch(() => { if (alive) setUser(null); }).finally(() => { if (alive) setLoading(false); }); };
     refresh(); window.addEventListener('account-changed', refresh);
