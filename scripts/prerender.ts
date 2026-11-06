@@ -29,7 +29,7 @@ const year = new Date(builtAt).getUTCFullYear();
 const documents: Array<{ pathname: string; file: string; html: string }> = [];
 
 function pageStyles(pathname: string): string[] {
-  const name = pathname.startsWith('/blog/') ? 'BlogPost' : ({ '/': 'Home', '/pricing': 'Pricing', '/faq': 'FAQ', '/blog': 'Blog', '/privacy': 'Terms', '/terms': 'Terms' } as Record<string, string>)[pathname];
+  const name = pathname.startsWith('/blog/') ? 'BlogPost' : ({ '/': 'Home', '/linkedin-headshots': 'LinkedInHeadshots', '/pricing': 'Pricing', '/faq': 'FAQ', '/blog': 'Blog', '/privacy': 'Terms', '/terms': 'Terms' } as Record<string, string>)[pathname];
   const styles = new Set<string>();
   const seen = new Set<string>();
   const visit = (key: string) => {

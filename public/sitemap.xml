@@ -10,6 +10,12 @@
 
   <!-- 核心功能/商业页 -->
   <url>
+    <loc>https://www.professionalheadshotai.ink/linkedin-headshots</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://www.professionalheadshotai.ink/pricing</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>

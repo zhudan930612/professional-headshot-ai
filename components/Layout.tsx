@@ -87,8 +87,8 @@ const Navbar = () => {
     <>
       <nav className="bg-white border-b border-slate-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
+          <div className="flex justify-between gap-3 h-16">
+            <div className="flex items-center min-w-0">
               <Link
                 to="/"
                 onClick={(e) => {
@@ -97,10 +97,11 @@ const Navbar = () => {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }
                 }}
-                className="flex-shrink-0 flex items-center gap-2.5 group"
+                aria-label="Professional Headshot AI home"
+                className="min-w-0 flex items-center gap-2 sm:gap-2.5 group"
               >
-                <img src="/logo.svg" alt="Professional Headshot AI" className="w-10 h-10 group-hover:scale-105 transition-transform duration-300" />
-                <span className="font-bold text-xl tracking-tight text-slate-900 group-hover:text-primary-700 transition-colors">
+                <img src="/logo.svg" alt="" className="w-8 h-8 sm:w-10 sm:h-10 shrink-0 group-hover:scale-105 transition-transform duration-300" />
+                <span className="font-bold text-base sm:text-xl truncate tracking-tight text-slate-900 group-hover:text-primary-700 transition-colors">
                   Professional Headshot<span className="text-primary-600 ml-1.5 border-0 border-none bg-[unset] bg-none" style={{ borderWidth: '0px', borderColor: 'rgba(0, 0, 0, 0)', borderImage: 'none', borderStyle: 'none', background: 'unset', backgroundImage: 'none' }}>AI</span>
                 </span>
               </Link>
@@ -240,7 +241,7 @@ const Navbar = () => {
             </div>
 
             {/* Mobile menu button */}
-            <div className="flex items-center md:hidden gap-3">
+            <div className="flex items-center md:hidden gap-3 shrink-0">
               {user && (
                 authQuotaInfo ? (
                   <span className="text-xs font-medium text-slate-500">
@@ -252,7 +253,9 @@ const Navbar = () => {
               )}
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="text-slate-500 hover:text-slate-900 focus:outline-none"
+                aria-label={isOpen ? 'Close navigation' : 'Open navigation'}
+                aria-expanded={isOpen}
+                className="text-slate-500 hover:text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-600"
               >
                 {isOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
@@ -383,6 +386,7 @@ const Footer = () => {
           <h4 className="text-white font-semibold mb-4">Product</h4>
           <ul className="space-y-2 text-sm">
             <li><Link to="/" className="hover:text-white transition-colors">Generator</Link></li>
+            <li><Link to="/linkedin-headshots" className="hover:text-white transition-colors">LinkedIn headshots</Link></li>
             <li><Link to="/history" className="hover:text-white transition-colors">My Headshots</Link></li>
             <li><Link to="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
           </ul>

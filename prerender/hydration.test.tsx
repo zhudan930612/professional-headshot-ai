@@ -29,6 +29,7 @@ beforeEach(() => {
   recoveries.length = 0;
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   window.scrollTo = vi.fn();
+  Element.prototype.scrollIntoView = vi.fn();
   fetchMock = vi.fn(async (input: string | URL | Request) => {
     const pathname = String(input);
     if (pathname === '/api/auth/session') return Response.json({ user: null });
@@ -164,7 +165,7 @@ describe('all public pages without JavaScript and after hydration', () => {
     expect(fetchMock.mock.calls.some(([url]) => String(url).includes('create-payment'))).toBe(false);
   });
 
-  it('restores a signed-in session and runs upload, style selection and the generation result UI', async () => {
+  it.each(['/', '/linkedin-headshots'])('restores a signed-in session and runs the generation result UI on %s', async pathname => {
     const user = { id: 'seo-local-user', email: 'seo@example.invalid', user_metadata: { name: 'SEO Tester' } };
     const quota = { plan_type: 'professional', total_quota: 30, remaining_quota: 30, used_quota: 0, is_paid: true, quality: '1K', has_watermark: false };
     fetchMock.mockImplementation(async (url: string) => {
@@ -181,7 +182,7 @@ describe('all public pages without JavaScript and after hydration', () => {
     });
     Object.defineProperty(URL, 'createObjectURL', { configurable: true, value: vi.fn(() => 'blob:seo-test') });
     Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, value: vi.fn() });
-    await mount('/');
+    await mount(pathname);
     expect(document.body.textContent).toContain('SEO Tester');
     const file = new File(['local fixture'], 'headshot.jpg', { type: 'image/jpeg' });
     const input = document.querySelector<HTMLInputElement>('input[type="file"]')!;
@@ -192,7 +193,8 @@ describe('all public pages without JavaScript and after hydration', () => {
     expect(next?.disabled).toBe(false);
     await act(async () => next!.click());
     expect(document.body.textContent).toContain('Step 2: Choose Your Style');
-    const style = document.querySelector<HTMLImageElement>('img[alt^="AI-generated"]')!.parentElement!;
+    const toolSelector = pathname === '/' ? '#upload-tool' : '#linkedin-generator';
+    const style = document.querySelector<HTMLImageElement>(`${toolSelector} img[alt^="AI-generated"]`)!.parentElement!;
     await act(async () => style.click());
     const generate = [...document.querySelectorAll('button')].find(button => button.textContent?.trim() === 'Generate (1)');
     expect(generate?.disabled).toBe(false);
@@ -203,6 +205,18 @@ describe('all public pages without JavaScript and after hydration', () => {
     expect(generateHeadshots).toHaveBeenCalledWith(file, expect.any(Array), expect.any(String), user.id, expect.any(String), undefined, expect.any(Function));
     expect(document.querySelector('img[alt="Result"]')?.getAttribute('src')).toBe('/seo-result.png');
     expect(fetchMock.mock.calls.some(([url]) => url === '/api/history')).toBe(true);
+  });
+
+  it('switches LinkedIn examples and keeps the generator destination through login', async () => {
+    await mount('/linkedin-headshots');
+    const sample = [...document.querySelectorAll('button')].find(button => button.textContent === 'Business casual');
+    await act(async () => sample!.click());
+    expect(sample?.getAttribute('aria-pressed')).toBe('true');
+    expect(document.querySelector('figure img')?.getAttribute('src')).toBe('/best-headshot/best_12.jpeg');
+    await click('a[href="#linkedin-generator"]');
+    expect(document.querySelector('[role="dialog"]')).not.toBeNull();
+    expect(localStorage.getItem('auth_return_path')).toBe('/linkedin-headshots#linkedin-generator');
+    expect(fetchMock.mock.calls.some(([url]) => String(url).includes('create-payment') || String(url).includes('nanoBanana'))).toBe(false);
   });
 
   it('safely serializes article text containing closing script tags', () => {

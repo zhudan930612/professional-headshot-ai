@@ -10,6 +10,10 @@ export interface PageSeo {
 }
 
 const PAGE_SEO: Record<string, PageSeo> = {
+  '/linkedin-headshots': {
+    title: 'AI LinkedIn Headshots from Your Selfies | Professional Headshot AI',
+    description: 'Create a professional LinkedIn profile photo from your selfies. Explore AI headshot examples, check your framing, and choose a style that fits your work.',
+  },
   '/': {
     title: 'Professional Headshot AI – Headshots That Look Like You',
     description: 'Create realistic AI professional headshots that actually look like you. Upload photos, choose a style, and get studio-quality results in minutes.',
@@ -52,7 +56,7 @@ export const NOT_FOUND_SEO: PageSeo = {
 };
 
 export const PUBLIC_PAGE_PATHS = [
-  '/', '/pricing', '/faq', '/blog',
+  '/', '/linkedin-headshots', '/pricing', '/faq', '/blog',
   ...BLOG_POSTS.map(post => `/blog/${post.slug}`),
   '/privacy', '/terms',
 ];

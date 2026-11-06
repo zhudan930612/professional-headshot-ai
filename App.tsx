@@ -8,6 +8,7 @@ import type { PublicPageData } from '@/types';
 
 // 懒加载页面组件以减少初始包大小
 const Home = lazy(() => import('./pages/Home').then(m => ({ default: m.Home })));
+const LinkedInHeadshots = lazy(() => import('./pages/LinkedInHeadshots').then(m => ({ default: m.LinkedInHeadshots })));
 const History = lazy(() => import('./pages/History').then(m => ({ default: m.History })));
 const FAQ = lazy(() => import('./pages/FAQ').then(m => ({ default: m.FAQ })));
 const Blog = lazy(() => import('./pages/Blog').then(m => ({ default: m.Blog })));
@@ -58,6 +59,7 @@ export const AppContent: React.FC<{ initialData?: PublicPageData }> = ({ initial
 
             {/* 其他路由（各页面自己负责 Layout） */}
             <Route path="/" element={<Home />} />
+            <Route path="/linkedin-headshots" element={<LinkedInHeadshots />} />
             <Route path="/history" element={<History />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/blog" element={<Blog />} />

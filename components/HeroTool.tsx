@@ -615,14 +615,14 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
     <div className="flex flex-col h-full animate-in fade-in duration-300">
       <div className="mb-6 text-center">
         <h3 className="text-xl font-bold text-slate-900 mb-2">Step 1: Upload Your Photos</h3>
-        <p className="text-slate-500 whitespace-nowrap">We recommend uploading 3–5 clear selfies to help the AI better capture your facial features.</p>
+        <p className="text-slate-500">We recommend uploading 3–5 clear selfies to help the AI better capture your facial features.</p>
       </div>
 
       <div
         onClick={() => fileInputRef.current?.click()}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        className={`flex-grow border-2 border-dashed rounded-2xl p-8 text-center transition-all cursor-pointer group flex flex-col items-center justify-center min-h-[300px] ${files.length > 0 ? 'border-primary-200 bg-primary-50/30' : 'border-slate-300 hover:border-primary-500 hover:bg-primary-50'
+        className={`flex-grow border-2 border-dashed rounded-2xl p-3 sm:p-8 text-center transition-all cursor-pointer group flex flex-col items-center justify-center min-h-[300px] ${files.length > 0 ? 'border-primary-200 bg-primary-50/30' : 'border-slate-300 hover:border-primary-500 hover:bg-primary-50'
           }`}
       >
         <input
@@ -637,22 +637,22 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
         {files.length === 0 ? (
           <>
             {/* 示例图片展示 - 放在最上面重点展示 */}
-            <div className="mb-6">
+            <div className="mb-6 w-full">
               <p className="text-xs text-slate-500 font-medium mb-3 text-center">Example Photos:</p>
-              <div className="flex gap-4 justify-center">
+              <div className="grid grid-cols-3 gap-2 sm:gap-4 max-w-[392px] mx-auto">
                 {[
                   '/hero-img/hero_01.jpeg',
                   '/hero-img/hero_02.jpeg',
                   '/hero-img/hero_03.jpeg'
                 ].map((url, idx) => (
-                  <div key={idx} className="w-[120px] h-[160px] rounded-xl overflow-hidden border-2 border-slate-300 shadow-md hover:shadow-lg transition-shadow flex-shrink-0">
+                  <div key={idx} className="w-full aspect-[3/4] rounded-xl overflow-hidden border-2 border-slate-300 shadow-md hover:shadow-lg transition-shadow">
                     <img src={url} alt={`Example ${idx + 1}`} className="w-full h-full object-cover" />
                   </div>
                 ))}
               </div>
 
               {/* 照片要求说明 */}
-              <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3 max-w-md mx-auto">
+              <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3 max-w-md mx-auto text-left">
                 <p className="text-xs font-semibold text-blue-900 mb-2">Photo Requirements:</p>
                 <ul className="text-xs text-blue-800 space-y-1">
                   <li className="flex items-start gap-1.5">
@@ -1006,13 +1006,13 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
 
       <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden min-h-[600px] flex flex-col">
         {/* Header Progress Indicators */}
-        <div className="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+        <div className="px-4 sm:px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex flex-wrap gap-3 items-center justify-between">
           <h2 className="font-bold text-lg text-slate-800 flex items-center gap-2">
             <Sparkles className="text-primary-600" size={20} />
             AI Studio
           </h2>
 
-          <div className="flex items-center gap-2">
+          <div className="order-3 sm:order-none w-full sm:w-auto flex items-center justify-center gap-2">
             {[1, 2, 3].map((s) => {
               // 判断第三步是否已完成：step === 3 且所有图片都生成完成
               const isStep3Completed = s === 3 && step === 3 && !generationResults.some(r => r.loading) && generationResults.length > 0;
@@ -1043,7 +1043,7 @@ export const HeroTool: React.FC<HeroToolProps> = ({ onSuccess }) => {
         </div>
 
         {/* Content Body */}
-        <div className="flex-grow p-6 md:p-8 md:px-12 flex flex-col">
+        <div className="flex-grow p-4 sm:p-6 md:p-8 md:px-12 flex flex-col min-w-0">
           {step === 1 && renderStep1_Upload()}
           {step === 2 && renderStep2_Template()}
           {step === 3 && renderStep3_Result()}

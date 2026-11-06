@@ -5,6 +5,7 @@ import { FAQ_ITEMS, USE_CASE_OPTIONS } from '../constants';
 import { CheckCircle, Upload, Download, ArrowRight, Shield, Clock, DollarSign, Sparkles, LayoutTemplate } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { UseCase } from '@/types';
 
 // Data structure for gallery images
 const ROW_1_DATA: string[] = [
@@ -221,7 +222,11 @@ export const Home = () => {
                     </div>
                     <h3 className="text-lg font-bold text-slate-900 mb-2">{useCase.label}</h3>
                     <p className="text-sm text-slate-500 mb-6">Perfect for updating your {useCase.label.toLowerCase()} to stand out to recruiters and clients.</p>
-                    <button
+                    {useCase.value === UseCase.LinkedIn ? (
+                      <Link to="/linkedin-headshots" className="text-sm font-semibold text-primary-600 inline-flex items-center gap-1 hover:underline">
+                        Explore LinkedIn headshots <ArrowRight size={14} />
+                      </Link>
+                    ) : <button
                         onClick={() => {
                           const element = document.getElementById('upload-tool');
                           if (element) {
@@ -232,7 +237,7 @@ export const Home = () => {
                         className="text-sm font-semibold text-primary-600 flex items-center gap-1 hover:gap-2 transition-all"
                     >
                         Create for this <ArrowRight size={14} />
-                    </button>
+                    </button>}
                 </div>
             ))}
         </div>

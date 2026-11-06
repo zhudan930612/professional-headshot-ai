@@ -234,8 +234,8 @@ export const BlogPost = () => {
 
             {/* CTA */}
             <div className="mt-12 pt-8 border-t border-slate-100 flex justify-end">
-              <Link to="/" className="px-6 py-3 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-colors">
-                Create Your Headshot Now
+              <Link to={post.slug === 'linkedin-resume-website-headshot-optimization-guide' ? '/linkedin-headshots' : '/'} className="px-6 py-3 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-colors">
+                {post.slug === 'linkedin-resume-website-headshot-optimization-guide' ? 'Create a LinkedIn headshot' : 'Create Your Headshot Now'}
               </Link>
             </div>
           </div>
