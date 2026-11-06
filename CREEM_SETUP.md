@@ -2,6 +2,14 @@
 
 2026-11-05：原域名、Creem 账户和单次购买产品继续使用；支付流水与额度现由 Cloudflare D1 管理。
 
+## 从现有接入开始
+
+- 先运行 `pnpm check:payments` 做只读配置检查；2026-11-05 本轮复查全部通过。正式产品和回调已存在，不需要重新创建，也不需要为了接入额外安装 Next.js SDK。
+- 查看下方沙箱验收记录，再到 [Creem Dashboard](https://creem.io/dashboard) 确认商店审核与收款账户验证状态。产品 active 和配置检查通过不能证明 KYC/KYB、商店审核或正式现金付款验收已经完成；本轮没有查询这些账户状态。
+- 官方 [SKILL.md](https://creem.io/SKILL.md) 将生成式 AI 列为需先联系支持确认的类别。[AI Wrapper Compliance](https://docs.creem.io/merchant-of-record/account-reviews/ai-wrapper-compliance) 要求用户输入提示词生图/视频的产品接入 Moderation API，并禁止 face-swap、deepfake、face-manipulation 工具。
+- 当前 `cloudflare/generation.ts` 使用服务端固定提示词、用户照片和白名单模板，没有用户自由文本提示词，也没有 Creem Moderation API 调用。固定模板职业头像流程的审核分类、是否需接入该 API，以及照片输入的审核要求，需向 support@creem.io 提供真实流程确认；不能据此直接判定产品获准、豁免或被禁止。
+- 若确认需要接入，先在隔离测试环境实现；仅 `allow` 继续生成，`flag`、`deny`、超时及错误阻止生成。将请求延迟、审核费用、失败不消耗用户额度及重试幂等纳入验收。当前尚未实施。官方 [Moderation 文档](https://docs.creem.io/features/moderation) 说明其按文本单位计费，不应把重复审核固定模板视为已解决上传照片的审核。
+
 | 套餐 | 正式产品 ID | 价格 | 额度 |
 | --- | --- | --- | --- |
 | Professional | prod_3VuEcSLV7nUFQIFYByNkaG | USD 25 | 30 |

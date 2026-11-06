@@ -1,5 +1,26 @@
 # 项目交接
 
+## 2026-11-06 Sitemap 重提与索引请求交接
+
+- 用户授权重新提交现有sitemap，并为简历照片常见错误文章和LinkedIn用途页请求编入索引。GSC Wizard `submit_sitemap` 于16:05:27（Asia/Taipei）返回accepted=true、confirmed=true，submitted=1、failed=0、isPending=true；这是请求被接受、等待下载，不是页面已经收录。
+- 两页的索引请求没有通过代理完成：内置浏览器读取Search Console超时，随后Windows Computer Use因无法可靠识别当前浏览器URL而强制停止。没有绕过该限制，也没有把inspect_url或IndexNow当成Google索引提交。用户选择自行操作，已提供步骤，但尚未收到两页“已请求编入索引”的明确确认。
+- 用户随后明确要求提交“所有未提交的内容”，包含原有支付文档、另一会话追加的竞品调研和本轮SEO记录；仅本地Git提交，不推送或触发发布。忽略目录中的凭据与验收原始资料继续由原有ignore规则保留。
+
+
+## 2026-11-06 首页与套餐竞品调研（讨论中）
+
+- 用户要求先调研竞品价格、套餐组合及宣传方式，再讨论首页、定价、FAQ和SEO方案。已读取Aragon、HeadshotPro（.com）、BetterPic、PortraitPal、Secta、PFPMaker官网；价格为当日公开展示，未进入付款或实测竞品生成。BetterPic金额来自其pricing页面JSON-LD；Secta不同模块的照片数量不一致，不能将营销页全部数字当作统一契约。没有修改产品、套餐数据、支付配置或部署。
+- 重要事实修正：HeroTool允许上传最多5张，但生成使用files[selectedReferenceIndex]这一张参考图；cloudflare/generation.ts向供应商发送该参考图和风格模板，不会联合分析全部自拍。现有FAQ“更多角度与光线会使结果更准确”不能作为当前多图处理能力宣传。后续应按“选择一张清晰自拍作为参考”统一说明。
+- 讨论建议而非已批准决策：保留一次性额度模式及现有$25/30、$45/70基线，围绕免费验证本人效果、按需选模板、无水印/分辨率形成权益差异；约$9/10次小包仅作为候选实验。免费体验本身不是独有卖点；竞品公开退款、时效、评价、人数和效果声明未经本项目独立验证，不可照搬。
+- 成本边界：docs/production-acceptance.md中的$0.046（1K）/$0.096（2K）各只有一次历史验收样本，不能直接视为当前稳定成本或毛利；测算还需免费用户、重试、支付、退款、支持及获客费用。新增套餐需复核现有账户级质量/额度合并规则，不能假设每个购买包天然具有独立质量权益。
+
+## 2026-11-06 发布后 Search Console 只读核对
+
+- 用户指定检查sitemap、首页、简历照片常见错误文章及LinkedIn用途页。15:59（Asia/Taipei）经GSC Wizard读取：首页已收录，最近抓取11-06 05:18:53；简历文章仍Crawled - currently not indexed，最近抓取08-20 18:56:51；`/linkedin-headshots` 为URL is unknown to Google，无抓取记录。已抓取两页Google/用户canonical均为自身，robots与索引许可正常。
+- sitemap记录仍为01-14 22:47提交/下载、submitted=14、错误/警告0、非pending；线上文件200且有15个网址，含本次三页。三个页面线上200、正文/H1/自指canonical正确且无noindex。检查结果的抓取时间早于本次发布，不能把旧索引状态解释成修复后仍被拒收，也不能把sitemap submitted或已废弃indexed字段当成收录数。
+- 本次检查前剩余配额1986，调用3次单页inspect，未提交sitemap、请求索引或配置跟踪。详细结果已补入docs/seo-branch-acceptance.md；脱敏原始结果和实时HTTP核对在 `.recovery/gsc-post-release-inspections.json`、`gsc-post-release-live.json`。本轮只读检查与本地记录，未提交或发布新代码。
+
+
 ## 2026-11-06 SEO 正式发布与线上验证
 
 - 用户在综合回归通过后明确要求“提交并进行发布”。功能提交 `55100df4dc59e6443c6f5651180494cddb019e5c` 已快进合入main并推送，Cloudflare Git生产部署 `ba344843-340d-49c1-90a0-556e5e2e4c8b` 于2026-11-06 15:47:45（Asia/Taipei）成功，GitHub Cloudflare检查也为success。下方“暂不发布/未提交”为各阶段历史状态。
@@ -155,6 +176,24 @@
 - 首页 20 张独立图库文件共 1,679,579 字节，循环渲染 40 个 img，均未设懒加载；不能把重复 img 数算作重复传输量。仅完成源码和 HTTP 检查，未取得 Search Console、真实访客 Core Web Vitals 或关键词搜索量，不据此断言零收录/流量损失/性能不合格。
 - 浏览器工具仅提供 IAB，无 Chrome；本次 IAB 打开文章超时，未完成渲染 DOM 验证，不反复重试或冒充完成。Google 官方更新记录已确认 FAQ 富结果自 2026-05-07 停用，不能把增加 FAQ schema 当作当前富结果收益承诺。
 - 本轮未修改业务代码、发布、付费查询或创建订单；保留原有 CREEM_SETUP.md、HANDOFF.MD 未提交改动。
+
+## 2026-11-05 正式支付配置只读复查
+
+生产部署 2c5e3d5d-5386-4b07-8546-e11d33d8f66a / main 393faeb 的 Cloudflare 配置已只读核对：CREEM_TEST_MODE=false、原 www 域名及正式产品 ID，支付 key/回调 secret 为 secret_text，D1/R2 绑定正确。正式产品 active/onetime/prod，Professional USD25/30、Executive USD45/60+10 与线上套餐一致。正式 webhook enabled/http/prod、事件和密钥匹配；线上非财务签名探测 received/ignored，坏签名401。未创建付款/退款、修改生产配置或余额。
+
+用户 Payout Account 截图顶部显示“审核中”，右侧 Review by Creem Team 已勾选，Payouts Enabled 仍为等待图标。这些信号不完全一致：可确认打款尚未启用，不能仅凭 Pending 或 API 可访问断言客户付款能力已禁用/已完全获批；应由 Creem 确认 live charges 与 payouts 的实际状态。此前核心业务验收覆盖迁移与沙箱流程，不等于商户审核和正式实收已验收。
+
+16:28（Asia/Taipei）只读对账：正式 Professional 有6条 paid 交易（1条实付USD25、5条实付0），Executive 无交易。USD25 是2026-02-10 16:16的历史交易，未关联当前D1保存的任何checkout。D1有6条pending订单，包含3条历史记录和3条迁移后checkout；迁移后3条在Creem也仍pending，没有发现当前checkout已扣款却未入账的证据。不擅自为未关联历史交易分配用户或补发额度。脱敏证据在 .migration/acceptance/production-transaction-audit.json、production-order-reconciliation.json。
+
+裸域 professionalheadshotai.ink 的Pages条目报旧证书过期/替换错误，但实际HTTPS返回301至www；www为200且域名active，当前主站和回调未受阻。不要把控制面历史错误直接写成整站不可用，不在只读检查中删除域名/证书。
+
+操作坑：Cloudflare MCP search 的OpenAPI全局变量为 spec。IAB读取/点击多次超时，DOM快照曾仍显示Test Mode而截图已无横幅，不能据旧快照要求用户反复切换。猜测的 /dashboard/balance 为404，应从实际导航进入；后台客户收入总数不能作为本轮网站支付到账的证据。
+
+## 2026-11-05 Creem 官方入门指南复核
+
+已完整读取 https://creem.io/SKILL.md 并核对 Moderation、AI Wrapper Compliance 官方文档；`pnpm check:payments` 本轮只读复查全部通过，未创建交易或修改线上配置。现有产品和回调无需重建。
+
+支付检查通过不能证明商店审核/KYC/KYB 已完成。本轮发现当前生图是固定提示词 + 用户照片 + 白名单模板，未接入 Creem Moderation API；官方对用户文字提示生图明确要求接入，也禁止 face-swap/deepfake/face-manipulation。固定模板职业头像业务的具体分类与审核适用边界需向 Creem 确认，不能自行宣称豁免或禁止，不能用审核固定文本冒充已审核照片。详见 CREEM_SETUP.md 的入门步骤；本轮未发送支持邮件、调用收费审核或改动生图代码。
 
 ## 2026-11-05 后续业务验收（业务闭环已通过）
 

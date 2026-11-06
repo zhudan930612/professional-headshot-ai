@@ -34,15 +34,37 @@
 
 ## 仍待后续验证
 
-1. 核对Search Console的sitemap读取和URL Inspection，优先首页、简历照片常见错误文章及LinkedIn页；按后续授权请求重新抓取/提交sitemap，再观察实际索引、展示和点击变化。
+1. 已完成下方Search Console首轮只读核对和sitemap重新提交；Google报告的抓取记录尚早于本次发布。两页单独请求编入索引由用户接手，成功结果尚未确认；后续观察实际索引、展示和点击变化。
 2. 验证真实社交平台的分享卡片及缓存。图片与标签已在线可访问，但平台缓存尚未实测。WebSite不受Google Rich Results Test支持；最终搜索名称由Google决定。
 3. 收集线上真实访客性能数据；没有足够样本时标记数据不足，不把本地实验当作生产CWV。
+
+## 发布后 Search Console 首轮核对
+
+2026-11-06 15:59（Asia/Taipei），GSC Wizard `list_sitemaps`、`inspect_url` 返回：
+
+| 页面 | Google索引状态 | 最近抓取（Asia/Taipei） |
+|---|---|---|
+| 首页 `/` | Submitted and indexed | 2026-11-06 05:18:53 |
+| `/blog/top-5-mistakes-in-resume-photos` | Crawled - currently not indexed | 2026-08-20 18:56:51 |
+| `/linkedin-headshots` | URL is unknown to Google | 无记录 |
+
+首页与简历文章的robots/indexing均允许、抓取成功，Google与用户canonical均为各自网址。LinkedIn的抓取/robots/索引许可状态为未提供，不可解释为被robots屏蔽。`list_url_inspections` 历史显示首页与简历文章的状态及抓取时间和发布前检查相同；本次检查调用读取Google索引记录，不会实时触发抓取。
+
+`https://www.professionalheadshotai.ink/sitemap.xml` 的Search Console记录：最后提交2026-01-14 22:47:26、最后下载22:47:27，isPending=false，warnings=0、errors=0，submitted=14。现场HTTP检查为200、15个网址，并包含本次3个目标。Google记录尚未反映本次新sitemap；最后下载时间不能据以断言此后从未抓取任何页面，submitted也不是已收录数量。
+
+本次线上HTTP同时确认3页均200、canonical指向自身、无meta/header noindex、初始HTML含正文及H1。技术版本已上线，但Google尚无发布后的抓取记录可用于评价修复效果。检查前配额1,986/2,000，本次使用3次；未配置索引跟踪器，未新建任务、提交sitemap或请求编入索引。证据为 `.recovery/gsc-post-release-inspections.json` 和 `.recovery/gsc-post-release-live.json`。
+
+## Sitemap 提交与人工索引请求交接
+
+2026-11-06 16:05:27（Asia/Taipei），`submit_sitemap` 返回：现有sitemap提交1项、成功1项、失败0项，accepted=true、confirmed=true、isPending=true。Google已接受重新下载请求；返回的错误/警告均为0，但仍需下载后核对解析结果，不能据此宣称已收录。
+
+简历照片常见错误文章及LinkedIn用途页的单独索引请求未由代理提交。内置浏览器读取超时，Windows Computer Use又因无法可靠确定浏览器当前URL而停止；用户已选择自行操作并收到步骤，尚未明确确认两页均出现“已请求编入索引”。当前不得把这两项记为提交成功。
 
 ## 保留事项与当前状态
 
 - **内容审核另行处理**：用户已跳过宣传文案/套餐权益一致性，博客中的量化效果、年份和事实依据尚未完成内容验收。本次技术通过不代表这些表述已经核实。
 - **已有风格提示保留**：此前全页设计检查仍有页脚阴影/分隔线/渐变、文章少图片、窄屏长标题等 5 类 FAIL/5 类 WARN；按用户要求保留统一页脚及现有正文，本轮没有扩大改版。30 次技术布局检查通过不等于全页风格评分为零警告。
-- **提交范围**：原先6个SEO提交和首页WebSite已一起发布。原有 `CREEM_SETUP.md` 的8行、`HANDOFF.MD` 中两段支付记录共18行继续保留，未纳入SEO提交。
+- **提交范围**：原先6个SEO提交和首页WebSite已一起发布。此前隔离的支付文档记录、后续Search Console结果和竞品调研记录，本次均已获用户明确的本地提交授权；没有新增推送或发布授权。
 - **发布已完成**：沿用既有Cloudflare Git自动发布，未修改数据库、支付配置或原私有资源。发布使用仓库外独立main工作区，原工作区保持功能分支及原有文档改动。
 - **文档与规则已对齐**：README 增加本记录入口，AGENTS 命令表修正历史 auth 检查说明；历史迁移资料保留历史标识。长期记忆和其他项目为 out-of-scope，未改动。
 - **复核现场保留**：隔离 Pages 预览 `http://127.0.0.1:4173` 继续可用；没有删除分支、worktree、验收证据或其他会话资料。
