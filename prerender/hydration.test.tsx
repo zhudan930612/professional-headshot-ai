@@ -9,6 +9,8 @@ import { serializePublicData } from '@/prerender/document';
 import { TEST_PLANS } from '@/prerender/fixtures';
 import { PUBLIC_PAGE_PATHS, SITE_URL } from '@/lib/seo';
 import type { PublicPageData } from '@/types';
+import { BLOG_POSTS } from '@/constants';
+import { getBlogPresentation } from '@/lib/blogPresentation';
 
 vi.mock('@/services/authService', async original => ({
   ...await original<typeof import('@/services/authService')>(),
@@ -87,6 +89,56 @@ async function click(selector: string) {
 }
 
 describe('all public pages without JavaScript and after hydration', () => {
+  it('uses real portrait previews when browsing the editorial index with focus', async () => {
+    await mount('/blog');
+    const link = document.querySelector<HTMLAnchorElement>('.journal-row[href="/blog/lighting-101-studio-vs-natural"]')!;
+    await act(async () => link.focus());
+    const source = getBlogPresentation('lighting-101-studio-vs-natural').cover;
+    await vi.waitFor(async () => { await act(async () => {}); expect(document.querySelector(`.journal-preview img[src="${source}"]`)).not.toBeNull(); });
+    expect(document.querySelector('.journal-preview img[data-active="true"]')?.getAttribute('src')).not.toBe(source);
+    await act(async () => document.querySelector(`.journal-preview img[src="${source}"]`)!.dispatchEvent(new Event('load')));
+    await vi.waitFor(async () => { await act(async () => {}); expect(document.querySelector('.journal-preview img[data-active="true"]')?.getAttribute('src')).toBe(source); });
+  });
+  it('ignores a preview that finishes loading after focus has moved away', async () => {
+    await mount('/blog');
+    const link = document.querySelector<HTMLAnchorElement>('.journal-row[href="/blog/lighting-101-studio-vs-natural"]')!;
+    const source = getBlogPresentation('lighting-101-studio-vs-natural').cover;
+    await act(async () => link.focus());
+    await vi.waitFor(async () => { await act(async () => {}); expect(document.querySelector(`.journal-preview img[src="${source}"]`)).not.toBeNull(); });
+    await act(async () => link.blur());
+    await act(async () => document.querySelector(`.journal-preview img[src="${source}"]`)!.dispatchEvent(new Event('load')));
+    expect(document.querySelector('.journal-preview img[data-active="true"]')?.getAttribute('src')).not.toBe(source);
+  });
+  it('does not switch previews when the pointer briefly sweeps over a row', async () => {
+    await mount('/blog');
+    const link = document.querySelector<HTMLAnchorElement>('.journal-row[href="/blog/lighting-101-studio-vs-natural"]')!;
+    const original = document.querySelector('.journal-preview img[data-active="true"]')?.getAttribute('src');
+    vi.useFakeTimers();
+    try {
+      await act(async () => { link.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })); await vi.advanceTimersByTimeAsync(100); });
+      await act(async () => { link.dispatchEvent(new MouseEvent('mouseout', { bubbles: true })); await vi.advanceTimersByTimeAsync(200); });
+      expect(document.querySelectorAll('.journal-preview img')).toHaveLength(1);
+      expect(document.querySelector('.journal-preview img[data-active="true"]')?.getAttribute('src')).toBe(original);
+    } finally { vi.useRealTimers(); }
+  });
+  it.each(BLOG_POSTS.map(post => post.slug))('follows the related reading from %s with matching cover and canonical', async slug => {
+    await mount(`/blog/${slug}`);
+    const presentation = getBlogPresentation(slug);
+    expect(document.querySelector('article figure img')?.getAttribute('src')).toBe(presentation.cover);
+    expect(document.querySelectorAll('nav[aria-label="Related articles"] a')).toHaveLength(2);
+    const contents = [...document.querySelectorAll('nav[aria-label="Article contents"] a')];
+    expect(contents.length).toBeGreaterThan(0);
+    for (const link of contents) expect(document.getElementById(link.getAttribute('href')!.slice(1))).not.toBeNull();
+    expect(document.querySelector('.blog-content')?.textContent).not.toMatch(/\p{Extended_Pictographic}|Why this matters/u);
+    const target = presentation.related[0];
+    await click(`nav[aria-label="Related articles"] a[href="/blog/${target}"]`);
+    await vi.waitFor(async () => {
+      await act(async () => {});
+      expect(document.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(`${SITE_URL}/blog/${target}`);
+      expect(document.querySelector('article figure img')?.getAttribute('src')).toBe(getBlogPresentation(target).cover);
+    });
+  });
+
   it.each(['/missing-page', '/blog/missing-article', '/nested/path/missing/'])('hydrates a real 404 at %s and can navigate back to a valid page', async pathname => {
     const before = await mount(pathname, true);
     expect(document.querySelector('main')).toBe(before.main);

@@ -34,6 +34,12 @@ HTTP 验收使用 `pnpm check:prerender http://localhost:4173`，禁止自动跟
 
 ## 检查
 
+博客封面、阅读标题、摘要和文末推荐集中在 `lib/blogPresentation.ts`：每篇两条固定关联及一个工具入口。`BlogCover` 直接复用现有 JPEG 人像；列表采用图片索引，焦点/悬停切换预览，详情使用短阅读标题、目录与正文分区。旧 SVG 拼贴和生成脚本已撤下，备份在忽略目录 `.recovery/blog-svg-v1`。
+
+`lib/blogReading.ts` 在解析时移除装饰 emoji、重复提示标签和分隔线，保留后续段落与列表，并给二级标题生成稳定目录锚点。原 Markdown、文章 URL、发布日期和 SEO 标题保留；阅读标题及呈现单独配置，不代表已完成原文事实核验。博客专用布局和样式位于 `pages/blog.css`，不替换其他业务页面的版式。视觉记录及三宽截图在忽略目录 `.taste-skill/`。
+
+构建会检查 JPEG 封面、关联文章及工具目标；静态检查和交互测试覆盖封面一致性、目录锚点、正文装饰清理、两条推荐及跳转后的 canonical。
+
 ```powershell
 pnpm typecheck
 pnpm test

@@ -9,6 +9,7 @@ import css from 'highlight.js/lib/languages/css';
 import xml from 'highlight.js/lib/languages/xml';
 import 'highlight.js/styles/atom-one-dark.css';
 import { Buffer } from 'buffer';
+import { formatReadingHtml, prepareReadingMarkdown } from '@/lib/blogReading';
 
 for (const [name, language] of Object.entries({ javascript, typescript, json, bash, css, xml })) {
   hljs.registerLanguage(name, language);
@@ -61,7 +62,7 @@ export const parseMarkdown = async (markdown: string): Promise<ParsedBlog> => {
   // The page already renders the title. Keep one visible article heading.
   const lines = content.trimStart().split('\n');
   const body = lines[0].trim() === `# ${data.title}` ? lines.slice(1).join('\n') : content;
-  return { metadata: data as BlogMetadata, html: await marked(body) };
+  return { metadata: data as BlogMetadata, html: formatReadingHtml(await marked(prepareReadingMarkdown(body))) };
 };
 
 export const parseMarkdownFile = async (filePath: string, signal?: AbortSignal): Promise<ParsedBlog> => {

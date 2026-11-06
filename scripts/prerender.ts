@@ -5,6 +5,8 @@ import type { Manifest } from 'vite';
 import { PUBLIC_PAGE_PATHS, SITE_URL } from '@/lib/seo';
 import { renderDocument } from '@/prerender/document';
 import { fetchPublicPlans } from '@/prerender/plans';
+import { BLOG_PRESENTATION, getRelatedPosts } from '@/lib/blogPresentation';
+import { BLOG_POSTS } from '@/constants';
 import type { PublicPageData } from '@/types';
 import type { ParsedBlog } from '@/utils/markdownParser';
 
@@ -23,6 +25,16 @@ const sitemapPaths = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map(match => {
 if (JSON.stringify([...sitemapPaths].sort()) !== JSON.stringify([...PUBLIC_PAGE_PATHS].sort())) throw new Error('The sitemap and prerender route list must contain exactly the same public pages.');
 
 const plansSource = process.env.PRERENDER_PLANS_URL || `${SITE_URL}/api/plans`;
+if (Object.keys(BLOG_PRESENTATION).length !== BLOG_POSTS.length) throw new Error('Blog presentation must cover every article.');
+for (const post of BLOG_POSTS) {
+  const presentation = BLOG_PRESENTATION[post.slug];
+  if (!presentation || !presentation.coverAlt || new Set(presentation.related).size !== 2) throw new Error(`Invalid blog presentation: ${post.slug}`);
+  getRelatedPosts(post.slug);
+  if (!PUBLIC_PAGE_PATHS.includes(presentation.action.href)) throw new Error(`Invalid article action: ${post.slug}`);
+  if (!/^\/best-headshot\/best_\d{2}\.jpeg$/.test(presentation.cover)) throw new Error('Unsafe cover path.');
+  const cover = await readFile(`public${presentation.cover}`);
+  if (cover[0] !== 0xff || cover[1] !== 0xd8) throw new Error(`Invalid JPEG: ${presentation.cover}`);
+}
 const plans = await fetchPublicPlans(plansSource);
 const builtAt = new Date().toISOString();
 const year = new Date(builtAt).getUTCFullYear();

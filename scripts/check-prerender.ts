@@ -4,11 +4,13 @@ import { gzipSync } from 'node:zlib';
 import { JSDOM } from 'jsdom';
 import { PUBLIC_PAGE_PATHS, SITE_URL } from '@/lib/seo';
 import type { PublicPageData } from '@/types';
+import { getBlogPresentation } from '@/lib/blogPresentation';
 
 const base = process.argv[2];
 const titles = new Set<string>();
 const publicLinks = new Map<string, string[]>();
 const report = [];
+let homepageFooter: string | undefined;
 for (const pathname of PUBLIC_PAGE_PATHS) {
   const file = pathname === '/' ? 'index.html' : `${pathname.slice(1)}.html`;
   let html: string;
@@ -20,6 +22,10 @@ for (const pathname of PUBLIC_PAGE_PATHS) {
   } else html = await readFile(`dist/${file}`, 'utf8');
   const dom = new JSDOM(html); // Scripts are deliberately disabled.
   const document = dom.window.document;
+  const footer = document.querySelector('footer')?.outerHTML;
+  assert.ok(footer, 'Public pages must include the shared footer.');
+  if (pathname === '/') homepageFooter = footer;
+  if (pathname === '/blog' || pathname.startsWith('/blog/')) assert.equal(footer, homepageFooter, 'Blog footer must match the homepage.');
   publicLinks.set(pathname, [...document.querySelectorAll('a[href]')].flatMap(link => {
     const url = new URL(link.getAttribute('href')!, `${SITE_URL}${pathname}`);
     const target = url.pathname.replace(/\/+$/, '') || '/';
@@ -38,9 +44,23 @@ for (const pathname of PUBLIC_PAGE_PATHS) {
   const data: PublicPageData = JSON.parse(document.getElementById('__PUBLIC_PAGE_DATA__')!.textContent!);
   assert.equal(data.pathname, pathname);
   if (data.post) {
+    const presentation = getBlogPresentation(data.post.slug);
+    assert.equal(document.querySelector('article figure img')?.getAttribute('src'), presentation.cover);
+    const recommendations = [...document.querySelectorAll('nav[aria-label="Related articles"] a')].map(link => link.getAttribute('href'));
+    assert.deepEqual(recommendations, presentation.related.map(slug => `/blog/${slug}`));
+    assert.equal(document.querySelectorAll('img[src*="picsum.photos"]').length, 0);
+    assert.equal(document.querySelectorAll('main img[src$=".svg"], .blog-content hr').length, 0);
+    assert.ok(!/\p{Extended_Pictographic}/u.test(document.querySelector('.blog-content')?.textContent || ''));
+    for (const link of document.querySelectorAll('nav[aria-label="Article contents"] a')) {
+      assert.ok(document.getElementById(link.getAttribute('href')!.slice(1)), 'Contents must link to a real heading.');
+    }
     assert.equal(document.querySelector('.blog-content')?.textContent?.trim(), new JSDOM(data.post.content).window.document.body.textContent?.trim());
     assert.ok((document.querySelector('.blog-content')?.textContent?.length || 0) > 1000);
     assert.ok([...document.querySelectorAll('link[rel="stylesheet"]')].some(link => link.getAttribute('href')?.includes('BlogPost-')), 'Article CSS must work without JavaScript.');
+  }
+  if (pathname === '/blog') {
+    assert.ok(document.querySelectorAll('main img[src^="/best-headshot/"]').length >= 8);
+    assert.equal(document.querySelectorAll('main img[src*="picsum.photos"]').length, 0);
   }
   if (data.plans) for (const plan of data.plans) assert.ok(document.querySelector('main')?.textContent?.includes(`$${plan.price}`));
   assert.ok(!html.includes('Loading article...'));

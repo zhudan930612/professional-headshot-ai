@@ -20,6 +20,7 @@ dist-ssr
 .vercel/
 .recovery/
 .migration/
+.taste-skill/
 
 # Editor directories and files
 .vscode/*

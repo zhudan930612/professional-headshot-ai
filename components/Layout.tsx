@@ -8,7 +8,7 @@ import { usePublicPageData } from '@/contexts/PublicPageContext';
 import type { PageSeo } from '@/lib/seo';
 import type { QuotaInfo } from '../types';
 
-const Navbar = () => {
+const Navbar = ({ editorial = false }: { editorial?: boolean }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const location = useLocation();
@@ -108,7 +108,7 @@ const Navbar = () => {
             </div>
 
             {/* Desktop Nav */}
-            <div className="hidden md:flex md:items-center md:space-x-8">
+            <div className={editorial ? 'hidden lg:flex lg:items-center lg:space-x-8' : 'hidden md:flex md:items-center md:space-x-8'}>
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
@@ -241,7 +241,7 @@ const Navbar = () => {
             </div>
 
             {/* Mobile menu button */}
-            <div className="flex items-center md:hidden gap-3 shrink-0">
+            <div className={`flex items-center gap-3 shrink-0 ${editorial ? 'lg:hidden' : 'md:hidden'}`}>
               {user && (
                 authQuotaInfo ? (
                   <span className="text-xs font-medium text-slate-500">
@@ -265,7 +265,7 @@ const Navbar = () => {
 
         {/* Mobile Menu */}
         {isOpen && (
-          <div className="md:hidden bg-white border-b border-slate-100">
+          <div className={`${editorial ? 'lg:hidden' : 'md:hidden'} bg-white border-b border-slate-100`}>
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
               {navLinks.map((link) => (
                 <Link
@@ -532,7 +532,7 @@ const Footer = () => {
   );
 };
 
-export const Layout: React.FC<{ children: React.ReactNode; seo?: Partial<PageSeo> }> = ({ children, seo }) => {
+export const Layout: React.FC<{ children: React.ReactNode; seo?: Partial<PageSeo>; editorial?: boolean }> = ({ children, seo, editorial = false }) => {
   const location = useLocation();
 
   // Determine if the current page should be noindex (private/user-specific pages)
@@ -540,9 +540,9 @@ export const Layout: React.FC<{ children: React.ReactNode; seo?: Partial<PageSeo
   const shouldNoIndex = noIndexPaths.some(path => location.pathname.startsWith(path));
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className={`min-h-screen flex flex-col bg-white ${editorial ? 'editorial-shell' : ''}`}>
       <SEOHead {...seo} noIndex={seo?.noIndex ?? shouldNoIndex} />
-      <Navbar />
+      <Navbar editorial={editorial} />
       <main className="flex-grow">
         {children}
       </main>
